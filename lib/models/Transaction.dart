@@ -1,19 +1,29 @@
 class Transaction {
-  final int? id; // ID from SQFlite
-  final DateTime date;
-  final double amount;
-  final String description;
-  final List<String> tags; // Changed from String to List<String>
-  final String paymentMethod;
+  int? id; // ID from SQFlite
+  DateTime date;
+  double amount;
+  String description;
+  List<String> tags;
+  String paymentMethod;
 
+  // Default constructor
   Transaction({
-    required this.id,
+    this.id,
     required this.date,
     required this.amount,
     required this.description,
     required this.tags,
     required this.paymentMethod,
   });
+
+  // Named constructor to create a Transaction with default values
+  Transaction.defaults()
+      : id = null,
+        date = DateTime.now(),
+        amount = 0.0,
+        description = '',
+        tags = [],
+        paymentMethod = 'CASH';
 
   // Convert Transaction object to a map (JSON representation)
   Map<String, dynamic> toJson() {
@@ -22,7 +32,7 @@ class Transaction {
       'date': date.toIso8601String(),
       'amount': amount,
       'description': description,
-      'tags': tags, // Updated key to 'tags'
+      'tags': tags,
       'paymentMethod': paymentMethod,
     };
   }
@@ -35,7 +45,6 @@ class Transaction {
       amount: json['amount'],
       description: json['description'],
       tags: List<String>.from(json['tags']),
-      // Parsing as a List<String>
       paymentMethod: json['paymentMethod'],
     );
   }

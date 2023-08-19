@@ -74,6 +74,12 @@
       "languageVersion": "2.15"
     },
     {
+      "name": "get_storage",
+      "rootUri": "file:///Users/oshaklya/.pub-cache/hosted/pub.dev/get_storage-2.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.16"
+    },
+    {
       "name": "google_fonts",
       "rootUri": "file:///Users/oshaklya/.pub-cache/hosted/pub.dev/google_fonts-4.0.4",
       "packageUri": "lib/",
@@ -272,7 +278,7 @@
       "languageVersion": "2.16"
     }
   ],
-  "generated": "2023-08-19T08:17:45.475971Z",
+  "generated": "2023-08-19T17:31:01.516580Z",
   "generator": "pub",
   "generatorVersion": "2.19.6"
 }

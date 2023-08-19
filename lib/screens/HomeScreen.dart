@@ -6,7 +6,9 @@ import 'package:journal/widgets/DisplayCard.dart';
 import 'package:journal/widgets/FabWidget.dart';
 import 'package:journal/widgets/TransactionCard.dart';
 
+import '../constants/routes.dart';
 import '../controllers/TransactionController.dart';
+import '../models/Transaction.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({Key? key}) : super(key: key);
@@ -16,7 +18,10 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: buildFloatingActionButton(() {}),
+      floatingActionButton: buildFloatingActionButton(() {
+        Get.toNamed(RouteClass.createTransaction,
+            arguments: {'transaction': Transaction.defaults()});
+      }, 'Add Transaction'),
       appBar: buildAppBar(homePage),
       body: Column(
         children: [

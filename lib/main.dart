@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:journal/constants/routes.dart';
 import 'package:journal/screens/HomeScreen.dart';
+import 'package:journal/service/ThemeService.dart';
 
 import 'constants/Theme.dart';
 
-void main() {
+void main() async {
+  await GetStorage.init();
+
   runApp(const MyApp());
 }
 
@@ -12,10 +18,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  MaterialApp(
+    return  GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: darkThemeData(context),
-      home: HomeScreen(),
+      theme: themeData(context),
+      darkTheme: darkThemeData(context),
+      themeMode: ThemeService.getThemeMode(),
+      initialRoute: RouteClass.home,
+      getPages: RouteClass.routes,
     );
   }
 }
