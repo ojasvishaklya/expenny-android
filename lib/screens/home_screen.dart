@@ -22,9 +22,13 @@ class _HomeScreenState extends State<HomeScreen> {
         children: const [
           DisplayCard(balance: '5000', expense: '1000', income: '4000'),
           TransactionCard(
-              transactionName: 'Hasnt material.dart already \nbeen converted by now?',
-              money: 'money',
-              expenseOrIncome: 'expenseOrIncome')
+              transactionName: 'Gym fee \nbeen converted by now?',
+              money: '4500',
+              expenseOrIncome: 'expense'),
+          TransactionCard(
+              transactionName: 'metro card recharge',
+              money: '500',
+              expenseOrIncome: 'expense')
         ],
       ),
     );
