@@ -46,7 +46,7 @@
 //                       Row(
 //                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
 //                         children: [
-//                           Text('Expense'),
+//                           Text('Transaction'),
 //                           Switch(
 //                             value: _isIncome,
 //                             onChanged: (newValue) {
@@ -158,10 +158,10 @@
 //             ),
 //             TopNeuCard(
 //               balance: (GoogleSheetsApi.calculateIncome() -
-//                   GoogleSheetsApi.calculateExpense())
+//                   GoogleSheetsApi.calculateTransaction())
 //                   .toString(),
 //               income: GoogleSheetsApi.calculateIncome().toString(),
-//               expense: GoogleSheetsApi.calculateExpense().toString(),
+//               Transaction: GoogleSheetsApi.calculateTransaction().toString(),
 //             ),
 //             Expanded(
 //               child: Container(
@@ -183,7 +183,7 @@
 //                                     .currentTransactions[index][0],
 //                                 money: GoogleSheetsApi
 //                                     .currentTransactions[index][1],
-//                                 expenseOrIncome: GoogleSheetsApi
+//                                 TransactionOrIncome: GoogleSheetsApi
 //                                     .currentTransactions[index][2],
 //                               );
 //                             }),

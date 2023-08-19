@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:journal/constants/constants.dart';
+import 'package:journal/constants/Constants.dart';
 
 AppBar buildAppBar(String pageName) {
   List<Widget> actions = [];
