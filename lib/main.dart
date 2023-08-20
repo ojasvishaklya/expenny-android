@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:journal/constants/routes.dart';
-import 'package:journal/screens/HomeScreen.dart';
 import 'package:journal/service/ThemeService.dart';
 
 import 'constants/Theme.dart';
+import 'controllers/TransactionController.dart';
 
 void main() async {
   await GetStorage.init();
+  Get.put(TransactionController());
 
   runApp(const MyApp());
 }

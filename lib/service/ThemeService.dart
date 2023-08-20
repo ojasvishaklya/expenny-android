@@ -18,11 +18,30 @@ class ThemeService {
     _getStorage.write(darkModeKey, isDarkMode);
   }
 
+  static Widget getThemeIconButton() {
+    Icon icon;
+    Color color;
+    if (getDarkThemeStatus()) {
+      icon = Icon(Icons.wb_sunny_rounded);
+    } else {
+      icon = Icon(
+        Icons.nightlight_round,
+      );
+    }
+
+    return IconButton(
+      onPressed: () {
+        ThemeService.changeThemeMode();
+      },
+      icon: icon,
+    );
+  }
+
   static void changeThemeMode() {
-    if(getDarkThemeStatus()){
+    if (getDarkThemeStatus()) {
       setDarkThemeStatus(false);
       Get.changeThemeMode(ThemeMode.light);
-    }else {
+    } else {
       setDarkThemeStatus(true);
       Get.changeThemeMode(ThemeMode.dark);
     }

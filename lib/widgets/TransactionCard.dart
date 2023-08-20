@@ -11,16 +11,15 @@ class TransactionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2,horizontal: 5),
+      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 5),
       child: InkWell(
-          onTap: () {
-            print(transaction);
-          },
+        onTap: () {
+          print(transaction);
+        },
         child: Container(
-          height: 70,
           decoration: BoxDecoration(
-            color: Colors.black45, //todo: color theme
-            borderRadius: BorderRadius.circular(10), // Adjust the radius value as needed
+            borderRadius:
+                BorderRadius.circular(10), // Adjust the radius value as needed
           ),
           padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
           child: Row(
@@ -39,7 +38,6 @@ class TransactionCard extends StatelessWidget {
                   Text(transaction.description,
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.grey[500], //todo: color theme
                       )),
                 ],
               ),
