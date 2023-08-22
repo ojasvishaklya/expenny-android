@@ -12,20 +12,18 @@ Welcome to the Daily Transaction Manager Flutter App repository! This Flutter ap
 
 ## Todo
 
-- [ ] Implement state management solution (e.g., Provider, Riverpod, Bloc) for efficient data handling and responsiveness.
-- [ ] Add the ability to categorize Transactions using tags (e.g., Food, Transportation, Entertainment).
-- [ ] Create an Transaction entry form to input date, amount, description, and associated tags.
+- [X] Implement state management solution (e.g., Provider, Riverpod, Bloc) for efficient data handling and responsiveness.
+- [X] Add the ability to categorize Transactions using tags (e.g., Food, Transportation, Entertainment).
+- [X] Create an Transaction entry form to input date, amount, description, and associated tags.
 - [ ] Display a list of Transactions, including sorting and filtering options for better navigation.
 - [ ] Develop visual charts and graphs to depict spending patterns and trends over time.
 - [ ] Implement a budget-setting feature with notifications for approaching/exceeding limits.
 - [ ] Provide support for currency conversion to track Transactions in different currencies.
 - [ ] Integrate user authentication to secure sensitive financial data.
-- [ ] Allow users to sync Transaction data across devices using cloud storage services.
 - [ ] Implement data export functionality in formats like CSV or PDF.
 - [ ] Set up reminder notifications to prompt users to regularly input their Transactions.
-- [ ] Include a dark mode option for improved usability in low-light conditions.
+- [X] Include a dark mode option for improved usability in low-light conditions.
 - [ ] Implement a search functionality to quickly locate specific Transactions based on various criteria.
-- [ ] Add multi-language support to cater to a diverse global user base.
 - [ ] Provide options for users to locally back up data or use cloud backup services.
 
 ## Screenshots

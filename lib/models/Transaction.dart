@@ -1,3 +1,5 @@
+import 'package:journal/models/PaymentMethod.dart';
+
 class Transaction {
   int? id; // ID from SQFlite
   DateTime date;
@@ -23,7 +25,7 @@ class Transaction {
         amount = 0.0,
         description = '',
         tags = [],
-        paymentMethod = 'CASH';
+        paymentMethod = PaymentMethod.CASH.name;
 
   // Convert Transaction object to a map (JSON representation)
   Map<String, dynamic> toJson() {

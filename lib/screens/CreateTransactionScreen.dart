@@ -2,8 +2,11 @@ import 'dart:ffi';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:journal/models/PaymentMethod.dart';
+import 'package:journal/models/TransactionTag.dart';
 
 import '../models/Transaction.dart';
+import '../widgets/TagSelectorWidget.dart';
 
 showFormDialog(BuildContext context) {
   showDialog(
@@ -44,6 +47,19 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
   final _formKey = GlobalKey<FormState>();
   final Transaction _transaction = Transaction.defaults();
   bool _paymentMethod = true;
+  Set<String> selectedTagIds = <String>{};
+
+  updateTransactionTags(Set<String> selectedTagIds) {
+    List<String> tags = [];
+
+    for (String tagId in selectedTagIds) {
+      tags.add(tagId);
+    }
+
+    setState(() {
+      _transaction.tags = tags;
+    });
+  }
 
   textFormFieldDecoration(
       {labelText = 'labelText',
@@ -73,10 +89,7 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
     return SizedBox(
-      width: screenWidth,
-      height: 400,
       child: Form(
         key: _formKey,
         child: Column(
@@ -102,10 +115,12 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
             SizedBox(
               height: 10,
             ),
-
+            TagSelectorWidget(
+              updateTransactionTags: updateTransactionTags,
+            ),
             buildPaymentMethodInput(),
             Spacer(),
-            Text(_transaction.toString())
+            Text(_transaction.toString()),
           ],
         ),
       ),
@@ -118,18 +133,19 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
       onPressed: (int index) {
         setState(() {
           _paymentMethod = index == 0;
-          _transaction.paymentMethod = index == 0 ? 'CASH' : 'CARD/UPI';
+          _transaction.paymentMethod =
+              index == 0 ? PaymentMethod.CASH.name : PaymentMethod.ONLINE.name;
         });
       },
       borderRadius: const BorderRadius.all(Radius.circular(8)),
       isSelected: [_paymentMethod, !_paymentMethod],
-      children: const <Widget>[
+      children: <Widget>[
         TextIconWidget(
-          text: 'CASH',
+          text: PaymentMethod.CASH.name,
           icon: Icons.money,
         ),
         TextIconWidget(
-          text: 'Cars/UPI',
+          text: PaymentMethod.ONLINE.name,
           icon: Icons.credit_card,
         ),
       ],
