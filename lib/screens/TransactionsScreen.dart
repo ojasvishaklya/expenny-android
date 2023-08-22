@@ -5,16 +5,20 @@ import 'package:journal/widgets/FabWidget.dart';
 import 'package:journal/widgets/TransactionCard.dart';
 
 import '../controllers/TransactionController.dart';
+import 'CreateTransactionScreen.dart';
 
 class TransactionsScreen extends StatelessWidget {
   TransactionsScreen({Key? key}) : super(key: key);
+
 
   @override
   Widget build(BuildContext context) {
     return  Column(
         children: [
           DisplayCard(),
-          buildFloatingActionButton((){}, 'Add Transaction'),
+          buildFloatingActionButton((){
+           showFormDialog(context);
+          }, 'Add Transaction'),
           Expanded(child: GetX<TransactionController>(builder: (controller) {
             return ListView.builder(
                 scrollDirection: Axis.vertical,

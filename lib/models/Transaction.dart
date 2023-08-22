@@ -51,6 +51,12 @@ class Transaction {
 
   @override
   String toString() {
-    return 'Transaction{id: $id, date: $date, amount: $amount, description: $description, tags: $tags, paymentMethod: $paymentMethod}';
+    return 'Transaction{\n'
+        ' id: $id,\n'
+        ' date: $date,\n'
+        ' amount: $amount,\n'
+        ' description: $description,\n'
+        ' tags: $tags,\n'
+        ' paymentMethod: $paymentMethod\n}';
   }
 }

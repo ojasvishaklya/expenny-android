@@ -19,10 +19,6 @@ Widget buildBottomNavBar(void Function(int index) onItemTapped) {
         icon: Icons.man_sharp,
         text: 'Profile',
       ),
-      GButton(
-        icon: Icons.add_box_rounded,
-        text: 'Add',
-      ),
     ],
   );
 }

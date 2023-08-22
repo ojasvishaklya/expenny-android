@@ -23,8 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static final List<Widget> _widgetOptions = <Widget>[
     AnalyticsScreen(),
     TransactionsScreen(),
-    ProfileScreen(),
-    CreateTransactionScreen()
+    ProfileScreen()
   ];
 
   void _onItemTapped(int index) {
