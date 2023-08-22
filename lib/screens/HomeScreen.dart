@@ -54,30 +54,9 @@ class _HomeScreenState extends State<HomeScreen> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
         overlays: [SystemUiOverlay.top]);
     return Scaffold(
-      appBar: buildAppBar(RouteClass.home),
+      appBar: buildAppBar(),
       body: _widgetOptions[_selectedIndex],
-      bottomNavigationBar: GNav(
-        gap: 10,
-        onTabChange: _onItemTapped,
-        tabs: const [
-          GButton(
-            icon: Icons.analytics_outlined,
-            text: 'Analytics',
-          ),
-          GButton(
-            icon: Icons.home,
-            text: 'Home',
-          ),
-          GButton(
-            icon: Icons.man_sharp,
-            text: 'Profile',
-          ),
-          GButton(
-            icon: Icons.add_box_rounded,
-            text: 'Add',
-          ),
-        ],
-      ),
+      bottomNavigationBar: buildBottomNavBar(_onItemTapped),
     );
   }
 }

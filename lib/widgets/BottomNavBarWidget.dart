@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
-Widget buildBottomNavBar() {
+Widget buildBottomNavBar(void Function(int index) onItemTapped) {
   return GNav(
     gap: 10,
-    onTabChange: (index){
-      print(index);
-    },
+    onTabChange: onItemTapped,
+    selectedIndex: 1,
     tabs: const [
       GButton(
         icon: Icons.analytics_outlined,
@@ -19,6 +18,10 @@ Widget buildBottomNavBar() {
       GButton(
         icon: Icons.man_sharp,
         text: 'Profile',
+      ),
+      GButton(
+        icon: Icons.add_box_rounded,
+        text: 'Add',
       ),
     ],
   );
