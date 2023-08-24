@@ -2,27 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:journal/models/TransactionTag.dart';
 
 class TagSelectorWidget extends StatefulWidget {
-  final void Function(Set<String>) updateTransactionTags;
+  final void Function(String) updateTransactionTag;
 
-  TagSelectorWidget({Key? key, required this.updateTransactionTags}) : super(key: key);
+  TagSelectorWidget({Key? key, required this.updateTransactionTag})
+      : super(key: key);
 
   @override
   State<TagSelectorWidget> createState() => _TagSelectorWidgetState();
 }
 
 class _TagSelectorWidgetState extends State<TagSelectorWidget> {
-
-  Set<String> selectedTagIds = <String>{};
-  String longPressedTag='';
+  String selectedTagId = 'miscellaneous';
+  String longPressedTag = 'Miscellaneous';
 
   @override
   Widget build(BuildContext context) {
     return Column(
-
       children: [
-        Visibility(
-          visible: longPressedTag.isNotEmpty,
-          child: Center(child: Text(longPressedTag)),
+        Center(
+          child: Text(
+            longPressedTag,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
         ),
         Wrap(
           spacing: 8.0, // Spacing between icons
@@ -30,39 +31,33 @@ class _TagSelectorWidgetState extends State<TagSelectorWidget> {
             final id = tag.id;
             final icon = tag.icon;
 
-            final isSelected = selectedTagIds.contains(id);
-
+            final isSelected = id == selectedTagId;
+            print('-');
+            print(id);
+            print(selectedTagId);
+            print(isSelected);
+            print('-');
             return GestureDetector(
               onTap: () {
                 setState(() {
-                  if (isSelected) {
-                    selectedTagIds.remove(id);
-                  } else {
-                    selectedTagIds.add(id);
+                  if (!isSelected) {
+                    selectedTagId = id;
+                    longPressedTag = tag.name;
                   }
-                  widget.updateTransactionTags(selectedTagIds);
+                  widget.updateTransactionTag(selectedTagId);
                 });
-              },
-              onLongPress: (){
-                setState(() {
-                  longPressedTag=tag.name;
-                });
-
-
-                // hide the name after 2sec
-                Future.delayed(Duration(seconds: 2), () {
-                  setState(() {
-                    longPressedTag = '';
-                  });
-                });
-
               },
               child: Container(
                 margin: EdgeInsets.symmetric(vertical: 6),
-                padding: EdgeInsets.all( 6),
+                padding: EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color:
-                      isSelected ? Theme.of(context).cardColor : Colors.transparent,
+                  border: Border.all(
+                    color: isSelected
+                        ? Theme.of(context).textTheme.bodySmall?.color ??
+                            Colors.black
+                        : Colors.transparent, // Border color
+                    width: 2, // Border width
+                  ),
                   // Set the background color here
                   borderRadius:
                       BorderRadius.circular(5.0), // Optional: Add border radius

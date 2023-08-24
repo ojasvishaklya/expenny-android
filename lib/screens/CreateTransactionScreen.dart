@@ -1,35 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:journal/models/PaymentMethod.dart';
 
+import '../controllers/TransactionController.dart';
 import '../models/Transaction.dart';
 import '../widgets/TagSelectorWidget.dart';
-
-showFormDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius:
-              BorderRadius.circular(5.0), // Customize the corner radius
-        ),
-        content: CreateTransactionScreen(),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {},
-            child: Text('Submit'),
-          ),
-        ],
-      );
-    },
-  );
-}
 
 class CreateTransactionScreen extends StatefulWidget {
   const CreateTransactionScreen({Key? key}) : super(key: key);
@@ -43,18 +18,20 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
   final _formKey = GlobalKey<FormState>();
   final Transaction _transaction = Transaction.defaults();
   bool _paymentMethod = true;
-  Set<String> selectedTagIds = <String>{};
+  late String selectedTagId;
 
-  updateTransactionTags(Set<String> selectedTagIds) {
-    List<String> tags = [];
+  late TransactionController _controller;
 
-    for (String tagId in selectedTagIds) {
-      tags.add(tagId);
-    }
+  @override
+  void initState() {
+    super.initState();
+    _controller = Get.find<TransactionController>();
+  }
 
-    // setState(() {
-    //   _transaction.tags = tags;
-    // });
+  updateTransactionTag(String selectedTagId) {
+    setState(() {
+      _transaction.tag = selectedTagId;
+    });
   }
 
   textFormFieldDecoration(
@@ -79,13 +56,17 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      // Form validation succeeded, perform form submission logic
+      print('saving form');
+      _controller.addTransaction(_transaction);
+    } else {
+      print('error in form');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
       child: Form(
         key: _formKey,
         child: Column(
@@ -112,11 +93,28 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
               height: 10,
             ),
             TagSelectorWidget(
-              updateTransactionTags: updateTransactionTags,
+              updateTransactionTag: updateTransactionTag,
             ),
             buildPaymentMethodInput(),
             Spacer(),
             Text(_transaction.toString()),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    _submitForm();
+                  },
+                  child: Text('Submit'),
+                ),
+              ],
+            )
           ],
         ),
       ),
@@ -155,6 +153,8 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Please enter a description';
+        } else if (value.length > 40) {
+          return 'Description must not exceed 40 characters';
         }
         return null;
       },

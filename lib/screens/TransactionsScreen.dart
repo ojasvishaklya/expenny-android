@@ -16,9 +16,9 @@ class TransactionsScreen extends StatelessWidget {
     return  Column(
         children: [
           DisplayCard(),
-          buildFloatingActionButton((){
-           showFormDialog(context);
-          }, 'Add Transaction'),
+          // buildFloatingActionButton((){
+          //  showFormDialog(context);
+          // }, 'Add Transaction'),
           Expanded(child: GetX<TransactionController>(builder: (controller) {
             return ListView.builder(
                 scrollDirection: Axis.vertical,

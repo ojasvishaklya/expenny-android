@@ -116,12 +116,6 @@
       "languageVersion": "2.12"
     },
     {
-      "name": "logger",
-      "rootUri": "file:///Users/oshaklya/.pub-cache/hosted/pub.dev/logger-1.4.0",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    },
-    {
       "name": "matcher",
       "rootUri": "file:///Users/oshaklya/.pub-cache/hosted/pub.dev/matcher-0.12.13",
       "packageUri": "lib/",
@@ -284,7 +278,7 @@
       "languageVersion": "2.16"
     }
   ],
-  "generated": "2023-08-20T08:03:41.939207Z",
+  "generated": "2023-08-24T12:26:40.845682Z",
   "generator": "pub",
   "generatorVersion": "2.19.6"
 }
