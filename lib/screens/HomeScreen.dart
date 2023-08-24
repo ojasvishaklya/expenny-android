@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:journal/screens/CreateTransactionScreen.dart';
 import 'package:journal/screens/TransactionsScreen.dart';
-import 'package:journal/widgets/AppBarWidget.dart';
 import 'package:journal/widgets/BottomNavBarWidget.dart';
 
-import '../constants/routes.dart';
 import 'AnalyticsScreen.dart';
 import 'ProfileScreen.dart';
 
@@ -19,43 +14,49 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 1;
+  PageController _pageController = PageController();
 
-  static final List<Widget> _widgetOptions = <Widget>[
+  static final List<Widget> _screens = <Widget>[
     AnalyticsScreen(),
     TransactionsScreen(),
     ProfileScreen()
   ];
 
-  void _onItemTapped(int index) {
+  void _updateSelectedIndex(int index) {
     setState(() {
       _selectedIndex = index;
+      _pageController.jumpToPage(index);
     });
   }
 
-  void _onSwipe(DragEndDetails dragEndDetails) {
-    print(dragEndDetails.primaryVelocity);
-    print(_selectedIndex);
-    if (dragEndDetails.primaryVelocity! > 0 && _selectedIndex > 0) {
-      setState(() {
-        print('decrementing index');
-        _selectedIndex-=1;
-      });
-    } else if (_selectedIndex < _widgetOptions.length - 1) {
-      setState(() {
-        print('incrementing index');
-        _selectedIndex+=1;
-      });
-    }
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _selectedIndex);
   }
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-        overlays: [SystemUiOverlay.top]);
+    // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+    //     overlays: [SystemUiOverlay.top]);
     return Scaffold(
-      appBar: buildAppBar(),
-      body: _widgetOptions[_selectedIndex],
-      bottomNavigationBar: buildBottomNavBar(_onItemTapped),
+      // appBar: buildAppBar(),
+      body: Padding(
+        padding: const EdgeInsets.only(top: 70.0),
+        child: PageView(
+          controller: _pageController,
+          children: _screens,
+          onPageChanged: (index) {
+            setState(() {
+              _selectedIndex = index;
+            });
+          },
+        ),
+      ),
+      bottomNavigationBar: BottomNavBarWidget(
+        currentIndex: _selectedIndex,
+        onIndexChanged: _updateSelectedIndex,
+      ),
     );
   }
 }

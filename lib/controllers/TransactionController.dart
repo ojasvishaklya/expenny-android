@@ -40,7 +40,7 @@ class TransactionController extends GetxController {
     transactionList.refresh();
   }
 
-  void addAlarm(Transaction transaction) {
+  void addTransaction(Transaction transaction) {
     transactionList.add(transaction);
     transactionList.refresh();
   }

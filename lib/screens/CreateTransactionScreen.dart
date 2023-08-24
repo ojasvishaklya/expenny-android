@@ -1,9 +1,5 @@
-import 'dart:ffi';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:journal/models/PaymentMethod.dart';
-import 'package:journal/models/TransactionTag.dart';
 
 import '../models/Transaction.dart';
 import '../widgets/TagSelectorWidget.dart';

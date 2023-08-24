@@ -1,9 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:journal/widgets/DisplayCard.dart';
-import 'package:journal/widgets/TransactionCard.dart';
-
-import '../controllers/TransactionController.dart';
 
 class ProfileScreen extends StatelessWidget {
   ProfileScreen({Key? key}) : super(key: key);
