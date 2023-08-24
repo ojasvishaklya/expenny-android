@@ -52,9 +52,9 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
       tags.add(tagId);
     }
 
-    setState(() {
-      _transaction.tags = tags;
-    });
+    // setState(() {
+    //   _transaction.tags = tags;
+    // });
   }
 
   textFormFieldDecoration(

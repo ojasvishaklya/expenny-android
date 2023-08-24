@@ -1,5 +1,5 @@
+import '../models/PaymentMethod.dart';
 import '../models/Transaction.dart';
-import '../models/TransactionTag.dart';
 
 class TransactionService {
   Future<List<Transaction>> getTransactionList() async {
@@ -9,43 +9,33 @@ class TransactionService {
       Transaction(
         id: 1,
         date: DateTime(2023, 8, 15),
-        amount: 25,
-        description: 'Lunch at a restaurant',
-        tags: [TransactionTag.getRandomTagId()],
-        paymentMethod: 'Credit Card',
+        amount: 150.0,
+        description: 'Groceries',
+        isExpense: true,
+        isStarred: false,
+        tag: 'grocery',
+        paymentMethod: PaymentMethod.ONLINE.name,
       ),
       Transaction(
         id: 2,
-        date: DateTime(2023, 8, 16),
-        amount: 10,
-        description: 'Movie ticket',
-        tags: [TransactionTag.getRandomTagId()],
-        paymentMethod: 'Cash',
+        date: DateTime(2023, 8, 18),
+        amount: 50.0,
+        description: 'Gasoline',
+        isExpense: true,
+        isStarred: true,
+        tag: 'transportation',
+        paymentMethod: PaymentMethod.CASH.name,
       ),
       Transaction(
         id: 3,
-        date: DateTime(2023, 8, 17),
-        amount: -50.0,
-        description: 'Groceries',
-        tags: [TransactionTag.getRandomTagId()],
-        paymentMethod: 'Debit Card',
-      ),
-      Transaction(
-        id: 4,
-        date: DateTime(2023, 8, 18),
-        amount: 8,
-        description: 'Coffee',
-        tags: [TransactionTag.getRandomTagId()],
-        paymentMethod: 'Cash',
-      ),
-      Transaction(
-        id: 5,
-        date: DateTime(2023, 8, 18),
-        amount: -30.0,
-        description: 'Taxi ride',
-        tags: [TransactionTag.getRandomTagId()],
-        paymentMethod: 'Credit Card',
-      ),
+        date: DateTime(2023, 8, 10),
+        amount: 200.0,
+        description: 'Salary',
+        isExpense: false,
+        isStarred: false,
+        tag: 'salary',
+        paymentMethod: PaymentMethod.ONLINE.name,
+      )
     ];
     return dummyTransactions + dummyTransactions + dummyTransactions;
   }

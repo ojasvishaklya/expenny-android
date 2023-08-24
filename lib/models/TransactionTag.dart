@@ -48,6 +48,8 @@ class TransactionTag {
     TransactionTag(
         name: 'Healthcare', id: 'healthcare', icon: Icons.local_hospital),
     TransactionTag(
+        name: 'Salary', id: 'salary', icon: Icons.insights_sharp),
+    TransactionTag(
         name: 'Miscellaneous', id: 'miscellaneous', icon: Icons.more_horiz),
   ];
 }

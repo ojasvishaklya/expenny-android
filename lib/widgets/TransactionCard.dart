@@ -29,7 +29,7 @@ class TransactionCard extends StatelessWidget {
                 children: [
                   Center(
                     child: Icon(
-                      TransactionTag.getTagById(transaction.tags.first).icon,
+                      TransactionTag.getTagById(transaction.tag).icon,
                     ),
                   ),
                   const SizedBox(

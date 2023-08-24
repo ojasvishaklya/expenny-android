@@ -3,7 +3,7 @@ import 'package:journal/screens/TransactionsScreen.dart';
 import 'package:journal/widgets/BottomNavBarWidget.dart';
 
 import 'AnalyticsScreen.dart';
-import 'ProfileScreen.dart';
+import 'PreferencesScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -19,7 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static final List<Widget> _screens = <Widget>[
     AnalyticsScreen(),
     TransactionsScreen(),
-    ProfileScreen()
+    PreferencesScreen()
   ];
 
   void _updateSelectedIndex(int index) {
