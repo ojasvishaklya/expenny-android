@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:journal/models/PaymentMethod.dart';
+import 'package:journal/widgets/AppBarWidget.dart';
+import 'package:journal/widgets/ScreenHeaderWidget.dart';
 
 import '../controllers/TransactionController.dart';
 import '../models/Transaction.dart';
@@ -33,23 +35,30 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
       _transaction.tag = selectedTagId;
     });
   }
-
-  textFormFieldDecoration(
-      {labelText = 'labelText',
-      icon = Icons.info_outline,
-      hintText = 'hintText'}) {
+  InputDecoration textFormFieldDecoration({
+    labelText = 'labelText',
+    icon = Icons.info_outline,
+    hintText = 'hintText',
+  }) {
     return InputDecoration(
       labelText: labelText,
       hintText: hintText,
-      // prefixIcon: Icon(icon),
-      border: InputBorder.none,
+      // prefixIcon: Icon(icon, color: Colors.blue),
+      contentPadding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+      ),
       errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(8.0)),
         borderSide: BorderSide(color: Colors.red),
-        borderRadius: BorderRadius.circular(10.0),
       ),
       focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(8.0)),
         borderSide: BorderSide(color: Colors.red),
-        borderRadius: BorderRadius.circular(10.0),
       ),
     );
   }
@@ -65,41 +74,52 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Form(
-        key: _formKey,
+    return Scaffold(
+      // appBar: buildAppBar(),
+      body: Padding(
+        padding: const EdgeInsets.only(bottom: 16.0,right: 16,left: 16,top: 70),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            buildDescriptionInput(),
-            SizedBox(
-              height: 10,
-            ),
-            Row(
-              children: [
-                Expanded(
-                  flex: 4,
-                  child: buildAmountInput(),
+          children: [
+            ScreenHeaderWidget(text: 'Create Transaction'),
+            SingleChildScrollView(
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    buildDescriptionInput(),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 4,
+                          child: buildAmountInput(),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: buildDatePicker(context),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    TagSelectorWidget(
+                      updateTransactionTag: updateTransactionTag,
+                    ),
+                    buildPaymentMethodInput(),
+                  ],
                 ),
-                Expanded(
-                  flex: 1,
-                  child: buildDatePicker(context),
-                ),
-              ],
+              ),
             ),
-            SizedBox(
-              height: 10,
-            ),
-            TagSelectorWidget(
-              updateTransactionTag: updateTransactionTag,
-            ),
-            buildPaymentMethodInput(),
             Spacer(),
-            Text(_transaction.toString()),
             Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 TextButton(
                   onPressed: () {
@@ -116,7 +136,8 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
               ],
             )
           ],
-        ),
+        )
+        ,
       ),
     );
   }
@@ -232,3 +253,4 @@ class TextIconWidget extends StatelessWidget {
     );
   }
 }
+

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-
-Widget buildFloatingActionButton(function, label){
+Widget buildFloatingActionButton(function, label) {
   return Align(
     alignment: Alignment.bottomCenter,
     child: ElevatedButton.icon(

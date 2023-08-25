@@ -6,8 +6,6 @@ import '../screens/CreateTransactionScreen.dart';
 class RouteClass {
   static String home = '/';
   static String createTransaction = '/createTransaction';
-  static String analytics = '/analytics';
-  static String profile = '/profile';
 
   static List<GetPage> routes = [
     GetPage(
@@ -19,20 +17,8 @@ class RouteClass {
     GetPage(
       name: createTransaction,
       page: () => CreateTransactionScreen(),
-      transition: Transition.native,
-      transitionDuration: Duration(milliseconds: 300),
-    ),
-    GetPage(
-      name: analytics,
-      page: () => CreateTransactionScreen(),
-      transition: Transition.native,
-      transitionDuration: Duration(milliseconds: 300),
-    ),
-    GetPage(
-      name: profile,
-      page: () => CreateTransactionScreen(),
-      transition: Transition.native,
-      transitionDuration: Duration(milliseconds: 300),
+      transition: Transition.downToUp,
+      transitionDuration: Duration(milliseconds: 500),
     ),
   ];
 }

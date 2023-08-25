@@ -48,14 +48,13 @@ class _TagSelectorWidgetState extends State<TagSelectorWidget> {
                 decoration: BoxDecoration(
                   border: Border.all(
                     color: isSelected
-                        ? Theme.of(context).textTheme.bodySmall?.color ??
-                            Colors.black
+                        ? Theme.of(context).primaryColorLight
                         : Colors.transparent, // Border color
                     width: 2, // Border width
                   ),
                   // Set the background color here
                   borderRadius:
-                      BorderRadius.circular(5.0), // Optional: Add border radius
+                      BorderRadius.circular(30.0), // Optional: Add border radius
                 ),
                 child: Icon(
                   icon,

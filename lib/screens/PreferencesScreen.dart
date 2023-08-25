@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-
-import 'package:flutter/material.dart';
 import 'package:journal/service/ThemeService.dart';
+import 'package:journal/widgets/ScreenHeaderWidget.dart';
 
 class PreferencesScreen extends StatefulWidget {
   const PreferencesScreen({Key? key}) : super(key: key);
@@ -43,24 +42,18 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context)
-        .textTheme
-        .apply(displayColor: Theme.of(context).colorScheme.onSurface);
+
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Preferences',
-            style: textTheme.headlineLarge,
-          ),
+          ScreenHeaderWidget(text: 'Preferences'),
           Row(
-            children: [
+            children: const [
               Text(
                 'Theme Preferences',
-                style: textTheme.bodyLarge,
               ),
             ],
           ),
@@ -74,7 +67,6 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
           SizedBox(height: 16),
           Text(
             'Notification Preferences',
-            style: textTheme.bodyLarge,
           ),
           ListTile(
             title: Text('Show Notifications'),
@@ -86,7 +78,6 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
           SizedBox(height: 16),
           Text(
             'Currency Preferences',
-            style: textTheme.bodyLarge,
           ),
           ListTile(
             title: Text('Currency'),

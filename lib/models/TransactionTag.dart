@@ -116,5 +116,4 @@ class TransactionTag {
       color: Color(0xFF607D8B), // Grey
     ),
   ];
-
 }

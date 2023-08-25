@@ -12,35 +12,36 @@ class BottomNavBarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Theme.of(context).cardColor,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16,vertical: 10),
-        child: GNav(
-          gap: 8,
-          onTabChange: onIndexChanged,
-          selectedIndex: currentIndex,
-          // backgroundColor: Colors.black,
-          tabBackgroundColor: Theme.of(context).hoverColor,
-          padding: EdgeInsets.all(12),
-          tabs: const [
-            GButton(
-              icon: Icons.analytics_outlined,
-              text: 'Analytics',
-            ),
-            GButton(
-              icon: Icons.home,
-              text: 'Home',
-            ),
-            GButton(
-              icon: Icons.search,
-              text: 'Search',
-            ),
-            GButton(
-              icon: Icons.settings,
-              text: 'Preferences',
-            ),
-          ],
-        ),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        border: Border(),
+      ),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: GNav(
+        gap: 8,
+        onTabChange: onIndexChanged,
+        selectedIndex: currentIndex,
+        // backgroundColor: Colors.black,
+        tabBackgroundColor: Theme.of(context).hoverColor,
+        padding: EdgeInsets.all(12),
+        tabs: const [
+          GButton(
+            icon: Icons.analytics_outlined,
+            text: 'Analytics',
+          ),
+          GButton(
+            icon: Icons.home,
+            text: 'Home',
+          ),
+          GButton(
+            icon: Icons.search,
+            text: 'Search',
+          ),
+          GButton(
+            icon: Icons.settings,
+            text: 'Preferences',
+          ),
+        ],
       ),
     );
   }

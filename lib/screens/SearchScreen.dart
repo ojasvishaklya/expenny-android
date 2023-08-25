@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:flutter/material.dart';
+import '../widgets/ScreenHeaderWidget.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -21,24 +21,15 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context)
-        .textTheme
-        .apply(displayColor: Theme.of(context).colorScheme.onSurface);
-
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Search Transactions',
-            style: textTheme.headlineLarge,
-          ),
-          SizedBox(height: 30.0),
-
+          ScreenHeaderWidget(text: 'Search Transactions'),
           Container(
             decoration: BoxDecoration(
-              color: Theme.of(context).focusColor,
+              color: Theme.of(context).dialogBackgroundColor,
               borderRadius: BorderRadius.circular(24.0),
               boxShadow: const [
                 BoxShadow(
