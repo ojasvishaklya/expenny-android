@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:journal/screens/CreateTransactionScreen.dart';
+import 'package:journal/screens/SearchScreen.dart';
 import 'package:journal/screens/TransactionsScreen.dart';
 import 'package:journal/widgets/BottomNavBarWidget.dart';
 
+import '../widgets/AppBarWidget.dart';
 import 'AnalyticsScreen.dart';
 import 'PreferencesScreen.dart';
 
@@ -20,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static final List<Widget> _screens = <Widget>[
     CreateTransactionScreen(),
     TransactionsScreen(),
+    SearchScreen(),
     PreferencesScreen()
   ];
 

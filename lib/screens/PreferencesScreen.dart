@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter/material.dart';
+import 'package:journal/service/ThemeService.dart';
 
 class PreferencesScreen extends StatefulWidget {
   const PreferencesScreen({Key? key}) : super(key: key);
@@ -17,6 +18,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
   void _toggleDarkMode(bool value) {
     setState(() {
       _isDarkMode = value;
+      ThemeService.changeThemeMode();
     });
   }
 
@@ -30,6 +32,13 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     setState(() {
       _selectedCurrency = index;
     });
+  }
+
+  @override
+  void initState() {
+    _isDarkMode = ThemeService.getDarkThemeStatus();
+    print(_isDarkMode);
+    super.initState();
   }
 
   @override

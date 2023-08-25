@@ -183,7 +183,7 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
       },
       onChanged: (value) {
         setState(() {
-          _transaction.amount = double.tryParse(value)!;
+          _transaction.setAmount(double.tryParse(value)!);
         });
       },
     );

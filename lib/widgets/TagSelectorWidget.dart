@@ -32,11 +32,6 @@ class _TagSelectorWidgetState extends State<TagSelectorWidget> {
             final icon = tag.icon;
 
             final isSelected = id == selectedTagId;
-            print('-');
-            print(id);
-            print(selectedTagId);
-            print(isSelected);
-            print('-');
             return GestureDetector(
               onTap: () {
                 setState(() {

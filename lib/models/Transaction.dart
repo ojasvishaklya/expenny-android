@@ -20,9 +20,11 @@ class Transaction {
     required this.isStarred,
     required this.tag,
     required this.paymentMethod,
-  }) {
+  });
+
+  setAmount(double amount) {
     if (isExpense) {
-      amount = -1 * amount.abs();
+      this.amount = -1 * amount.abs();
     }
   }
 
