@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:journal/models/PaymentMethod.dart';
-import 'package:journal/widgets/AppBarWidget.dart';
 import 'package:journal/widgets/ScreenHeaderWidget.dart';
 
 import '../controllers/TransactionController.dart';
@@ -35,6 +34,7 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
       _transaction.tag = selectedTagId;
     });
   }
+
   InputDecoration textFormFieldDecoration({
     labelText = 'labelText',
     icon = Icons.info_outline,
@@ -77,7 +77,8 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
     return Scaffold(
       // appBar: buildAppBar(),
       body: Padding(
-        padding: const EdgeInsets.only(bottom: 16.0,right: 16,left: 16,top: 70),
+        padding:
+            const EdgeInsets.only(bottom: 16.0, right: 16, left: 16, top: 70),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
@@ -90,7 +91,25 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
-                    buildDescriptionInput(),
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: buildDescriptionInput(),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child:                                 Switch(
+                            value: _transaction.isExpense,
+                            onChanged: (value) {
+                              setState(() {
+                                _transaction.isExpense = value;
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                     SizedBox(
                       height: 10,
                     ),
@@ -130,14 +149,14 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                 ElevatedButton(
                   onPressed: () {
                     _submitForm();
+                    Navigator.of(context).pop();
                   },
                   child: Text('Submit'),
                 ),
               ],
             )
           ],
-        )
-        ,
+        ),
       ),
     );
   }
@@ -253,4 +272,3 @@ class TextIconWidget extends StatelessWidget {
     );
   }
 }
-

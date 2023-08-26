@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:journal/models/Transaction.dart';
 import 'package:journal/models/TransactionTag.dart';
+import 'package:journal/widgets/PopupWidget.dart';
+
+import '../controllers/TransactionController.dart';
 
 class TransactionCard extends StatelessWidget {
   final Transaction transaction;
+  final _controller = Get.find<TransactionController>();
 
-  const TransactionCard({Key? key, required this.transaction})
-      : super(key: key);
+  TransactionCard({Key? key, required this.transaction}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +19,31 @@ class TransactionCard extends StatelessWidget {
       child: InkWell(
         onTap: () {
           print(transaction);
+        },
+        onLongPress: () {
+          showAlert(context, transaction, [
+            Text(transaction.toString()),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    _controller.deleteTransaction(transaction);
+                    Navigator.of(context).pop();
+                    showSnackBar(
+                        context, transaction.tag + 'transaction deleted', Colors.redAccent);
+                  },
+                  child: Text('Delete'),
+                ),
+              ],
+            )
+          ]);
         },
         child: Container(
           decoration: BoxDecoration(

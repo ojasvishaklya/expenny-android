@@ -37,9 +37,6 @@ class TransactionService {
         paymentMethod: PaymentMethod.ONLINE.name,
       )
     ];
-    return dummyTransactions +
-        dummyTransactions +
-        dummyTransactions +
-        dummyTransactions;
+    return dummyTransactions;
   }
 }

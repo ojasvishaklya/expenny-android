@@ -66,6 +66,31 @@ class Transaction {
       'paymentMethod': paymentMethod,
     };
   }
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'date': date.toIso8601String(),
+      'amount': amount,
+      'isExpense': isExpense ? 1 : 0,
+      'isStarred': isStarred ? 1 : 0,
+      'description': description,
+      'tag': tag,
+      'paymentMethod': paymentMethod,
+    };
+  }
+
+  factory Transaction.fromMap(Map<String, dynamic> map) {
+    return Transaction(
+      id: map['id'],
+      date: DateTime.parse(map['date']),
+      amount: map['amount'],
+      isExpense: map['isExpense'] == 1,
+      isStarred: map['isStarred'] == 1,
+      description: map['description'],
+      tag: map['tag'],
+      paymentMethod: map['paymentMethod'],
+    );
+  }
 
   @override
   String toString() {

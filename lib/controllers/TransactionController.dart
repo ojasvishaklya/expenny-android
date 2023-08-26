@@ -2,7 +2,13 @@ import 'package:get/get.dart';
 import 'package:journal/models/Transaction.dart';
 import 'package:journal/service/TransactionService.dart';
 
+import '../repository/TransactionRepository.dart';
+
 class TransactionController extends GetxController {
+  final TransactionRepository transactionRepository;
+
+  TransactionController(this.transactionRepository);
+
   var transactionList = List<Transaction>.empty().obs;
 
   double get balance =>
@@ -18,12 +24,11 @@ class TransactionController extends GetxController {
         return sum;
       });
 
-  final TransactionService _transactionService = TransactionService();
 
   @override
   void onInit() async {
     super.onInit();
-    transactionList.value = await _transactionService.getTransactionList();
+    transactionList.value = await transactionRepository.getTransactions();
   }
 
   void updateAlarm(Transaction transaction) {
@@ -35,12 +40,14 @@ class TransactionController extends GetxController {
     transactionList.refresh();
   }
 
-  void deleteAlarm(Transaction transaction) {
+  void deleteTransaction(Transaction transaction) async {
+    await transactionRepository.deleteTransaction(transaction.id!);
     transactionList.removeWhere((item) => item.id == transaction.id);
     transactionList.refresh();
   }
 
-  void addTransaction(Transaction transaction) {
+  void addTransaction(Transaction transaction) async {
+    await transactionRepository.insertTransaction(transaction);
     transactionList.add(transaction);
     transactionList.refresh();
   }
