@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import 'package:journal/models/Transaction.dart';
-import 'package:journal/service/TransactionService.dart';
 
 import '../repository/TransactionRepository.dart';
 
@@ -24,7 +23,6 @@ class TransactionController extends GetxController {
         return sum;
       });
 
-
   @override
   void onInit() async {
     super.onInit();
@@ -47,7 +45,7 @@ class TransactionController extends GetxController {
   }
 
   void addTransaction(Transaction transaction) async {
-    await transactionRepository.insertTransaction(transaction);
+    transaction.id = await transactionRepository.insertTransaction(transaction);
     transactionList.add(transaction);
     transactionList.refresh();
   }

@@ -22,7 +22,49 @@ class TransactionCard extends StatelessWidget {
         },
         onLongPress: () {
           showAlert(context, transaction, [
-            Text(transaction.toString()),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                ListTile(
+                  leading: Icon(Icons.calendar_today),
+                  title: Text('Date'),
+                  subtitle: Text(transaction.date.toString()),
+                ),
+                ListTile(
+                  leading: Icon(transaction.isExpense
+                      ? Icons.arrow_downward
+                      : Icons.arrow_upward),
+                  title: Text('Amount'),
+                  subtitle: Text('\$${transaction.amount.toStringAsFixed(2)}'),
+                ),
+                ListTile(
+                  leading: Icon(
+                    transaction.isStarred ? Icons.star : Icons.star_border,
+                    color: transaction.isStarred
+                        ? Colors.amber
+                        : null, // Apply color if starred
+                  ),
+                  title: Text('Starred'),
+                  subtitle: Text(transaction.isStarred ? 'Yes' : 'No'),
+                ),
+                ListTile(
+                  leading: Icon(Icons.description),
+                  title: Text('Description'),
+                  subtitle: Text(transaction.description),
+                ),
+                ListTile(
+                  leading: Icon(Icons.label),
+                  title: Text('Tag'),
+                  subtitle: Chip(label: Text(transaction.tag)),
+                ),
+                ListTile(
+                  leading: Icon(Icons.payment),
+                  title: Text('Payment Method'),
+                  subtitle: Text(transaction.paymentMethod),
+                ),
+              ],
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -37,7 +79,9 @@ class TransactionCard extends StatelessWidget {
                     _controller.deleteTransaction(transaction);
                     Navigator.of(context).pop();
                     showSnackBar(
-                        context, transaction.tag + 'transaction deleted', Colors.redAccent);
+                        context,
+                        transaction.tag + 'transaction deleted',
+                        Colors.redAccent);
                   },
                   child: Text('Delete'),
                 ),
@@ -72,7 +116,7 @@ class TransactionCard extends StatelessWidget {
               ),
               Column(
                 children: [
-                  Text(DateTime.now().toIso8601String().substring(0, 10)),
+                  Text(transaction.humanReadableDate()),
                   SizedBox(
                     height: 10,
                   ),

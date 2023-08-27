@@ -35,30 +35,22 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
     });
   }
 
-  InputDecoration textFormFieldDecoration({
-    labelText = 'labelText',
-    icon = Icons.info_outline,
-    hintText = 'hintText',
-  }) {
+  textFormFieldDecoration(
+      {labelText = 'labelText',
+      icon = Icons.info_outline,
+      hintText = 'hintText'}) {
     return InputDecoration(
       labelText: labelText,
       hintText: hintText,
-      // prefixIcon: Icon(icon, color: Colors.blue),
-      contentPadding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(8.0)),
-        borderSide: BorderSide.none,
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(8.0)),
-      ),
+      prefixIcon: Icon(icon),
+      border: InputBorder.none,
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(8.0)),
         borderSide: BorderSide(color: Colors.red),
+        borderRadius: BorderRadius.circular(10.0),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(8.0)),
         borderSide: BorderSide(color: Colors.red),
+        borderRadius: BorderRadius.circular(10.0),
       ),
     );
   }
@@ -94,19 +86,12 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                     Row(
                       children: [
                         Expanded(
-                          flex: 2,
+                          flex: 4,
                           child: buildDescriptionInput(),
                         ),
                         Expanded(
                           flex: 1,
-                          child:                                 Switch(
-                            value: _transaction.isExpense,
-                            onChanged: (value) {
-                              setState(() {
-                                _transaction.isExpense = value;
-                              });
-                            },
-                          ),
+                          child: buildIsStarredInput(),
                         ),
                       ],
                     ),
@@ -121,17 +106,20 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                         ),
                         Expanded(
                           flex: 1,
-                          child: buildDatePicker(context),
+                          child: buildIsExpenseInput(),
                         ),
                       ],
                     ),
+
                     SizedBox(
                       height: 10,
                     ),
                     TagSelectorWidget(
                       updateTransactionTag: updateTransactionTag,
                     ),
-                    buildPaymentMethodInput(),
+                    SizedBox(
+                      height: 10,
+                    ),
                   ],
                 ),
               ),
@@ -158,6 +146,31 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  IconButton buildIsStarredInput() {
+    return IconButton(
+      icon: Icon(
+        Icons.star,
+        color: _transaction.isStarred ? Colors.amber : null,
+      ),
+      onPressed: () {
+        setState(() {
+          _transaction.isStarred = !_transaction.isStarred;
+        });
+      },
+    );
+  }
+
+  Switch buildIsExpenseInput() {
+    return Switch(
+      value: _transaction.isExpense,
+      onChanged: (value) {
+        setState(() {
+          _transaction.isExpense = value;
+        });
+      },
     );
   }
 
@@ -188,8 +201,9 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
 
   TextFormField buildDescriptionInput() {
     return TextFormField(
+      initialValue: _transaction.description,
       decoration: textFormFieldDecoration(
-          labelText: 'Description', hintText: 'Transaction description'),
+          labelText: 'Description', hintText: 'Transaction description',icon: Icons.description),
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Please enter a description';
@@ -208,8 +222,9 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
 
   TextFormField buildAmountInput() {
     return TextFormField(
+      initialValue: _transaction.amount.toString(),
       decoration: textFormFieldDecoration(
-          labelText: 'Amount', hintText: 'Transaction amount'),
+          labelText: 'Amount', hintText: 'Transaction amount',icon: Icons.numbers),
       keyboardType: TextInputType.number,
       validator: (value) {
         if (value == null || value.isEmpty) {

@@ -18,6 +18,7 @@ class _TagSelectorWidgetState extends State<TagSelectorWidget> {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Center(
           child: Text(
@@ -44,7 +45,7 @@ class _TagSelectorWidgetState extends State<TagSelectorWidget> {
               },
               child: Container(
                 margin: EdgeInsets.symmetric(vertical: 6),
-                padding: EdgeInsets.all(6),
+                padding: EdgeInsets.only(right: 6),
                 decoration: BoxDecoration(
                   border: Border.all(
                     color: isSelected
@@ -58,7 +59,7 @@ class _TagSelectorWidgetState extends State<TagSelectorWidget> {
                 ),
                 child: Icon(
                   icon,
-                  size: 26,
+                  // size: 26,
                 ),
               ),
             );

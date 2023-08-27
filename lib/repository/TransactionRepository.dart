@@ -29,8 +29,8 @@ class TransactionRepository {
     );
   }
 
-  Future<void> insertTransaction(Transaction transaction) async {
-    await _database.insert(
+  Future<int> insertTransaction(Transaction transaction) async {
+   return await _database.insert(
       tableName,
       transaction.toMap(),
       conflictAlgorithm: sqflite.ConflictAlgorithm.replace,
