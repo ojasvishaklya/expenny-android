@@ -37,6 +37,7 @@ class TransactionController extends GetxController {
   }
 
   void addTransaction(Transaction transaction) async {
+    transaction.setAmount(transaction.amount);
     transaction.id = await transactionRepository.insertTransaction(transaction);
 
     int existingIndex = transactionList.indexWhere((existing) => existing.id == transaction.id);
@@ -44,6 +45,7 @@ class TransactionController extends GetxController {
     if (existingIndex != -1) {
       transactionList.removeAt(existingIndex);
     }
+    print(transaction);
     transactionList.add(transaction);
     refreshTransactionList();
   }

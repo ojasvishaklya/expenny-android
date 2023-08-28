@@ -72,13 +72,16 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
       body: Padding(
         padding:
             const EdgeInsets.only(bottom: 16.0, right: 16, left: 16, top: 70),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            ScreenHeaderWidget(text: 'Create Transaction'),
-            SingleChildScrollView(
-              child: Form(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              ScreenHeaderWidget(
+                  text: _transaction.description.isNotEmpty
+                      ? 'Update Transaction'
+                      : 'Create Transaction'),
+              Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -92,13 +95,7 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                         ),
                         Expanded(
                           flex: 1,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('Star'),
-                              buildIsStarredInput(),
-                            ],
-                          ),
+                          child: buildIsStarredInput(),
                         ),
                       ],
                     ),
@@ -203,17 +200,19 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                         GestureDetector(
                           onTap: () {
                             setState(() {
-                              _transaction.paymentMethod = PaymentMethod.CASH.name;
+                              _transaction.paymentMethod =
+                                  PaymentMethod.CASH.name;
                             });
                           },
                           child: Container(
-                          width: 150,
+                            width: 150,
                             padding: EdgeInsets.symmetric(
                                 vertical: 8, horizontal: 16),
                             decoration: BoxDecoration(
                               // color: Theme.of(context).hoverColor,
                               border: Border.all(
-                                color: _transaction.paymentMethod == PaymentMethod.CASH.name
+                                color: _transaction.paymentMethod ==
+                                        PaymentMethod.CASH.name
                                     ? Theme.of(context).primaryColor
                                     : Colors.transparent,
                                 width: 2.0,
@@ -225,7 +224,8 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                               children: [
                                 Icon(
                                   Icons.money,
-                                  color: _transaction.paymentMethod == PaymentMethod.CASH.name
+                                  color: _transaction.paymentMethod ==
+                                          PaymentMethod.CASH.name
                                       ? Theme.of(context).primaryColor
                                       : Colors.grey,
                                 ),
@@ -238,7 +238,8 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                         GestureDetector(
                           onTap: () {
                             setState(() {
-                              _transaction.paymentMethod = PaymentMethod.ONLINE.name;
+                              _transaction.paymentMethod =
+                                  PaymentMethod.ONLINE.name;
                             });
                           },
                           child: Container(
@@ -247,7 +248,8 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                                 vertical: 8, horizontal: 16),
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: _transaction.paymentMethod == PaymentMethod.ONLINE.name
+                                color: _transaction.paymentMethod ==
+                                        PaymentMethod.ONLINE.name
                                     ? Theme.of(context).primaryColor
                                     : Colors.transparent,
                                 width: 2.0,
@@ -259,7 +261,8 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                               children: [
                                 Icon(
                                   Icons.credit_card,
-                                  color: _transaction.paymentMethod == PaymentMethod.ONLINE.name
+                                  color: _transaction.paymentMethod ==
+                                          PaymentMethod.ONLINE.name
                                       ? Theme.of(context).primaryColor
                                       : Colors.grey,
                                 ),
@@ -287,27 +290,26 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                   ],
                 ),
               ),
-            ),
-            Spacer(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('Cancel'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    _submitForm();
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('Submit'),
-                ),
-              ],
-            )
-          ],
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      _submitForm();
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('Submit'),
+                  ),
+                ],
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -383,7 +385,7 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
       },
       onChanged: (value) {
         setState(() {
-          _transaction.setAmount(double.tryParse(value)!);
+          _transaction.amount = double.tryParse(value)!;
         });
       },
     );
@@ -407,4 +409,3 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
         icon: Icon(Icons.calendar_today));
   }
 }
-
