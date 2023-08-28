@@ -27,8 +27,8 @@ class TransactionController extends GetxController {
   void onInit() async {
     super.onInit();
     transactionList.value = await transactionRepository.getTransactions();
+    transactionList.sort((a, b) => b.date.compareTo(a.date));
   }
-
 
   void deleteTransaction(Transaction transaction) async {
     await transactionRepository.deleteTransaction(transaction.id!);
@@ -40,7 +40,8 @@ class TransactionController extends GetxController {
     transaction.setAmount(transaction.amount);
     transaction.id = await transactionRepository.insertTransaction(transaction);
 
-    int existingIndex = transactionList.indexWhere((existing) => existing.id == transaction.id);
+    int existingIndex =
+        transactionList.indexWhere((existing) => existing.id == transaction.id);
 
     if (existingIndex != -1) {
       transactionList.removeAt(existingIndex);
@@ -50,7 +51,7 @@ class TransactionController extends GetxController {
     refreshTransactionList();
   }
 
-  void refreshTransactionList(){
+  void refreshTransactionList() {
     transactionList.sort((a, b) => b.date.compareTo(a.date));
     transactionList.refresh();
   }

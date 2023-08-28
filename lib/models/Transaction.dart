@@ -25,8 +25,8 @@ class Transaction {
   setAmount(double amount) {
     if (isExpense) {
       this.amount = -1 * amount.abs();
-    }else {
-      this.amount=amount;
+    } else {
+      this.amount = amount;
     }
   }
 
@@ -116,7 +116,7 @@ class Transaction {
       return 'Today'; // Return day of the week for the current day
     }
     if (date.year == now.year) {
-        return '${date.day}  ${monthNames[date.month]}'; // Return day and month name for the current year
+      return '${date.day}  ${monthNames[date.month]}'; // Return day and month name for the current year
     }
     return '${date.day} ${monthNames[date.month]} ${date.year}'; // Return the whole date for different year
   }

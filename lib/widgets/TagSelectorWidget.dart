@@ -42,10 +42,9 @@ class _TagSelectorWidgetState extends State<TagSelectorWidget> {
                 ),
                 padding: EdgeInsets.all(8),
                 child: Text(
-                   selectedTag.name,
+                  selectedTag.name,
                   style: TextStyle(
                     color: Colors.white,
-
                   ),
                 ),
               ),
@@ -71,7 +70,7 @@ class _TagSelectorWidgetState extends State<TagSelectorWidget> {
               },
               child: Container(
                 margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                padding: EdgeInsets.all( 8),
+                padding: EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   border: Border.all(
                     color: isSelected

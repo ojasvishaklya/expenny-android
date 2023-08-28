@@ -9,8 +9,10 @@ import 'constants/Theme.dart';
 import 'controllers/TransactionController.dart';
 
 void main() async {
-  final transactionRepository = TransactionRepository(); // this updates transactions in the DB
-  final transactionController = TransactionController(transactionRepository); // this updates transactions on the UI
+  final transactionRepository =
+      TransactionRepository(); // this updates transactions in the DB
+  final transactionController = TransactionController(
+      transactionRepository); // this updates transactions on the UI
 
   WidgetsFlutterBinding.ensureInitialized();
 

@@ -16,7 +16,8 @@ class TransactionCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 5),
       child: InkWell(
         onTap: () {
-          showAlert(context, transaction, buildTransactionPreview(context,transaction));
+          showAlert(context, transaction,
+              buildTransactionPreview(context, transaction));
         },
         child: Container(
           decoration: BoxDecoration(
@@ -65,5 +66,4 @@ class TransactionCard extends StatelessWidget {
       ),
     );
   }
-
 }

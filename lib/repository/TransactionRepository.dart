@@ -30,7 +30,7 @@ class TransactionRepository {
   }
 
   Future<int> insertTransaction(Transaction transaction) async {
-   return await _database.insert(
+    return await _database.insert(
       tableName,
       transaction.toMap(),
       conflictAlgorithm: sqflite.ConflictAlgorithm.replace,
@@ -38,11 +38,20 @@ class TransactionRepository {
   }
 
   Future<List<Transaction>> getTransactions() async {
-    final List<Map<String, dynamic>> maps =
-        await _database.query(tableName);
+    final List<Map<String, dynamic>> maps = await _database.query(tableName);
     return List.generate(maps.length, (i) {
       return Transaction.fromMap(maps[i]);
     });
+  }
+
+  Future<List<Transaction>> getTransactionsBetweenDates(
+      DateTime startDate, DateTime endDate) async {
+    final transactions = await _database.rawQuery('''
+    SELECT * FROM $tableName
+    WHERE date BETWEEN ? AND ?
+  ''', [startDate.toIso8601String(), endDate.toIso8601String()]);
+
+    return transactions.map((map) => Transaction.fromMap(map)).toList();
   }
 
   Future<void> updateTransaction(Transaction transaction) async {

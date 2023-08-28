@@ -17,7 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 1;
   PageController _pageController = PageController();
 
-  static final List<Widget> _screens = <Widget>[
+  final List<Widget> _screens = <Widget>[
     AnalyticsScreen(),
     TransactionsScreen(),
     SearchScreen(),

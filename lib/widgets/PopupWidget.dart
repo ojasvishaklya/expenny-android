@@ -11,6 +11,7 @@ void showSnackBar(BuildContext context, String textContent, Color color) {
 
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
+
 void showAlert(BuildContext context, Transaction transaction, widgetList) {
   showDialog(
     context: context,
