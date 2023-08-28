@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:journal/models/Transaction.dart';
 import 'package:journal/models/TransactionTag.dart';
 import 'package:journal/widgets/PopupWidget.dart';
 
-import '../controllers/TransactionController.dart';
+import 'TransactionPreviewWidget.dart';
 
 class TransactionCard extends StatelessWidget {
   final Transaction transaction;
-  final _controller = Get.find<TransactionController>();
 
   TransactionCard({Key? key, required this.transaction}) : super(key: key);
 
@@ -18,76 +16,7 @@ class TransactionCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 5),
       child: InkWell(
         onTap: () {
-          print(transaction);
-        },
-        onLongPress: () {
-          showAlert(context, transaction, [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                ListTile(
-                  leading: Icon(Icons.calendar_today),
-                  title: Text('Date'),
-                  subtitle: Text(transaction.date.toString()),
-                ),
-                ListTile(
-                  leading: Icon(transaction.isExpense
-                      ? Icons.arrow_downward
-                      : Icons.arrow_upward),
-                  title: Text('Amount'),
-                  subtitle: Text('\$${transaction.amount.toStringAsFixed(2)}'),
-                ),
-                ListTile(
-                  leading: Icon(
-                    transaction.isStarred ? Icons.star : Icons.star_border,
-                    color: transaction.isStarred
-                        ? Colors.amber
-                        : null, // Apply color if starred
-                  ),
-                  title: Text('Starred'),
-                  subtitle: Text(transaction.isStarred ? 'Yes' : 'No'),
-                ),
-                ListTile(
-                  leading: Icon(Icons.description),
-                  title: Text('Description'),
-                  subtitle: Text(transaction.description),
-                ),
-                ListTile(
-                  leading: Icon(Icons.label),
-                  title: Text('Tag'),
-                  subtitle: Chip(label: Text(transaction.tag)),
-                ),
-                ListTile(
-                  leading: Icon(Icons.payment),
-                  title: Text('Payment Method'),
-                  subtitle: Text(transaction.paymentMethod),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    _controller.deleteTransaction(transaction);
-                    Navigator.of(context).pop();
-                    showSnackBar(
-                        context,
-                        transaction.tag + 'transaction deleted',
-                        Colors.redAccent);
-                  },
-                  child: Text('Delete'),
-                ),
-              ],
-            )
-          ]);
+          showAlert(context, transaction, buildTransactionPreview(context,transaction));
         },
         child: Container(
           decoration: BoxDecoration(
@@ -136,4 +65,5 @@ class TransactionCard extends StatelessWidget {
       ),
     );
   }
+
 }

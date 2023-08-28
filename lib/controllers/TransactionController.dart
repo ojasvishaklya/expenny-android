@@ -29,24 +29,27 @@ class TransactionController extends GetxController {
     transactionList.value = await transactionRepository.getTransactions();
   }
 
-  void updateAlarm(Transaction transaction) {
-    for (var element in transactionList) {
-      if (element.id == transaction.id) {
-        element = transaction;
-      }
-    }
-    transactionList.refresh();
-  }
 
   void deleteTransaction(Transaction transaction) async {
     await transactionRepository.deleteTransaction(transaction.id!);
     transactionList.removeWhere((item) => item.id == transaction.id);
-    transactionList.refresh();
+    refreshTransactionList();
   }
 
   void addTransaction(Transaction transaction) async {
     transaction.id = await transactionRepository.insertTransaction(transaction);
+
+    int existingIndex = transactionList.indexWhere((existing) => existing.id == transaction.id);
+
+    if (existingIndex != -1) {
+      transactionList.removeAt(existingIndex);
+    }
     transactionList.add(transaction);
+    refreshTransactionList();
+  }
+
+  void refreshTransactionList(){
+    transactionList.sort((a, b) => b.date.compareTo(a.date));
     transactionList.refresh();
   }
 }

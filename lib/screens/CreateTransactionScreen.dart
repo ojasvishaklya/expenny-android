@@ -17,9 +17,9 @@ class CreateTransactionScreen extends StatefulWidget {
 
 class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
   final _formKey = GlobalKey<FormState>();
-  final Transaction _transaction = Transaction.defaults();
+  final Transaction _transaction = Get.arguments as Transaction;
   bool _paymentMethod = true;
-  late String selectedTagId;
+  late String selectedTagId = _transaction.tag;
 
   late TransactionController _controller;
 
@@ -43,12 +43,13 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
       labelText: labelText,
       hintText: hintText,
       prefixIcon: Icon(icon),
-      border: InputBorder.none,
-      errorBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.red),
+      filled: true,
+      fillColor: Theme.of(context).hoverColor,
+      border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10.0),
+        borderSide: BorderSide.none,
       ),
-      focusedErrorBorder: OutlineInputBorder(
+      errorBorder: OutlineInputBorder(
         borderSide: BorderSide(color: Colors.red),
         borderRadius: BorderRadius.circular(10.0),
       ),
@@ -91,7 +92,13 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                         ),
                         Expanded(
                           flex: 1,
-                          child: buildIsStarredInput(),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('Star'),
+                              buildIsStarredInput(),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -106,16 +113,173 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                         ),
                         Expanded(
                           flex: 1,
-                          child: buildIsExpenseInput(),
+                          child: buildDatePicker(context),
                         ),
                       ],
                     ),
-
+                    SizedBox(
+                      height: 30,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _transaction.isExpense = true;
+                            });
+                          },
+                          child: Container(
+                            width: 150,
+                            padding: EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 16),
+                            decoration: BoxDecoration(
+                              // color: Theme.of(context).hoverColor,
+                              border: Border.all(
+                                color: _transaction.isExpense
+                                    ? Theme.of(context).primaryColor
+                                    : Colors.transparent,
+                                width: 2.0,
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                  10.0), // Set the BorderRadius
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.arrow_downward,
+                                  color: _transaction.isExpense
+                                      ? Colors.redAccent
+                                      : Colors.grey,
+                                ),
+                                SizedBox(width: 8.0),
+                                Text('Expense'),
+                              ],
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _transaction.isExpense = false;
+                            });
+                          },
+                          child: Container(
+                            width: 150,
+                            padding: EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 16),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: !_transaction.isExpense
+                                    ? Theme.of(context).primaryColor
+                                    : Colors.transparent,
+                                width: 2.0,
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                  10.0), // Set the BorderRadius
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.arrow_upward,
+                                  color: !_transaction.isExpense
+                                      ? Colors.green
+                                      : Colors.grey,
+                                ),
+                                SizedBox(width: 8.0),
+                                Text('Income'),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 15,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _transaction.paymentMethod = PaymentMethod.CASH.name;
+                            });
+                          },
+                          child: Container(
+                          width: 150,
+                            padding: EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 16),
+                            decoration: BoxDecoration(
+                              // color: Theme.of(context).hoverColor,
+                              border: Border.all(
+                                color: _transaction.paymentMethod == PaymentMethod.CASH.name
+                                    ? Theme.of(context).primaryColor
+                                    : Colors.transparent,
+                                width: 2.0,
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                  10.0), // Set the BorderRadius
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.money,
+                                  color: _transaction.paymentMethod == PaymentMethod.CASH.name
+                                      ? Theme.of(context).primaryColor
+                                      : Colors.grey,
+                                ),
+                                SizedBox(width: 8.0),
+                                Text('Cash'),
+                              ],
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _transaction.paymentMethod = PaymentMethod.ONLINE.name;
+                            });
+                          },
+                          child: Container(
+                            width: 150,
+                            padding: EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 16),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: _transaction.paymentMethod == PaymentMethod.ONLINE.name
+                                    ? Theme.of(context).primaryColor
+                                    : Colors.transparent,
+                                width: 2.0,
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                  10.0), // Set the BorderRadius
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.credit_card,
+                                  color: _transaction.paymentMethod == PaymentMethod.ONLINE.name
+                                      ? Theme.of(context).primaryColor
+                                      : Colors.grey,
+                                ),
+                                SizedBox(width: 8.0),
+                                Text('Online'),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
                     SizedBox(
                       height: 10,
                     ),
                     TagSelectorWidget(
                       updateTransactionTag: updateTransactionTag,
+                      transaction: _transaction,
                     ),
                     SizedBox(
                       height: 10,
@@ -174,36 +338,13 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
     );
   }
 
-  ToggleButtons buildPaymentMethodInput() {
-    return ToggleButtons(
-      direction: Axis.horizontal,
-      onPressed: (int index) {
-        setState(() {
-          _paymentMethod = index == 0;
-          _transaction.paymentMethod =
-              index == 0 ? PaymentMethod.CASH.name : PaymentMethod.ONLINE.name;
-        });
-      },
-      borderRadius: const BorderRadius.all(Radius.circular(8)),
-      isSelected: [_paymentMethod, !_paymentMethod],
-      children: <Widget>[
-        TextIconWidget(
-          text: PaymentMethod.CASH.name,
-          icon: Icons.money,
-        ),
-        TextIconWidget(
-          text: PaymentMethod.ONLINE.name,
-          icon: Icons.credit_card,
-        ),
-      ],
-    );
-  }
-
   TextFormField buildDescriptionInput() {
     return TextFormField(
       initialValue: _transaction.description,
       decoration: textFormFieldDecoration(
-          labelText: 'Description', hintText: 'Transaction description',icon: Icons.description),
+          labelText: 'Description',
+          hintText: 'Transaction description',
+          icon: Icons.description),
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Please enter a description';
@@ -222,9 +363,13 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
 
   TextFormField buildAmountInput() {
     return TextFormField(
-      initialValue: _transaction.amount.toString(),
+      initialValue: _transaction.amount != 0.0
+          ? _transaction.amount.abs().toString()
+          : null,
       decoration: textFormFieldDecoration(
-          labelText: 'Amount', hintText: 'Transaction amount',icon: Icons.numbers),
+          labelText: 'Amount',
+          hintText: 'Transaction amount',
+          icon: Icons.numbers),
       keyboardType: TextInputType.number,
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -263,27 +408,3 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
   }
 }
 
-class TextIconWidget extends StatelessWidget {
-  final String text;
-  final IconData icon;
-
-  const TextIconWidget({
-    Key? key,
-    required this.text,
-    required this.icon,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 0, horizontal: 10),
-      child: Row(
-        children: [
-          Container(
-              margin: EdgeInsets.symmetric(horizontal: 10), child: Text(text)),
-          Icon(icon),
-        ],
-      ),
-    );
-  }
-}

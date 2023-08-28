@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:journal/constants/routes.dart';
+import 'package:journal/models/Transaction.dart';
 import 'package:journal/widgets/DisplayCard.dart';
 import 'package:journal/widgets/FabWidget.dart';
 import 'package:journal/widgets/TransactionCard.dart';
@@ -36,7 +37,8 @@ class TransactionsScreen extends StatelessWidget {
           // right: 16.0,
           bottom: 10,
           child: buildFloatingActionButton(() {
-            Get.toNamed(RouteClass.createTransaction);
+            Get.toNamed(RouteClass.createTransaction,
+                arguments: Transaction.defaults());
           }, 'Add Transaction'),
         ),
       ],

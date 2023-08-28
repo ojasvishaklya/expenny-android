@@ -25,6 +25,8 @@ class Transaction {
   setAmount(double amount) {
     if (isExpense) {
       this.amount = -1 * amount.abs();
+    }else {
+      this.amount=amount;
     }
   }
 
