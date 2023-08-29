@@ -5,6 +5,8 @@ import 'package:journal/widgets/ScreenHeaderWidget.dart';
 
 import '../controllers/TransactionController.dart';
 import '../models/Transaction.dart';
+import '../widgets/AppBarWidget.dart';
+import '../widgets/PopupWidget.dart';
 import '../widgets/TagSelectorWidget.dart';
 
 class CreateTransactionScreen extends StatefulWidget {
@@ -18,8 +20,8 @@ class CreateTransactionScreen extends StatefulWidget {
 class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
   final _formKey = GlobalKey<FormState>();
   final Transaction _transaction = Get.arguments as Transaction;
-  bool _paymentMethod = true;
   late String selectedTagId = _transaction.tag;
+  late bool isNewTransaction;
 
   late TransactionController _controller;
 
@@ -27,6 +29,7 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
   void initState() {
     super.initState();
     _controller = Get.find<TransactionController>();
+    isNewTransaction = _transaction.id == null;
   }
 
   updateTransactionTag(String selectedTagId) {
@@ -58,8 +61,18 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      print('saving form');
       _controller.addTransaction(_transaction);
+      if (isNewTransaction) {
+        showSnackBar(
+            context: context,
+            textContent: 'Transaction created',
+            color: Colors.green);
+      } else {
+        showSnackBar(
+            context: context,
+            textContent: 'Transaction updated',
+            color: Colors.orange);
+      }
     } else {
       print('error in form');
     }
@@ -68,19 +81,21 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: buildAppBar(),
+      appBar: buildAppBar(
+          actions: isNewTransaction
+              ? [Container()]
+              : [buildTransactionDeleteButton(context)]),
       body: Padding(
-        padding:
-            const EdgeInsets.only(bottom: 16.0, right: 16, left: 16, top: 70),
+        padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               ScreenHeaderWidget(
-                  text: _transaction.description.isNotEmpty
-                      ? 'Update Transaction'
-                      : 'Create Transaction'),
+                  text: isNewTransaction
+                      ? 'Create Transaction'
+                      : 'Update Transaction'),
               Form(
                 key: _formKey,
                 child: Column(
@@ -304,13 +319,67 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                       _submitForm();
                       Navigator.of(context).pop();
                     },
-                    child: Text('Submit'),
+                    child: Text(isNewTransaction?'Create':'Update'),
                   ),
                 ],
               )
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  IconButton buildTransactionDeleteButton(BuildContext context) {
+    return IconButton(
+      onPressed: () {
+        showAlert(
+          context: context,
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(top: 32.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Are you sure you want to delete this transaction?',
+                    style: Theme.of(context).textTheme.bodyLarge
+                  ),
+                  SizedBox(height: 16.0),
+                  // Add spacing between the message and buttons
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Close the dialog
+                        },
+                        child: Text('Cancel'),
+                      ),
+                      SizedBox(width: 16.0), // Add spacing between the buttons
+                      TextButton(
+                        onPressed: () {
+                          _controller.deleteTransaction(_transaction);
+                          Navigator.of(context).pop(); // Close the dialog
+                          Navigator.of(context).pop(); // Close update screen
+                          showSnackBar(
+                              context: context,
+                              textContent:
+                                  _transaction.tag + ' transaction deleted',
+                              color: Colors.redAccent);
+                        },
+                        child: Text('Delete'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+      icon: Icon(
+        Icons.delete,
       ),
     );
   }
@@ -324,17 +393,6 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
       onPressed: () {
         setState(() {
           _transaction.isStarred = !_transaction.isStarred;
-        });
-      },
-    );
-  }
-
-  Switch buildIsExpenseInput() {
-    return Switch(
-      value: _transaction.isExpense,
-      onChanged: (value) {
-        setState(() {
-          _transaction.isExpense = value;
         });
       },
     );
@@ -365,9 +423,8 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
 
   TextFormField buildAmountInput() {
     return TextFormField(
-      initialValue: _transaction.amount != 0.0
-          ? _transaction.amount.abs().toString()
-          : null,
+      initialValue:
+          isNewTransaction ? null : _transaction.amount.abs().toString(),
       decoration: textFormFieldDecoration(
           labelText: 'Amount',
           hintText: 'Transaction amount',

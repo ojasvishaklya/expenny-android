@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:journal/models/Transaction.dart';
 import 'package:journal/models/TransactionTag.dart';
-import 'package:journal/widgets/PopupWidget.dart';
 
-import 'TransactionPreviewWidget.dart';
+import '../constants/routes.dart';
 
 class TransactionCard extends StatelessWidget {
   final Transaction transaction;
@@ -16,8 +16,8 @@ class TransactionCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 5),
       child: InkWell(
         onTap: () {
-          showAlert(context, transaction,
-              buildTransactionPreview(context, transaction));
+          Get.toNamed(RouteClass.createTransaction,
+              arguments: transaction);
         },
         child: Container(
           decoration: BoxDecoration(

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../models/Transaction.dart';
-
-void showSnackBar(BuildContext context, String textContent, Color color) {
+void showSnackBar(
+    {required BuildContext context,
+    required String textContent,
+    required Color color}) {
   final snackBar = SnackBar(
     content: Text(textContent),
     duration: Duration(seconds: 3),
@@ -12,13 +13,12 @@ void showSnackBar(BuildContext context, String textContent, Color color) {
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
 
-void showAlert(BuildContext context, Transaction transaction, widgetList) {
+void showAlert({required BuildContext context, actions}) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text('Delete Transaction'),
-        actions: widgetList,
+        actions: actions,
       );
     },
   );
