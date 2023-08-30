@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:journal/models/Transaction.dart';
 
+import '../models/TransactionTag.dart';
 import '../repository/TransactionRepository.dart';
 
 class TransactionController extends GetxController {
@@ -26,13 +27,40 @@ class TransactionController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
+    // TransactionService().getTransactionList().forEach((element) async {
+    //   await transactionRepository.insertTransaction(element);
+    // });
     transactionList.value = await transactionRepository.getTransactions();
-    transactionList.sort((a, b) => b.date.compareTo(a.date));
+    // transactionList.value = await getTransactionsBetweenDates(
+    //     DateTime.now(), DateTime.now().subtract(Duration(days: 30)));
+  }
+
+  Future<List<Transaction>> getTransactionsBetweenDates(
+      DateTime startDate, DateTime endDate, Set<TransactionTag> tagSet) async {
+    List<Transaction> transactions =
+        await transactionRepository.getTransactionsRawQuery('''
+    SELECT * FROM tableName
+    WHERE date BETWEEN ? AND ?
+  ''', [startDate.toIso8601String(), endDate.toIso8601String()]);
+
+    if (tagSet.isNotEmpty) {
+      return transactions
+          .where((transaction) =>
+              tagSet.contains(TransactionTag.getTagById(transaction.tag)))
+          .toList();
+    } else {
+      return transactions;
+    }
   }
 
   void deleteTransaction(Transaction transaction) async {
     await transactionRepository.deleteTransaction(transaction.id!);
     transactionList.removeWhere((item) => item.id == transaction.id);
+    refreshTransactionList();
+  }
+
+  void deleteAllTransactions() async {
+    await transactionRepository.deleteAllTransactions();
     refreshTransactionList();
   }
 

@@ -24,10 +24,10 @@ class TransactionTag {
             color: Colors.red));
   }
 
-  static String getRandomTagId() {
+  static TransactionTag getRandomTag() {
     final random = Random();
     int randomIndex = random.nextInt(TransactionTag.tags.length);
-    return TransactionTag.tags[randomIndex].id;
+    return TransactionTag.tags[randomIndex];
   }
 
   static final List<TransactionTag> tags = [
@@ -68,14 +68,14 @@ class TransactionTag {
       color: Color(0xFFB00020), // Red
     ),
     TransactionTag(
-      name: 'Transportation',
-      id: 'transportation',
+      name: 'Cab',
+      id: 'cab',
       icon: Icons.directions_car,
       color: Color(0xFF2962FF), // Blue
     ),
     TransactionTag(
       name: 'Gym Fee',
-      id: 'gym_fee',
+      id: 'gym',
       icon: Icons.fitness_center,
       color: Color(0xFF26A69A), // Teal
     ),
@@ -108,6 +108,12 @@ class TransactionTag {
       id: 'salary',
       icon: Icons.insights_sharp,
       color: Color(0xFF039BE5), // Blue
+    ),
+    TransactionTag(
+      name: 'Apparel',
+      id: 'apparel',
+      icon: Icons.shopping_bag,
+      color: Color(0xFF039BA1), // Blue
     ),
     TransactionTag(
       name: 'Miscellaneous',

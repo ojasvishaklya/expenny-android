@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:journal/models/Filter.dart';
 import 'package:journal/models/Transaction.dart';
 
+import '../controllers/TransactionController.dart';
+import '../widgets/FilterSelectorWidget.dart';
+import '../widgets/LineChartWidget.dart';
+import '../widgets/PopupWidget.dart';
 import '../widgets/ScreenHeaderWidget.dart';
-
-enum DateRangeOption { lastWeek, lastMonth, lastYear, customDates }
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({Key? key}) : super(key: key);
@@ -13,8 +17,21 @@ class AnalyticsScreen extends StatefulWidget {
 }
 
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
-  DateRangeOption _selectedOption = DateRangeOption.lastWeek;
-  late List<Transaction> _selectedTransactions;
+  late List<Transaction> _selectedTransactions = [];
+  final _controller = Get.find<TransactionController>();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  _getSelectedPeriodTransactions(Filter filter) async {
+    var transactionList = await _controller.getTransactionsBetweenDates(
+        filter.startDate, filter.endDate, filter.tagSet);
+    setState(() {
+      _selectedTransactions = transactionList;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,35 +41,29 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ScreenHeaderWidget(text: 'Analytics'),
-            // buildDatePeriodSelector(),
-            // Text(_selectedTransactions.toString())
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ScreenHeaderWidget(text: 'Analytics'),
+                Spacer(),
+                IconButton(
+                    onPressed: () {
+                      showAlertContent(context: context, content:
+                      FilterSelectorWidget(
+                          getSelectedPeriodTransactions:
+                          _getSelectedPeriodTransactions),
+                      );
+                    },
+                    icon: Icon(Icons.filter_alt)),
+              ],
+            ),
+            LineChartWidget(transactions: _selectedTransactions,),
+            Text(_selectedTransactions.toString()),
+
           ],
         ),
-      ),
-    );
-  }
-
-  Center buildDatePeriodSelector() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          DropdownButton<DateRangeOption>(
-            value: _selectedOption,
-            onChanged: (option) {
-              setState(() {
-                _selectedOption = option!;
-              });
-            },
-            items: DateRangeOption.values.map((option) {
-              return DropdownMenuItem<DateRangeOption>(
-                value: option,
-                child: Text(option.toString().split('.').last),
-              );
-            }).toList(),
-          ),
-        ],
       ),
     );
   }

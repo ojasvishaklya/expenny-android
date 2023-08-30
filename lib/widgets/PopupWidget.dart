@@ -23,3 +23,14 @@ void showAlert({required BuildContext context, actions}) {
     },
   );
 }
+
+void showAlertContent({required BuildContext context, content}) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        content: content,
+      );
+    },
+  );
+}

@@ -1,42 +1,51 @@
-import '../models/PaymentMethod.dart';
+import 'dart:math';
+
 import '../models/Transaction.dart';
+import '../models/TransactionTag.dart';
 
 class TransactionService {
-  Future<List<Transaction>> getTransactionList() async {
-    // await Future.delayed(Duration(seconds: 2));
+  List<Transaction> generateMonthlyTransactions(
+      DateTime currentDate, int monthsAgo) {
+    List<Transaction> transactions = [];
 
-    List<Transaction> dummyTransactions = [
-      Transaction(
-        id: 1,
-        date: DateTime(2023, 8, 15),
-        amount: 150.0,
-        description: 'Groceries',
-        isExpense: true,
+    List<String> paymentMethods = ['Cash', 'Card/UPI'];
+    Random random = Random();
+
+    for (int i = 0; i < 12; i++) {
+      final tag= TransactionTag.getRandomTag();
+      String randomTagId = tag.id;
+
+      double amount = random.nextInt(11001) - 1000;
+      String paymentMethod = paymentMethods[i % paymentMethods.length];
+
+      transactions.add(Transaction(
+        id: null,
+        date: DateTime(
+          currentDate.year,
+          currentDate.month - monthsAgo,
+          currentDate.day - i,
+          currentDate.hour,
+          currentDate.minute,
+        ),
+        amount: amount,
+        isExpense: amount<=0,
         isStarred: false,
-        tag: 'grocery',
-        paymentMethod: PaymentMethod.ONLINE.name,
-      ),
-      Transaction(
-        id: 2,
-        date: DateTime(2023, 8, 18),
-        amount: 50.0,
-        description: 'Gasoline',
-        isExpense: true,
-        isStarred: true,
-        tag: 'transportation',
-        paymentMethod: PaymentMethod.CASH.name,
-      ),
-      Transaction(
-        id: 3,
-        date: DateTime(2023, 8, 10),
-        amount: 200.0,
-        description: 'Salary',
-        isExpense: false,
-        isStarred: false,
-        tag: 'salary',
-        paymentMethod: PaymentMethod.ONLINE.name,
-      )
-    ];
-    return dummyTransactions;
+        description: tag.name,
+        tag: randomTagId,
+        paymentMethod: paymentMethod,
+      ));
+    }
+
+    return transactions;
+  }
+
+  List<Transaction> getTransactionList() {
+    List<Transaction> transactions = [];
+    DateTime currentDate = DateTime.now();
+
+    for (int monthsAgo = 0; monthsAgo <= 6; monthsAgo++) {
+      transactions += generateMonthlyTransactions(currentDate, monthsAgo);
+    }
+    return transactions;
   }
 }

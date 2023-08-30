@@ -126,7 +126,7 @@ class Transaction {
     return '''
 {
   "id": $id,
-  "date": "${humanReadableDate()}",
+  "date": "$date",
   "amount": $amount,
   "description": "$description",
   "isExpense": $isExpense,
@@ -137,3 +137,4 @@ class Transaction {
     ''';
   }
 }
+

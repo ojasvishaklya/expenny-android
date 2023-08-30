@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:journal/models/Transaction.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
@@ -39,19 +40,21 @@ class TransactionRepository {
 
   Future<List<Transaction>> getTransactions() async {
     final List<Map<String, dynamic>> maps = await _database.query(tableName);
-    return List.generate(maps.length, (i) {
+    var transactionList = List.generate(maps.length, (i) {
       return Transaction.fromMap(maps[i]);
     });
+    transactionList.sort((a, b) => b.date.compareTo(a.date));
+    return transactionList;
   }
 
-  Future<List<Transaction>> getTransactionsBetweenDates(
-      DateTime startDate, DateTime endDate) async {
-    final transactions = await _database.rawQuery('''
-    SELECT * FROM $tableName
-    WHERE date BETWEEN ? AND ?
-  ''', [startDate.toIso8601String(), endDate.toIso8601String()]);
-
-    return transactions.map((map) => Transaction.fromMap(map)).toList();
+  Future<List<Transaction>> getTransactionsRawQuery(String sql,
+      [List<Object?>? arguments]) async {
+    sql = sql.replaceAll('tableName', tableName);
+    final transactions = await _database.rawQuery(sql, arguments);
+    var transactionList =
+        transactions.map((map) => Transaction.fromMap(map)).toList();
+    transactionList.sort((a, b) => b.date.compareTo(a.date));
+    return transactionList;
   }
 
   Future<void> updateTransaction(Transaction transaction) async {
@@ -70,7 +73,9 @@ class TransactionRepository {
       whereArgs: [id],
     );
   }
-
+  Future<void> deleteAllTransactions() async {
+    await _database.delete(tableName);
+  }
   Future<void> close() async {
     await _database.close();
   }
