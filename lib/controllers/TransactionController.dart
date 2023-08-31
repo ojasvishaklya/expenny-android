@@ -3,6 +3,7 @@ import 'package:journal/models/Transaction.dart';
 
 import '../models/TransactionTag.dart';
 import '../repository/TransactionRepository.dart';
+import '../service/TransactionService.dart';
 
 class TransactionController extends GetxController {
   final TransactionRepository transactionRepository;
@@ -27,30 +28,35 @@ class TransactionController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-    // TransactionService().getTransactionList().forEach((element) async {
-    //   await transactionRepository.insertTransaction(element);
-    // });
+
     transactionList.value = await transactionRepository.getTransactions();
-    // transactionList.value = await getTransactionsBetweenDates(
-    //     DateTime.now(), DateTime.now().subtract(Duration(days: 30)));
   }
 
+  void insertRandomData(){
+    TransactionService().getTransactionList().forEach((element) async {
+      await transactionRepository.insertTransaction(element);
+    });
+  }
   Future<List<Transaction>> getTransactionsBetweenDates(
-      DateTime startDate, DateTime endDate, Set<TransactionTag> tagSet) async {
+      {DateTime? startDate,
+      DateTime? endDate,
+      required Set<TransactionTag>? tagSet}) async {
+    if (startDate == null || endDate == null) {
+      return await transactionRepository.getTransactions();
+    }
     List<Transaction> transactions =
         await transactionRepository.getTransactionsRawQuery('''
     SELECT * FROM tableName
     WHERE date BETWEEN ? AND ?
   ''', [startDate.toIso8601String(), endDate.toIso8601String()]);
 
-    if (tagSet.isNotEmpty) {
-      return transactions
-          .where((transaction) =>
-              tagSet.contains(TransactionTag.getTagById(transaction.tag)))
-          .toList();
-    } else {
+    if (tagSet==null || tagSet.isEmpty) {
       return transactions;
     }
+    return transactions
+        .where((transaction) =>
+            tagSet.contains(TransactionTag.getTagById(transaction.tag)))
+        .toList();
   }
 
   void deleteTransaction(Transaction transaction) async {

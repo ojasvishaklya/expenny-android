@@ -27,7 +27,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   _getSelectedPeriodTransactions(Filter filter) async {
     var transactionList = await _controller.getTransactionsBetweenDates(
-        filter.startDate, filter.endDate, filter.tagSet);
+        startDate: filter.startDate,
+        endDate: filter.endDate,
+        tagSet: filter.tagSet);
     setState(() {
       _selectedTransactions = transactionList;
     });
@@ -41,7 +43,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,19 +50,24 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 ScreenHeaderWidget(text: 'Analytics'),
                 Spacer(),
                 IconButton(
+                    onPressed: ()  {
+                       _controller.insertRandomData();
+                    },
+                    icon: Icon(Icons.add)),
+
+                IconButton(
                     onPressed: () {
-                      showAlertContent(context: context, content:
-                      FilterSelectorWidget(
-                          getSelectedPeriodTransactions:
-                          _getSelectedPeriodTransactions),
+                      showAlertContent(
+                        context: context,
+                        content: FilterSelectorWidget(
+                            getSelectedPeriodTransactions:
+                                _getSelectedPeriodTransactions),
                       );
                     },
                     icon: Icon(Icons.filter_alt)),
               ],
             ),
-            LineChartWidget(transactions: _selectedTransactions,),
-            Text(_selectedTransactions.toString()),
-
+            LineChartWidget(transactionList: _selectedTransactions,),
           ],
         ),
       ),

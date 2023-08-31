@@ -7,6 +7,7 @@ import 'package:journal/widgets/FabWidget.dart';
 import 'package:journal/widgets/TransactionCard.dart';
 
 import '../controllers/TransactionController.dart';
+import '../widgets/LoadingWidget.dart';
 
 class TransactionsScreen extends StatelessWidget {
   TransactionsScreen({Key? key}) : super(key: key);
@@ -21,6 +22,9 @@ class TransactionsScreen extends StatelessWidget {
             DisplayCard(),
             Expanded(
               child: GetX<TransactionController>(builder: (controller) {
+                if (controller.transactionList.isEmpty) {
+                  return  LoadingWidget(animationName: 'home_screen_loader');
+                }
                 return ListView.builder(
                     scrollDirection: Axis.vertical,
                     itemCount: controller.transactionList.length,
