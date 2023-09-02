@@ -6,6 +6,7 @@ import 'package:journal/models/Transaction.dart';
 import '../controllers/TransactionController.dart';
 import '../widgets/FilterSelectorWidget.dart';
 import '../widgets/LineChartWidget.dart';
+import '../widgets/LoadingWidget.dart';
 import '../widgets/PopupWidget.dart';
 import '../widgets/ScreenHeaderWidget.dart';
 
@@ -50,11 +51,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 ScreenHeaderWidget(text: 'Analytics'),
                 Spacer(),
                 IconButton(
-                    onPressed: ()  {
-                       _controller.insertRandomData();
+                    onPressed: () {
+                      _controller.insertRandomData();
                     },
                     icon: Icon(Icons.add)),
-
                 IconButton(
                     onPressed: () {
                       showAlertContent(
@@ -67,7 +67,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     icon: Icon(Icons.filter_alt)),
               ],
             ),
-            LineChartWidget(transactionList: _selectedTransactions,),
+            Center(
+              child: Visibility(
+                visible: _selectedTransactions.isNotEmpty,
+                replacement: LoadingWidget(animationName: 'analytics_loader'),
+                child: LineChartWidget(
+                  transactionList: _selectedTransactions,
+                ),
+              ),
+            ),
           ],
         ),
       ),

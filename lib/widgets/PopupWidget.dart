@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 void showSnackBar(
     {required BuildContext context,
     required String textContent,
-    required Color color}) {
+    required Color color,
+    int duration = 3}) {
   final snackBar = SnackBar(
     content: Text(textContent),
-    duration: Duration(seconds: 3),
+    duration: Duration(seconds: duration),
     backgroundColor: color,
   );
 

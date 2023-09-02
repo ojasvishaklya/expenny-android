@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:journal/models/Transaction.dart';
 
+import '../controllers/TransactionController.dart';
 import '../widgets/ScreenHeaderWidget.dart';
+import '../widgets/TransactionCard.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -10,13 +14,16 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  String searchQuery = '';
+  final _searchController = TextEditingController();
+  List<Transaction> _searchResults = [];
+  final _controller = Get.find<TransactionController>();
 
-  void onSearchSubmitted(String query) {
-    // Here you can implement your search logic based on the query
-    setState(() {
-      searchQuery = query;
-    });
+  void _performSearch() async {
+    String searchString = _searchController.text;
+    _searchResults = await _controller.searchTransaction(searchString);
+    print(_searchResults);
+    print(searchString);
+    setState(() {});
   }
 
   @override
@@ -27,42 +34,47 @@ class _SearchScreenState extends State<SearchScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ScreenHeaderWidget(text: 'Search Transactions'),
-          Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).dialogBackgroundColor,
-              borderRadius: BorderRadius.circular(24.0),
-              boxShadow: const [
-                BoxShadow(
-                    // color: Colors.grey.withOpacity(0.3),
-                    // spreadRadius: 2,
-                    // blurRadius: 5,
-                    // offset: Offset(0, 3),
-                    ),
-              ],
-            ),
-            child: TextField(
-              onSubmitted: onSearchSubmitted,
-              decoration: InputDecoration(
-                hintText: 'Search...',
-                prefixIcon: Icon(Icons.search),
-                border: InputBorder.none, // Hide the default border
-              ),
-            ),
-          ),
-          SizedBox(height: 16.0),
+          buildSearchBar(context),
           Expanded(
             child: ListView.builder(
-              itemCount: 1, // Replace with actual item count
+              itemCount: _searchResults.length,
               itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(searchQuery),
-                  // Add more content or actions for each search result
-                );
+                return TransactionCard(transaction: _searchResults[index]);
               },
             ),
           ),
         ],
       ),
     );
+  }
+
+  Widget buildSearchBar(BuildContext context) {
+    return TextField(
+        onSubmitted: (_) {
+          _performSearch();
+        },
+        controller: _searchController,
+        decoration: InputDecoration(
+          prefixIcon: _searchResults.isNotEmpty
+              ? IconButton(
+                  icon: Icon(Icons.delete),
+                  onPressed: () {
+                    setState(() {
+                      _searchResults = [];
+                    });
+                  },
+                )
+              : null,
+          suffixIcon: IconButton(
+            icon: Icon(Icons.search),
+            onPressed: _performSearch,
+          ),
+          filled: true,
+          fillColor: Theme.of(context).hoverColor,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10.0),
+            borderSide: BorderSide.none,
+          ),
+        ));
   }
 }

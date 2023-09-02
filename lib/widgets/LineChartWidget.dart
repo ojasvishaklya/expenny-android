@@ -13,7 +13,7 @@ class LineChartWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dataPoints = AnalyticsService.aggregateData(transactionList);
-    final List<FlSpot> expenseSpots =dataPoints[0];
+    final List<FlSpot> expenseSpots = dataPoints[0];
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -21,23 +21,17 @@ class LineChartWidget extends StatelessWidget {
         // width: expenseSpots.length*500,
         height: 200,
         child: AspectRatio(
-          aspectRatio: 16/9,
-          child: LineChart(
-            LineChartData(
-              lineBarsData: [
-                LineChartBarData(
-                spots: expenseSpots,
-                isCurved: true,
-                dotData: FlDotData(show: false),
-                belowBarData: BarAreaData(show: false),
-
-              ),
-              ]
-            )
-          ),
+          aspectRatio: 16 / 9,
+          child: LineChart(LineChartData(lineBarsData: [
+            LineChartBarData(
+              spots: expenseSpots,
+              isCurved: true,
+              dotData: FlDotData(show: false),
+              belowBarData: BarAreaData(show: false),
+            ),
+          ])),
         ),
       ),
     );
   }
 }
-

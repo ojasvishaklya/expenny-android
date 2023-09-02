@@ -23,7 +23,7 @@ class TransactionsScreen extends StatelessWidget {
             Expanded(
               child: GetX<TransactionController>(builder: (controller) {
                 if (controller.transactionList.isEmpty) {
-                  return  LoadingWidget(animationName: 'home_screen_loader');
+                  return LoadingWidget(animationName: 'home_screen_loader');
                 }
                 return ListView.builder(
                     scrollDirection: Axis.vertical,

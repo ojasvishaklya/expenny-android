@@ -319,7 +319,7 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                       _submitForm();
                       Navigator.of(context).pop();
                     },
-                    child: Text(isNewTransaction?'Create':'Update'),
+                    child: Text(isNewTransaction ? 'Create' : 'Update'),
                   ),
                 ],
               )
@@ -341,10 +341,8 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Are you sure you want to delete this transaction?',
-                    style: Theme.of(context).textTheme.bodyLarge
-                  ),
+                  Text('Are you sure you want to delete this transaction?',
+                      style: Theme.of(context).textTheme.bodyLarge),
                   SizedBox(height: 16.0),
                   // Add spacing between the message and buttons
                   Row(

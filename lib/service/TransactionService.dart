@@ -12,7 +12,7 @@ class TransactionService {
     Random random = Random();
 
     for (int i = 0; i < 12; i++) {
-      final tag= TransactionTag.getRandomTag();
+      final tag = TransactionTag.getRandomTag();
       String randomTagId = tag.id;
 
       double amount = random.nextInt(11001) - 1000;
@@ -28,7 +28,7 @@ class TransactionService {
           currentDate.minute,
         ),
         amount: amount,
-        isExpense: amount<=0,
+        isExpense: amount <= 0,
         isStarred: false,
         description: tag.name,
         tag: randomTagId,

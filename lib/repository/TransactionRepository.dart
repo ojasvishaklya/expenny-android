@@ -73,9 +73,11 @@ class TransactionRepository {
       whereArgs: [id],
     );
   }
+
   Future<void> deleteAllTransactions() async {
     await _database.delete(tableName);
   }
+
   Future<void> close() async {
     await _database.close();
   }

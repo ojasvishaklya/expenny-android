@@ -32,11 +32,19 @@ class TransactionController extends GetxController {
     transactionList.value = await transactionRepository.getTransactions();
   }
 
-  void insertRandomData(){
+  void insertRandomData() {
     TransactionService().getTransactionList().forEach((element) async {
       await transactionRepository.insertTransaction(element);
     });
   }
+
+  Future<List<Transaction>> searchTransaction(String searchString) async {
+    return await transactionRepository.getTransactionsRawQuery('''
+    SELECT * FROM tableName
+    WHERE description LIKE ?
+  ''', ['%$searchString%']);
+  }
+
   Future<List<Transaction>> getTransactionsBetweenDates(
       {DateTime? startDate,
       DateTime? endDate,
@@ -50,7 +58,7 @@ class TransactionController extends GetxController {
     WHERE date BETWEEN ? AND ?
   ''', [startDate.toIso8601String(), endDate.toIso8601String()]);
 
-    if (tagSet==null || tagSet.isEmpty) {
+    if (tagSet == null || tagSet.isEmpty) {
       return transactions;
     }
     return transactions
@@ -67,6 +75,7 @@ class TransactionController extends GetxController {
 
   void deleteAllTransactions() async {
     await transactionRepository.deleteAllTransactions();
+    transactionList.value = List<Transaction>.empty();
     refreshTransactionList();
   }
 

@@ -16,8 +16,7 @@ class TransactionCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 5),
       child: InkWell(
         onTap: () {
-          Get.toNamed(RouteClass.createTransaction,
-              arguments: transaction);
+          Get.toNamed(RouteClass.createTransaction, arguments: transaction);
         },
         child: Container(
           decoration: BoxDecoration(

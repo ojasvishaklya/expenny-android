@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:journal/service/DataService.dart';
 import 'package:journal/service/ThemeService.dart';
 import 'package:journal/widgets/ScreenHeaderWidget.dart';
+
+import '../widgets/PopupWidget.dart';
 
 class PreferencesScreen extends StatefulWidget {
   const PreferencesScreen({Key? key}) : super(key: key);
@@ -11,8 +14,7 @@ class PreferencesScreen extends StatefulWidget {
 
 class _PreferencesScreenState extends State<PreferencesScreen> {
   bool _isDarkMode = false;
-  bool _showNotifications = true;
-  int _selectedCurrency = 0; // 0 for USD, 1 for EUR, etc.
+  final _dataService = DataService();
 
   void _toggleDarkMode(bool value) {
     setState(() {
@@ -21,22 +23,9 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     });
   }
 
-  void _toggleNotifications(bool value) {
-    setState(() {
-      _showNotifications = value;
-    });
-  }
-
-  void _changeCurrency(int index) {
-    setState(() {
-      _selectedCurrency = index;
-    });
-  }
-
   @override
   void initState() {
     _isDarkMode = ThemeService.getDarkThemeStatus();
-    print(_isDarkMode);
     super.initState();
   }
 
@@ -49,53 +38,67 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         children: [
           ScreenHeaderWidget(text: 'Preferences'),
           Row(
-            children: const [
-              Text(
-                'Theme Preferences',
+            children: [
+              Expanded(
+                flex: 4,
+                child: PreferenceTileWidget(
+                    text: 'Dark mode', icon: Icons.nightlight_round),
+              ),
+              Expanded(
+                flex: 1,
+                child: Switch(
+                  value: _isDarkMode,
+                  onChanged: _toggleDarkMode,
+                ),
               ),
             ],
           ),
-          ListTile(
-            title: Text('Dark Mode'),
-            trailing: Switch(
-              value: _isDarkMode,
-              onChanged: _toggleDarkMode,
-            ),
-          ),
-          SizedBox(height: 16),
-          Text(
-            'Notification Preferences',
-          ),
-          ListTile(
-            title: Text('Show Notifications'),
-            trailing: Switch(
-              value: _showNotifications,
-              onChanged: _toggleNotifications,
-            ),
-          ),
-          SizedBox(height: 16),
-          Text(
-            'Currency Preferences',
-          ),
-          ListTile(
-            title: Text('Currency'),
-            trailing: DropdownButton<int>(
-              value: _selectedCurrency,
-              onChanged: (index) {},
-              items: const [
-                DropdownMenuItem<int>(
-                  value: 0,
-                  child: Text('USD'),
-                ),
-                DropdownMenuItem<int>(
-                  value: 1,
-                  child: Text('EUR'),
-                ),
-                // Add more currency options...
-              ],
-            ),
-          ),
+          Spacer(),
+          PreferenceTileWidget(
+              text: 'Download as excel',
+              icon: Icons.archive_rounded,
+              onTap: () async {
+                final response = await _dataService.exportToExcel();
+                showSnackBar(
+                    context: context,
+                    textContent: response.response,
+                    color: response.isError ? Colors.redAccent : Colors.green,
+                    duration: 5);
+              }),
+          PreferenceTileWidget(
+              text: 'Delete all data', icon: Icons.delete, onTap: () {}),
         ],
+      ),
+    );
+  }
+}
+
+class PreferenceTileWidget extends StatelessWidget {
+  final String text;
+  final IconData icon;
+  final onTap;
+
+  PreferenceTileWidget(
+      {required this.text, required this.icon, this.onTap = null});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8.0), // Make the border round
+      ),
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 8),
+          child: Row(
+            children: [
+              Icon(icon),
+              SizedBox(width: 16.0),
+              Text(text),
+            ],
+          ),
+        ),
       ),
     );
   }
