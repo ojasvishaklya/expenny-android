@@ -55,6 +55,14 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
           ),
           Spacer(),
           PreferenceTileWidget(
+              text: 'Export transaction data',
+              icon: Icons.arrow_upward,
+              onTap: () async {}),
+          PreferenceTileWidget(
+              text: 'Import transaction data',
+              icon: Icons.arrow_downward,
+              onTap: () async {}),
+          PreferenceTileWidget(
               text: 'Download as excel',
               icon: Icons.archive_rounded,
               onTap: () async {
@@ -66,7 +74,14 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                     duration: 5);
               }),
           PreferenceTileWidget(
-              text: 'Delete all data', icon: Icons.delete, onTap: () {}),
+              text: 'Delete all data', icon: Icons.delete, onTap:  ()async {
+                final response = await _dataService.deleteAllTransactions();
+                showSnackBar(
+                    context: context,
+                    textContent: response.response,
+                    color: response.isError ? Colors.redAccent : Colors.green,
+                    duration: 5);
+          }),
         ],
       ),
     );

@@ -75,7 +75,7 @@ class TransactionController extends GetxController {
 
   void deleteAllTransactions() async {
     await transactionRepository.deleteAllTransactions();
-    transactionList.value = List<Transaction>.empty();
+    transactionList.value = await transactionRepository.getTransactions();
     refreshTransactionList();
   }
 
@@ -89,7 +89,6 @@ class TransactionController extends GetxController {
     if (existingIndex != -1) {
       transactionList.removeAt(existingIndex);
     }
-    print(transaction);
     transactionList.add(transaction);
     refreshTransactionList();
   }

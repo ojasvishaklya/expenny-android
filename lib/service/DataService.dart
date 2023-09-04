@@ -26,6 +26,11 @@ class DataService {
 
       final transactionList =
           await _controller.getTransactionsBetweenDates(tagSet: null);
+
+      if (transactionList.isEmpty) {
+        return DataServiceResponse(
+            isError: true, response: 'There are no transactions');
+      }
       Directory? destinationFolder = Directory('/storage/emulated/0/Download');
 
       // Create a new Excel file
@@ -80,4 +85,14 @@ class DataService {
     }
   }
 
+  deleteAllTransactions() async {
+    try {
+      _controller.deleteAllTransactions();
+      return DataServiceResponse(
+          isError: false, response: 'All transactions deleted');
+    } catch (e) {
+      return DataServiceResponse(
+          isError: true, response: 'Error deleting transactions: $e');
+    }
+  }
 }
