@@ -146,10 +146,9 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                             padding: EdgeInsets.symmetric(
                                 vertical: 8, horizontal: 16),
                             decoration: BoxDecoration(
-                              // color: Theme.of(context).hoverColor,
                               border: Border.all(
                                 color: _transaction.isExpense
-                                    ? Theme.of(context).primaryColor
+                                    ? Theme.of(context).colorScheme.primary
                                     : Colors.transparent,
                                 width: 2.0,
                               ),
@@ -183,7 +182,7 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                             decoration: BoxDecoration(
                               border: Border.all(
                                 color: !_transaction.isExpense
-                                    ? Theme.of(context).primaryColor
+                                    ? Theme.of(context).colorScheme.primary
                                     : Colors.transparent,
                                 width: 2.0,
                               ),
@@ -224,11 +223,10 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                             padding: EdgeInsets.symmetric(
                                 vertical: 8, horizontal: 16),
                             decoration: BoxDecoration(
-                              // color: Theme.of(context).hoverColor,
                               border: Border.all(
                                 color: _transaction.paymentMethod ==
                                         PaymentMethod.CASH.name
-                                    ? Theme.of(context).primaryColor
+                                    ? Theme.of(context).colorScheme.primary
                                     : Colors.transparent,
                                 width: 2.0,
                               ),
@@ -241,7 +239,7 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                                   Icons.money,
                                   color: _transaction.paymentMethod ==
                                           PaymentMethod.CASH.name
-                                      ? Theme.of(context).primaryColor
+                                      ? Theme.of(context).colorScheme.primary
                                       : Colors.grey,
                                 ),
                                 SizedBox(width: 8.0),
@@ -265,7 +263,7 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                               border: Border.all(
                                 color: _transaction.paymentMethod ==
                                         PaymentMethod.ONLINE.name
-                                    ? Theme.of(context).primaryColor
+                                    ? Theme.of(context).colorScheme.primary
                                     : Colors.transparent,
                                 width: 2.0,
                               ),
@@ -278,7 +276,7 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                                   Icons.credit_card,
                                   color: _transaction.paymentMethod ==
                                           PaymentMethod.ONLINE.name
-                                      ? Theme.of(context).primaryColor
+                                      ? Theme.of(context).colorScheme.primary
                                       : Colors.grey,
                                 ),
                                 SizedBox(width: 8.0),

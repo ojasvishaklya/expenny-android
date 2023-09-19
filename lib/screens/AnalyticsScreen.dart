@@ -61,22 +61,24 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     _controller.insertRandomData();
                   },
                   icon: Icon(Icons.add)),
-              IconButton(
-                  onPressed: () {
-                    showAlertContent(
-                      context: context,
-                      content: FilterSelectorWidget(
-                          getSelectedPeriodTransactions:
-                              _getSelectedPeriodTransactions),
-                    );
-                  },
-                  icon: Icon(Icons.filter_alt)),
+              Container(
+                child: IconButton(
+                    onPressed: () {
+                      showAlertContent(
+                        context: context,
+                        content: FilterSelectorWidget(
+                            getSelectedPeriodTransactions:
+                                _getSelectedPeriodTransactions),
+                      );
+                    },
+                    icon: Icon(Icons.filter_alt)),
+              ),
             ],
           ),
           Visibility(
             visible: _selectedTransactions.isNotEmpty,
             replacement:
-                CircularProgressIndicator(),
+                Center(child: CircularProgressIndicator()),
             child: SingleChildScrollView(
               child: Column(
                 children: [

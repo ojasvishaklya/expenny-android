@@ -217,7 +217,7 @@ class _FilterSelectorWidgetState extends State<FilterSelectorWidget> {
                 decoration: BoxDecoration(
                   border: Border.all(
                     color: isSelected
-                        ? Theme.of(context).primaryColor
+                        ? Theme.of(context).colorScheme.primary
                         : Colors.transparent, // Border color
                     width: 2, // Border width
                   ),

@@ -18,24 +18,6 @@ class ThemeService {
     _getStorage.write(darkModeKey, isDarkMode);
   }
 
-  static Widget getThemeIconButton() {
-    Icon icon;
-    Color color;
-    if (getDarkThemeStatus()) {
-      icon = Icon(Icons.wb_sunny_rounded);
-    } else {
-      icon = Icon(
-        Icons.nightlight_round,
-      );
-    }
-
-    return IconButton(
-      onPressed: () {
-        ThemeService.changeThemeMode();
-      },
-      icon: icon,
-    );
-  }
 
   static void changeThemeMode() {
     if (getDarkThemeStatus()) {

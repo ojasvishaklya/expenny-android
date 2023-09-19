@@ -13,7 +13,7 @@ class BottomNavBarWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: Theme.of(context).colorScheme.background,
         border: Border(),
       ),
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -21,7 +21,7 @@ class BottomNavBarWidget extends StatelessWidget {
         gap: 8,
         onTabChange: onIndexChanged,
         selectedIndex: currentIndex,
-        // backgroundColor: Colors.black,
+        activeColor: Theme.of(context).colorScheme.primary,
         tabBackgroundColor: Theme.of(context).hoverColor,
         padding: EdgeInsets.all(12),
         tabs: const [
