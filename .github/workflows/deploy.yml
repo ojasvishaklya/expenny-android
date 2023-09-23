@@ -32,12 +32,13 @@ jobs:
     steps:
       - name: Check out repo
         uses: actions/checkout@v3
+        with:
+          ref:
 
       - name: Job parameters
         run: |
           if [ ${{ github.event.inputs.deploy_test=='true' }} ]; then
             echo "deploy_test is true, setting upload_docker to true..."
-            github.event.inputs.upload_docker=true
           fi
 
           echo "upload_docker: ${{ github.event.inputs.upload_docker }}"
