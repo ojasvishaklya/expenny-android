@@ -35,13 +35,13 @@ jobs:
 
       - name: Job parameters
         run: |
-          if [ ${{ github.event.inputs.upload_docker }} == "true" ]; then
+          if [ ${{ github.event.inputs.deploy_test=='true' }} ]; then
             echo "deploy_test is true, setting upload_docker to true..."
             echo "::set-output name=upload_docker::true"
           fi
 
           echo "upload_docker: ${{ github.event.inputs.upload_docker }}"
-          echo "deploy_test: ${{ github.event.inputs.upload_docker }}"
+          echo "deploy_test: ${{ github.event.inputs.deploy_test }}"
           echo "commit_id: ${{ github.event.inputs.commit_id }}"
 
       - name: build project
