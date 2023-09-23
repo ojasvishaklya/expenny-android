@@ -1,7 +1,21 @@
 name: Deploy RCP Manual
 
 on:
-  push:
+  workflow_dispatch:
+    inputs:
+      upload_docker:
+        type: boolean
+        description: Upload artifact to docker
+      deploy_test:
+        type: boolean
+        description: Deploy to TEST
+      choice:
+        type: choice
+        description: Make a choice
+        options:
+          - foo
+          - bar
+          - baz
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -21,17 +35,17 @@ jobs:
           echo "BUILD SUCCESS"
 
       - name: login to kumo-docker-release-local
-        if: ${{ github.event.inputs.upload_docker != 'false' }}
+        if: ${{ github.event.inputs.upload_docker }}
         run: |
           echo "logged in to docker"
 
       - name: Build and Push Docker image
-        if: ${{ github.event.inputs.upload_docker != 'false' }}
+        if: ${{ github.event.inputs.upload_docker }}
         run: |
           echo "pushed image to docker"
 
   pipeline:
-    if: ${{  github.event.inputs.upload_docker != 'false' && github.event.inputs.deploy_test != 'false' }}
+    if: ${{  github.event.inputs.upload_docker && github.event.inputs.deploy_test }}
     needs: [build]
     runs-on: ubuntu-latest
     steps:
