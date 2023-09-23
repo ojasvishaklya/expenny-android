@@ -1,21 +1,7 @@
 name: Deploy RCP Manual
 
 on:
-  workflow_dispatch:
-    inputs:
-      upload_docker:
-        type: boolean
-        description: Upload artifact to docker
-      deploy_test:
-        type: boolean
-        description: Deploy to TEST
-      choice:
-        type: choice
-        description: Make a choice
-        options:
-          - foo
-          - bar
-          - baz
+  push:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
