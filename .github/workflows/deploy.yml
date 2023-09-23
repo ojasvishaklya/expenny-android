@@ -30,14 +30,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Job parameters
-        run: |
-          echo "upload_docker: ${{ github.event.inputs.upload_docker }}"
-          echo "deploy_test: ${{ github.event.inputs.deploy_test }}"
-          echo "commit_id: ${{ github.event.inputs.commit_id }}"
-
       - name: Check out repo
         uses: actions/checkout@v3
+
+      - name: Job parameters
+        run: |
+          deploy_test="${{ github.event.inputs.deploy_test }}"
+          if [ "$deploy_test" == "true" ]; then
+            echo "deploy_test is true, setting upload_docker to true..."
+            echo "::set-output name=upload_docker::true"
+          fi
+
+          echo "upload_docker: ${{ github.event.inputs.upload_docker }}"
+          echo "deploy_test: $deploy_test"
+          echo "commit_id: ${{ github.event.inputs.commit_id }}"
 
       - name: build project
         run: |
