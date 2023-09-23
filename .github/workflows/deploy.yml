@@ -9,6 +9,9 @@ on:
       deploy_test:
         type: boolean
         description: Deploy to TEST
+      commit_id:
+        decription: commit id (optional)
+        default: ''
       choice:
         type: choice
         description: Make a choice
@@ -27,6 +30,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Job parameters
+        run: |
+          echo "upload_docker: ${{ github.event.inputs.upload_docker }}"
+          echo "deploy_test: ${{ github.event.inputs.deploy_test }}"
+          echo "commit_id: ${{ github.event.inputs.commit_id }}"
+
       - name: Check out repo
         uses: actions/checkout@v3
 
@@ -37,7 +46,6 @@ jobs:
       - name: login to kumo-docker-release-local
         if: ${{ github.event.inputs.upload_docker=='true' }}
         run: |
-          echo "upload_docker: ${{ github.event.inputs.upload_docker }}"
           echo "logged in to docker"
 
       - name: Build and Push Docker image
@@ -46,7 +54,7 @@ jobs:
           echo "pushed image to docker"
 
   pipeline:
-    if: ${{  github.event.inputs.upload_docker==true && github.event.inputs.deploy_test==true }}
+    if: ${{  github.event.inputs.upload_docker=='true' && github.event.inputs.deploy_test=='true' }}
     needs: [build]
     runs-on: ubuntu-latest
     steps:
