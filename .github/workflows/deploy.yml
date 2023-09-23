@@ -35,18 +35,18 @@ jobs:
           echo "BUILD SUCCESS"
 
       - name: login to kumo-docker-release-local
-        if: ${{ github.event.inputs.upload_docker }}
+        if: ${{ github.event.inputs.upload_docker==true }}
         run: |
           echo "upload_docker: ${{ github.event.inputs.upload_docker }}"
           echo "logged in to docker"
 
       - name: Build and Push Docker image
-        if: ${{ github.event.inputs.upload_docker }}
+        if: ${{ github.event.inputs.upload_docker==true }}
         run: |
           echo "pushed image to docker"
 
   pipeline:
-    if: ${{  github.event.inputs.upload_docker && github.event.inputs.deploy_test }}
+    if: ${{  github.event.inputs.upload_docker==true && github.event.inputs.deploy_test==true }}
     needs: [build]
     runs-on: ubuntu-latest
     steps:
