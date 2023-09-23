@@ -11,7 +11,6 @@ on:
         description: Deploy to TEST
       commit_id:
         decription: commit id (optional)
-        default: ''
       choice:
         type: choice
         description: Make a choice
@@ -33,7 +32,7 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v3
         with:
-          ref:
+          ref: ${{ github.event.inputs.commit_id }}
 
       - name: Job parameters
         run: |
