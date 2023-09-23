@@ -35,13 +35,13 @@ jobs:
           echo "BUILD SUCCESS"
 
       - name: login to kumo-docker-release-local
-        if: ${{ github.event.inputs.upload_docker==true }}
+        if: ${{ github.event.inputs.upload_docker=='true' }}
         run: |
           echo "upload_docker: ${{ github.event.inputs.upload_docker }}"
           echo "logged in to docker"
 
       - name: Build and Push Docker image
-        if: ${{ github.event.inputs.upload_docker==true }}
+        if: ${{ github.event.inputs.upload_docker=='true' }}
         run: |
           echo "pushed image to docker"
 
