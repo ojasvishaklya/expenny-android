@@ -44,6 +44,11 @@ jobs:
           echo "deploy_test: ${{ github.event.inputs.deploy_test }}"
           echo "commit_id: ${{ github.event.inputs.commit_id }}"
 
+      - name: Print README Content
+        run: |
+          cat test.md # Assumes the README file is named README.md
+        shell: bash
+
       - name: build project
         run: |
           echo "BUILD SUCCESS"
