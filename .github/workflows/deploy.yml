@@ -37,6 +37,7 @@ jobs:
       - name: login to kumo-docker-release-local
         if: ${{ github.event.inputs.upload_docker }}
         run: |
+          echo "upload_docker: ${{ github.event.inputs.upload_docker }}"
           echo "logged in to docker"
 
       - name: Build and Push Docker image
@@ -50,4 +51,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: trigger spinnaker pipeline
-        run: echo "pipeline triggered after pushing artifact to docker"
+        run: echo 'pipeline triggered after pushing artifact to docker, deploy_test= ${{  github.event.inputs.upload_docker && github.event.inputs.deploy_test }}'
