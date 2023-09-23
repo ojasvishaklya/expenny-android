@@ -1,0 +1,53 @@
+name: Deploy RCP Manual
+
+on:
+  workflow_dispatch:
+    inputs:
+      upload_docker:
+        type: boolean
+        description: Upload artifact to docker
+      deploy_test:
+        type: boolean
+        description: Deploy to TEST
+      choice:
+        type: choice
+        description: Make a choice
+        options:
+          - foo
+          - bar
+          - baz
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+
+      - name: build project
+        run: |
+          echo "BUILD SUCCESS"
+
+      - name: login to kumo-docker-release-local
+        if: ${{ github.event.inputs.upload_docker != 'false' }}
+        run: |
+          echo "logged in to docker"
+
+      - name: Build and Push Docker image
+        if: ${{ github.event.inputs.upload_docker != 'false' }}
+        run: |
+          echo "pushed image to docker"
+
+  pipeline:
+    if: ${{  github.event.inputs.upload_docker != 'false' && github.event.inputs.deploy_test != 'false' }}
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: trigger spinnaker pipeline
+        run: echo "pipeline triggered after pushing artifact to docker"
