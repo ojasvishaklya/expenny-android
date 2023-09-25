@@ -11,13 +11,12 @@ on:
         description: Deploy to TEST
       commit_id:
         decription: commit id (optional)
-      choice:
+      build_params:
         type: choice
-        description: Make a choice
+        description: build parameters
         options:
-          - foo
-          - bar
-          - baz
+          - -DskipTests
+          - -DskipITs
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -43,6 +42,7 @@ jobs:
           echo "upload_docker: ${{ github.event.inputs.upload_docker }}"
           echo "deploy_test: ${{ github.event.inputs.deploy_test }}"
           echo "commit_id: ${{ github.event.inputs.commit_id }}"
+          echo "build_params: ${{ github.event.inputs.build_params }}"
 
       - name: Print README Content
         run: |

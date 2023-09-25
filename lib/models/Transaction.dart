@@ -95,32 +95,6 @@ class Transaction {
     );
   }
 
-  String humanReadableDate() {
-    DateTime now = DateTime.now();
-    List<String> monthNames = [
-      '',
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December'
-    ];
-    if (date.day == now.day) {
-      return 'Today'; // Return day of the week for the current day
-    }
-    if (date.year == now.year) {
-      return '${date.day}  ${monthNames[date.month]}'; // Return day and month name for the current year
-    }
-    return '${date.day} ${monthNames[date.month]} ${date.year}'; // Return the whole date for different year
-  }
-
   @override
   String toString() {
     return '''

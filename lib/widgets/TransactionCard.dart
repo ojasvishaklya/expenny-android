@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:journal/models/Transaction.dart';
 import 'package:journal/models/TransactionTag.dart';
+import 'package:journal/service/DateService.dart';
 
 import '../constants/routes.dart';
 
@@ -45,7 +46,7 @@ class TransactionCard extends StatelessWidget {
               ),
               Column(
                 children: [
-                  Text(transaction.humanReadableDate()),
+                  Text(DateService.humanReadableDate(transaction.date)),
                   SizedBox(
                     height: 10,
                   ),
