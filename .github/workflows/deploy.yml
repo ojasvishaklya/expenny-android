@@ -14,7 +14,9 @@ on:
       build_params:
         type: choice
         description: build parameters
+        default: ''
         options:
+          - ''
           - -DskipTests
           - -DskipITs
 
