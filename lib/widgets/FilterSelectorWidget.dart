@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:journal/models/Filter.dart';
-import 'package:journal/service/DateService.dart';
 
 import '../models/TransactionTag.dart';
+import 'DateTextWidget.dart';
 
 class FilterSelectorWidget extends StatefulWidget {
   Function(Filter filter) getSelectedPeriodTransactions;
@@ -69,15 +69,15 @@ class _FilterSelectorWidgetState extends State<FilterSelectorWidget> {
                   'from ',
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
-                buildDateText(_filter.startDate, updateStartDate),
+                Expanded(child: buildDateText(context, _filter.startDate, updateStartDate)),
                 SizedBox(
                   width: 10,
                 ),
-                Text(
+                Text( 
                   'till ',
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
-                buildDateText(_filter.endDate, updateEndDate),
+                Expanded(child: buildDateText(context, _filter.endDate, updateEndDate)),
               ],
             ),
             SizedBox(height: 20),
@@ -102,36 +102,6 @@ class _FilterSelectorWidgetState extends State<FilterSelectorWidget> {
               ],
             )
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget buildDateText(DateTime date, Function(DateTime date) updateStartDate) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: () async {
-          DateTime? pickedDate = await showDatePicker(
-            context: context,
-            initialDate: DateTime.now(),
-            firstDate: DateTime(2000),
-            lastDate: DateTime(2101),
-          );
-          if (pickedDate != null) {
-            updateStartDate(pickedDate);
-          }
-        },
-        child: Container(
-          padding: EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Theme.of(context).hoverColor, // Background color
-            borderRadius: BorderRadius.circular(10), // Border radius
-          ),
-          child: Center(
-            child: Text(
-              DateService.humanReadableDate(date),
-            ),
-          ),
         ),
       ),
     );

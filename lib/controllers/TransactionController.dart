@@ -45,13 +45,19 @@ class TransactionController extends GetxController {
   ''', ['%$searchString%']);
   }
 
-  Future<List<Transaction>> getTransactionsBetweenDates(
-      {DateTime? startDate,
-      DateTime? endDate,
-      required Set<TransactionTag>? tagSet}) async {
+  Future<List<Transaction>> getTransactionsBetweenDates({
+    DateTime? startDate, // older date
+    DateTime? endDate,  // newer date
+    required Set<TransactionTag>? tagSet,
+  }) async {
     if (startDate == null || endDate == null) {
       return await transactionRepository.getTransactions();
     }
+
+    // this is done since we are fetching data between these two dates included
+    startDate = startDate.add(Duration(days: -1));
+    endDate = endDate.add(Duration(days: 1));
+
     List<Transaction> transactions =
         await transactionRepository.getTransactionsRawQuery('''
     SELECT * FROM tableName

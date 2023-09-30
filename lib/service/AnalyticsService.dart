@@ -69,7 +69,7 @@ class AnalyticsService {
       if (maxExpense > value) {
         maxExpense = value;
       }
-      return FlSpot(index.toDouble(), value);
+      return FlSpot(index.toDouble()+1, -1*value);
     }).toList();
 
     double maxIncome = 0;
@@ -84,7 +84,7 @@ class AnalyticsService {
       if (maxIncome < value) {
         maxIncome = value;
       }
-      return FlSpot(index.toDouble(), value);
+      return FlSpot(index.toDouble()+1, value);
     }).toList();
 
     return [incomeSpots, maxIncome, expenseSpots,  maxExpense];

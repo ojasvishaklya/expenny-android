@@ -3,14 +3,15 @@ import 'dart:math';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:journal/service/AnalyticsService.dart';
+import 'package:journal/service/DateService.dart';
 
 import '../models/Transaction.dart';
 
-class LineChartWidget extends StatelessWidget {
+class MonthlyLineChartWidget extends StatelessWidget {
   final List<Transaction>
       transactionList; // Assuming you have a list of transactions
 
-  LineChartWidget({required this.transactionList});
+  const MonthlyLineChartWidget({Key? key, required this.transactionList}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -20,16 +21,19 @@ class LineChartWidget extends StatelessWidget {
 
     final List<FlSpot> incomeSpots = dataPoints[0];
     final maxIncome = dataPoints[1];
+    final incomeColor=Theme.of(context).colorScheme.primary;
+    final expenseColor=Theme.of(context).colorScheme.primary;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('E X P E N S E',
+        Text('EXPENSE',
           style: Theme.of(context).textTheme.bodyLarge,
         ),
-        SizedBox(height: 20,),
-        SizedBox(
+        Container(
+          margin: EdgeInsets.symmetric(vertical: 10,horizontal: 16),
           height: 200,
+          width: 500,
           child: LineChart(LineChartData(
               gridData: FlGridData(show: false),
               titlesData: FlTitlesData(
@@ -38,18 +42,11 @@ class LineChartWidget extends StatelessWidget {
                       showTitles: true,
                       reservedSize: 50,
                       getTitlesWidget: (value,meta) {
-
-
-                        final dateTime =
-                        DateTime.fromMillisecondsSinceEpoch(value.toInt());
-                        final day = dateTime.day;
-                        final month = dateTime.month;
-                        final year = dateTime.year;
-
-                        return Transform.rotate(
-                          angle: 1 * (pi / 180), // Convert degrees to radians
+                        String monthName=DateService.monthNames[value.toInt()].substring(0, 3);
+                        return Container(
+                          margin: EdgeInsets.symmetric(vertical: 10),
                           child: Text(
-                            '$month',
+                            monthName,
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ); // Customize the date format
@@ -73,21 +70,23 @@ class LineChartWidget extends StatelessWidget {
               lineBarsData: [
                 LineChartBarData(
                   spots: expenseSpots,
-                  isCurved: false,
+                  isCurved: true,
+                  color: expenseColor,
                   dotData: FlDotData(show: true),
                   belowBarData: BarAreaData(
+                    color: expenseColor.withOpacity(0.5),
                     show: true, // Fill color below the line
                   ),
                 ),
               ])),
         ),
-        SizedBox(height: 20,),
-        Text('Income Last Year',
+        Text('INCOME',
           style: Theme.of(context).textTheme.bodyLarge,
         ),
-        SizedBox(height: 20,),
-        SizedBox(
+        Container(
+          margin: EdgeInsets.symmetric(vertical: 10,horizontal: 16),
           height: 200,
+          width: 500,
           child: LineChart(LineChartData(
               gridData: FlGridData(show: false),
               titlesData: FlTitlesData(
@@ -96,18 +95,11 @@ class LineChartWidget extends StatelessWidget {
                       showTitles: true,
                       reservedSize: 50,
                       getTitlesWidget: (value,meta) {
-
-
-                        final dateTime =
-                        DateTime.fromMillisecondsSinceEpoch(value.toInt());
-                        final day = dateTime.day;
-                        final month = dateTime.month;
-                        final year = dateTime.year;
-
-                        return Transform.rotate(
-                          angle: 1 * (pi / 180), // Convert degrees to radians
+                        String monthName=DateService.monthNames[value.toInt()].substring(0, 3);
+                        return Container(
+                          margin: EdgeInsets.symmetric(vertical: 10),
                           child: Text(
-                            '$month',
+                            monthName,
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ); // Customize the date format
@@ -131,9 +123,11 @@ class LineChartWidget extends StatelessWidget {
               lineBarsData: [
                 LineChartBarData(
                   spots: incomeSpots,
-                  isCurved: false,
+                  isCurved: true,
+                  color: incomeColor,
                   dotData: FlDotData(show: true),
                   belowBarData: BarAreaData(
+                    color: incomeColor.withOpacity(0.5),
                     show: true, // Fill color below the line
                   ),
                 ),
@@ -143,3 +137,4 @@ class LineChartWidget extends StatelessWidget {
     );
   }
 }
+
