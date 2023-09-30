@@ -59,7 +59,7 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
     );
   }
 
-  void _submitForm() {
+  void _submitForm(BuildContext context) {
     if (_formKey.currentState!.validate()) {
       _controller.addTransaction(_transaction);
       if (isNewTransaction) {
@@ -73,6 +73,7 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
             textContent: 'Transaction updated',
             color: Colors.orange);
       }
+      Navigator.of(context).pop();
     } else {
       print('error in form');
     }
@@ -314,8 +315,7 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      _submitForm();
-                      Navigator.of(context).pop();
+                      _submitForm(context);
                     },
                     child: Text(isNewTransaction ? 'Create' : 'Update'),
                   ),

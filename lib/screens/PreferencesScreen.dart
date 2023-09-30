@@ -55,16 +55,18 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
           ),
           Spacer(),
           PreferenceTileWidget(
-              text: 'Export transaction data',
-              icon: Icons.arrow_upward,
-              onTap: () async {}),
-          PreferenceTileWidget(
               text: 'Import transaction data',
-              icon: Icons.arrow_downward,
-              onTap: () async {}),
+              icon: Icons.arrow_upward,
+              onTap: () async {
+                showSnackBar(
+                    context: context,
+                    textContent: "I'll work on this feature after 500 downloads",
+                    color: Colors.orange,
+                    duration: 5);
+              }),
           PreferenceTileWidget(
-              text: 'Download as excel',
-              icon: Icons.archive_rounded,
+              text: 'Export data as excel',
+              icon: Icons.arrow_downward,
               onTap: () async {
                 final response = await _dataService.exportToExcel();
                 showSnackBar(
@@ -74,14 +76,24 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                     duration: 5);
               }),
           PreferenceTileWidget(
-              text: 'Delete all data', icon: Icons.delete, onTap:  ()async {
-                final response = await _dataService.deleteAllTransactions();
-                showSnackBar(
-                    context: context,
-                    textContent: response.response,
-                    color: response.isError ? Colors.redAccent : Colors.green,
-                    duration: 5);
-          }),
+              text: 'Delete all data',
+              icon: Icons.delete,
+              onTap: () async {
+                showAlertContent(context: context, content: AlertContent(
+                    text: "Are you sure you want to delete all data?",
+                    showButtons: true,
+                    onTap:() async{
+                      final response = await _dataService.deleteAllTransactions();
+                      showSnackBar(
+                          context: context,
+                          textContent: response.response,
+                          color: response.isError ? Colors.redAccent : Colors.green,
+                          duration: 5);
+                    }
+                )
+                );
+              }
+              ),
         ],
       ),
     );
@@ -93,8 +105,9 @@ class PreferenceTileWidget extends StatelessWidget {
   final IconData icon;
   final onTap;
 
-  PreferenceTileWidget(
-      {required this.text, required this.icon, this.onTap = null});
+  const PreferenceTileWidget(
+      {Key? key, required this.text, required this.icon, this.onTap})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +127,58 @@ class PreferenceTileWidget extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class AlertContent extends StatelessWidget {
+  const AlertContent({Key? key,
+    required this.text,
+    required this.showButtons,
+    required this.onTap})
+      : super(key: key);
+
+  final String text;
+  final bool showButtons;
+  final onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 120,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text(text, style: Theme
+              .of(context)
+              .textTheme
+              .bodyLarge),
+          showButtons == true ? SizedBox(height: 10.0) : Container(),
+          // Add spacing between the message and buttons
+          showButtons == true
+              ? Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                child: Text('cancel'),
+              ),
+              SizedBox(width: 16.0), // Add spacing between the buttons
+              TextButton(
+                onPressed: () {
+                  onTap();
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                child: Text('delete'),
+              ),
+            ],
+          )
+              : Container(),
+        ],
       ),
     );
   }

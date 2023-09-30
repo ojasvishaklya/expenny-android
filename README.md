@@ -21,17 +21,17 @@ designed to help you manage your daily Transactions efficiently.
 - [X] Add the ability to categorize Transactions using tags (e.g., Food, Transportation,
   Entertainment).
 - [X] Create an Transaction entry form to input date, amount, description, and associated tags.
-- [ ] Display a list of Transactions, including sorting and filtering options for better navigation.
+- [X] Display a list of Transactions, including sorting and filtering options for better navigation.
 - [ ] Develop visual charts and graphs to depict spending patterns and trends over time.
 - [ ] Implement a budget-setting feature with notifications for approaching/exceeding limits.
 - [ ] Provide support for currency conversion to track Transactions in different currencies.
 - [ ] Integrate user authentication to secure sensitive financial data.
-- [ ] Implement data export functionality in formats like CSV or PDF.
+- [X] Implement data export functionality in formats like CSV or PDF.
 - [ ] Set up reminder notifications to prompt users to regularly input their Transactions.
 - [X] Include a dark mode option for improved usability in low-light conditions.
-- [ ] Implement a search functionality to quickly locate specific Transactions based on various
+- [X] Implement a search functionality to quickly locate specific Transactions based on various
   criteria.
-- [ ] Provide options for users to locally back up data or use cloud backup services.
+- [ ] Provide option for lazy loading monthly transactions.
 
 ## Screenshots
 

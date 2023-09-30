@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:journal/models/Filter.dart';
+import 'package:journal/service/DateService.dart';
 
 import '../models/TransactionTag.dart';
 
@@ -106,32 +107,6 @@ class _FilterSelectorWidgetState extends State<FilterSelectorWidget> {
     );
   }
 
-  String humanReadableDate(DateTime date) {
-    DateTime now = DateTime.now();
-    List<String> monthNames = [
-      '',
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December'
-    ];
-    if (date.day == now.day) {
-      return 'Today'; // Return day of the week for the current day
-    }
-    if (date.year == now.year) {
-      return '${date.day}  ${monthNames[date.month]}'; // Return day and month name for the current year
-    }
-    return '${date.day} ${monthNames[date.month]} ${date.year}'; // Return the whole date for different year
-  }
-
   Widget buildDateText(DateTime date, Function(DateTime date) updateStartDate) {
     return Expanded(
       child: GestureDetector(
@@ -154,7 +129,7 @@ class _FilterSelectorWidgetState extends State<FilterSelectorWidget> {
           ),
           child: Center(
             child: Text(
-              humanReadableDate(date),
+              DateService.humanReadableDate(date),
             ),
           ),
         ),
@@ -212,7 +187,7 @@ class _FilterSelectorWidgetState extends State<FilterSelectorWidget> {
                 });
               },
               child: Container(
-                margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                margin: EdgeInsets.symmetric(vertical: 10, horizontal: 2),
                 padding: EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   border: Border.all(
@@ -227,7 +202,6 @@ class _FilterSelectorWidgetState extends State<FilterSelectorWidget> {
                 ),
                 child: Icon(
                   icon,
-                  // size: 26,
                 ),
               ),
             );
