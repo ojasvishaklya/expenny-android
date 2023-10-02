@@ -6,8 +6,12 @@ import 'DateTextWidget.dart';
 
 class FilterSelectorWidget extends StatefulWidget {
   Function(Filter filter) getSelectedPeriodTransactions;
+  Filter filter;
 
-  FilterSelectorWidget({Key? key, required this.getSelectedPeriodTransactions})
+  FilterSelectorWidget(
+      {Key? key,
+      required this.getSelectedPeriodTransactions,
+      required this.filter})
       : super(key: key);
 
   @override
@@ -15,30 +19,7 @@ class FilterSelectorWidget extends StatefulWidget {
 }
 
 class _FilterSelectorWidgetState extends State<FilterSelectorWidget> {
-  final Filter _filter = Filter.defaults();
-  int selectedTimeFrame = 1;
-
-  void updateSelectedTimeFrame(index) {
-    setState(() {
-      selectedTimeFrame = index;
-      _filter.endDate = DateTime.now();
-      if (selectedTimeFrame == 0) {
-        _filter.startDate = _filter.endDate.subtract(Duration(days: 7));
-      } else if (selectedTimeFrame == 1) {
-        _filter.startDate = _filter.endDate.subtract(Duration(days: 30));
-      } else if (selectedTimeFrame == 2) {
-        _filter.startDate = _filter.endDate.subtract(Duration(days: 90));
-      }
-    });
-  }
-
-  updateStartDate(DateTime date) => setState(() {
-        _filter.startDate = date;
-      });
-
-  updateEndDate(DateTime date) => setState(() {
-        _filter.endDate = date;
-      });
+  late Filter _filter;
 
   @override
   void initState() {
@@ -47,6 +28,7 @@ class _FilterSelectorWidgetState extends State<FilterSelectorWidget> {
 
   @override
   Widget build(BuildContext context) {
+    _filter = widget.filter;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: SingleChildScrollView(
@@ -61,26 +43,80 @@ class _FilterSelectorWidgetState extends State<FilterSelectorWidget> {
             SizedBox(
               height: 10,
             ),
-            buildDateRangeDropDown(),
-            SizedBox(height: 20),
             Row(
-              children: [
-                Text(
-                  'from ',
-                  style: Theme.of(context).textTheme.bodyLarge,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _filter.year--; // Decrement year when left arrow is tapped
+                    });
+                  },
+                  child: Icon(Icons.arrow_left), // Left arrow icon
                 ),
-                Expanded(child: buildDateText(context, _filter.startDate, updateStartDate)),
-                SizedBox(
-                  width: 10,
+                Container(
+                  width: 200,
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).hoverColor,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Center(child: Text(_filter.year.toString())),
                 ),
-                Text( 
-                  'till ',
-                  style: Theme.of(context).textTheme.bodyLarge,
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _filter.year++; // Increment year when right arrow is tapped
+                    });
+                  },
+                  child: Icon(Icons.arrow_right), // Right arrow icon
                 ),
-                Expanded(child: buildDateText(context, _filter.endDate, updateEndDate)),
               ],
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 10),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      if(_filter.month==1){
+                        _filter.month=12;
+                      }else {
+                        _filter.month--; // Decrement year when left arrow is tapped
+                      }
+                    });
+                  },
+                  child: Icon(Icons.arrow_left), // Left arrow icon
+                ),
+                Container(
+                  width: 200,
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).hoverColor, // Background color
+                    borderRadius:
+                    BorderRadius.circular(10), // Border radius
+                  ),
+                  child: Center(child: Text(_filter.getMonthName())),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      if(_filter.month==12){
+                        _filter.month=1;
+                      }else {
+                        _filter.month++;
+                      }
+                    });
+                  },
+                  child: Icon(Icons.arrow_right), // Right arrow icon
+                ),
+              ],
+            ),
+
+
+            SizedBox(height: 40),
             Text(
               'Select tags',
               style: Theme.of(context).textTheme.bodyLarge,
@@ -103,35 +139,6 @@ class _FilterSelectorWidgetState extends State<FilterSelectorWidget> {
             )
           ],
         ),
-      ),
-    );
-  }
-
-  Widget buildDateRangeDropDown() {
-    List<String> datePresets = ['Past 1 week', 'Past 1 month', 'Past 3 months'];
-    String selectedOption = datePresets[selectedTimeFrame];
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).hoverColor,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: DropdownButton<String>(
-        value: selectedOption,
-        onChanged: (newValue) {
-          updateSelectedTimeFrame(datePresets.indexOf(newValue!));
-        },
-        items: datePresets.map<DropdownMenuItem<String>>(
-          (String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
-            );
-          },
-        ).toList(),
-        isExpanded: true,
-        underline: Container(), // Remove the underline
       ),
     );
   }

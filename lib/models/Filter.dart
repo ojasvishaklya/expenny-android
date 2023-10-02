@@ -1,29 +1,48 @@
-import 'package:journal/models/TransactionTag.dart';
+import '../service/DateService.dart';
+import 'TransactionTag.dart';
 
 class Filter {
-  DateTime startDate;
-  DateTime endDate;
   Set<TransactionTag> tagSet;
   String? searchString;
+  int month;
+  int year;
 
   Filter({
-    required this.startDate, // older date
-    required this.endDate, // newer date
+    required this.month,
+    required this.year,
     required this.tagSet,
     this.searchString,
   });
 
   Filter.defaults()
-      : endDate = DateTime.now(),
-        startDate = DateTime.now().subtract(Duration(days: 30)),
+      : month = DateTime.now().month,
+        year = DateTime.now().year,
         tagSet = {},
         searchString = '';
+
+  String getMonthName() {
+    return DateService.monthNames[month]!;
+  }
+
+  Filter copyWith({
+    Set<TransactionTag>? tagSet,
+    String? searchString,
+    int? month,
+    int? year,
+  }) {
+    return Filter(
+      month: month ?? this.month,
+      year: year ?? this.year,
+      tagSet: tagSet ?? this.tagSet,
+      searchString: searchString ?? this.searchString,
+    );
+  }
 
   @override
   String toString() {
     return 'Filter: {'
-        'startDate: $startDate, '
-        'endDate: $endDate, '
+        'year: $year, '
+        'month: $getMonthName(), '
         'tagSet: $tagSet, '
         'searchString: $searchString'
         '}';

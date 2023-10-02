@@ -1,12 +1,15 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:journal/models/Transaction.dart';
+import 'package:journal/models/TransactionTag.dart';
 
 class AnalyticsService {
-
-  static aggregateDataDateWise(List<Transaction> transactionList, int targetMonth, int targetYear) {
+  static aggregateDataDateWise(
+      List<Transaction> transactionList, int targetMonth, int targetYear) {
     // Filter transactions for the target month and year
-    List<Transaction> filteredTransactions = transactionList.where((transaction) {
-      return transaction.date.month == targetMonth && transaction.date.year == targetYear;
+    List<Transaction> filteredTransactions =
+        transactionList.where((transaction) {
+      return transaction.date.month == targetMonth &&
+          transaction.date.year == targetYear;
     }).toList();
 
     // Create a map to hold the daily sums for income and expenses
@@ -14,7 +17,9 @@ class AnalyticsService {
     Map<int, double> dailyExpenseSums = {};
 
     // Iterate through all days in the target month and set initial values to 0
-    for (int day = 1; day <= DateTime(targetYear, targetMonth + 1, 0).day; day++) {
+    for (int day = 1;
+        day <= DateTime(targetYear, targetMonth + 1, 0).day;
+        day++) {
       dailyIncomeSums[day] = 0;
       dailyExpenseSums[day] = 0;
     }
@@ -25,15 +30,15 @@ class AnalyticsService {
 
       // Add the transaction amount to the corresponding date's sum
       if (transaction.isExpense) {
-        dailyExpenseSums[day] = (dailyExpenseSums[day] ?? 0) + transaction.amount;
+        dailyExpenseSums[day] =
+            (dailyExpenseSums[day] ?? 0) + transaction.amount;
       } else {
         dailyIncomeSums[day] = (dailyIncomeSums[day] ?? 0) + transaction.amount;
       }
     }
 
     double maxExpense = double.negativeInfinity;
-    final List<FlSpot> expenseSpots =
-    dailyExpenseSums.entries.map((entry) {
+    final List<FlSpot> expenseSpots = dailyExpenseSums.entries.map((entry) {
       final day = entry.key;
       final value = entry.value;
       if (maxExpense < value) {
@@ -43,8 +48,7 @@ class AnalyticsService {
     }).toList();
 
     double maxIncome = 0;
-    final List<FlSpot> incomeSpots =
-    dailyIncomeSums.entries.map((entry) {
+    final List<FlSpot> incomeSpots = dailyIncomeSums.entries.map((entry) {
       final day = entry.key;
       final value = entry.value;
       if (maxIncome < value) {
@@ -54,6 +58,42 @@ class AnalyticsService {
     }).toList();
 
     return [incomeSpots, maxIncome, expenseSpots, maxExpense.abs()];
+  }
+
+  static List<List<dynamic>> aggregateDataByTag(
+      List<Transaction> transactionList) {
+    Map<String, double> tagIncomeMap = {};
+    Map<String, double> tagExpenseMap = {};
+
+    // Iterate through transactions and aggregate them by tag
+    for (final transaction in transactionList) {
+      // Add the transaction amount to the corresponding tag's sum
+      if (transaction.isExpense) {
+        tagExpenseMap.update(
+            transaction.tag, (value) => value + transaction.amount,
+            ifAbsent: () => transaction.amount);
+      } else {
+        tagIncomeMap.update(
+            transaction.tag, (value) => value + transaction.amount,
+            ifAbsent: () => transaction.amount);
+      }
+    }
+
+    List<List<dynamic>> aggregatedData = [];
+
+    for (String tagId in tagExpenseMap.keys) {
+      String tagName = TransactionTag.getTagById(tagId).name;
+      double expense = tagExpenseMap[tagId] ?? 0;
+      double income = tagIncomeMap[tagId] ?? 0;
+
+      // Add tag name, expense, and income to the list
+      aggregatedData.add([tagName, expense, income]);
+    }
+
+    // Sort the list based on the expense values (in descending order)
+    aggregatedData.sort((a, b) => a[1].compareTo(b[1]));
+
+    return aggregatedData;
   }
 
   static aggregateDataMonthWise(List<Transaction> transactionList) {
@@ -77,35 +117,27 @@ class AnalyticsService {
 
     double maxExpense = double.infinity;
     final List<FlSpot> expenseSpots =
-    monthlyExpenseSums
-        .asMap()
-        .entries
-        .map((entry) {
+        monthlyExpenseSums.asMap().entries.map((entry) {
       final index = entry.key;
       final value = entry.value;
       if (maxExpense > value) {
         maxExpense = value;
       }
-      return FlSpot(index.toDouble()+1, value.abs());
+      return FlSpot(index.toDouble() + 1, value.abs());
     }).toList();
 
     double maxIncome = 0;
 
     final List<FlSpot> incomeSpots =
-    monthlyIncomeSums
-        .asMap()
-        .entries
-        .map((entry) {
+        monthlyIncomeSums.asMap().entries.map((entry) {
       final index = entry.key;
       final value = entry.value;
       if (maxIncome < value) {
         maxIncome = value;
       }
-      return FlSpot(index.toDouble()+1, value);
+      return FlSpot(index.toDouble() + 1, value);
     }).toList();
 
-    return [incomeSpots, maxIncome, expenseSpots,  maxExpense.abs()];
+    return [incomeSpots, maxIncome, expenseSpots, maxExpense.abs()];
   }
 }
-
-

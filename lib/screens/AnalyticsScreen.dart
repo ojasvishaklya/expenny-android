@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:journal/models/Filter.dart';
 import 'package:journal/models/Transaction.dart';
-import 'package:journal/service/DateService.dart';
 import 'package:journal/widgets/LineChartWidget.dart';
 
 import '../controllers/TransactionController.dart';
@@ -24,43 +23,34 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   final String yearly = 'Y e a r l y';
   final String monthly = 'M o n t h l y';
   late String selectedPeriod;
-  late DateTime selectedYear;
-  late DateTime selectedMonth;
-
-  int monthIndex=DateTime.now().month;
-  int year=DateTime.now().year;
-
-  setSelectedYear(date) {
-    setState(() {
-      selectedYear = date;
-    });
-  }
-
-  setSelectedMonth(date) {
-    setState(() {
-      selectedMonth = date;
-    });
-  }
+  late Filter filter;
 
   @override
   void initState() {
-    if (_selectedTransactions.isEmpty) {
-      _getSelectedPeriodTransactions(Filter(
-          startDate: DateTime.now().subtract(Duration(days: 365)),
-          endDate: DateTime.now(),
-          tagSet: {}));
-    }
     selectedPeriod = yearly;
+    filter = Filter.defaults();
+
+    if (_selectedTransactions.isEmpty) {
+      _getSelectedPeriodTransactions(filter);
+    }
+
     super.initState();
   }
 
   _getSelectedPeriodTransactions(Filter filter) async {
+    DateTime startDate = DateTime(filter.year, 1, 1);
+    DateTime endDate = DateTime(filter.year, 12, 31);
+
+    if (selectedPeriod == monthly) {
+      startDate = DateTime(filter.year, filter.month, 1);
+      endDate = DateTime(filter.year, filter.month + 1, 0);
+    }
+    print('fethcing data for $startDate to $endDate');
     var transactionList = await _controller.getTransactionsBetweenDates(
-        startDate: filter.startDate,
-        endDate: filter.endDate,
-        tagSet: filter.tagSet);
+        startDate: startDate, endDate: endDate, tagSet: filter.tagSet);
     setState(() {
       _selectedTransactions = transactionList;
+      this.filter = filter;
     });
   }
 
@@ -68,8 +58,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   Widget build(BuildContext context) {
     var monthlyAggregatedData =
         AnalyticsService.aggregateDataMonthWise(_selectedTransactions);
-    var dateWiseAggregatedData =
-        AnalyticsService.aggregateDataDateWise(_selectedTransactions, 9, 2023);
+    var dateWiseAggregatedData = AnalyticsService.aggregateDataDateWise(
+        _selectedTransactions, filter.month, filter.year);
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -91,8 +81,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     showAlertContent(
                       context: context,
                       content: FilterSelectorWidget(
-                          getSelectedPeriodTransactions:
-                              _getSelectedPeriodTransactions),
+                        getSelectedPeriodTransactions:
+                            _getSelectedPeriodTransactions,
+                        filter: filter,
+                      ),
                     );
                   },
                   icon: Icon(Icons.filter_alt)),
@@ -106,6 +98,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   setState(() {
                     selectedPeriod = yearly;
                   });
+                  _getSelectedPeriodTransactions(filter);
                 },
                 child: Container(
                   width: 150,
@@ -128,6 +121,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   setState(() {
                     selectedPeriod = monthly;
                   });
+                  _getSelectedPeriodTransactions(filter);
                 },
                 child: Container(
                   width: 150,
@@ -158,13 +152,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       if (details.primaryVelocity! > 0) {
                         // swipe right
                         setState(() {
-                          year=year-1;
+                          filter.year = filter.year - 1;
                         });
                       } else if (details.primaryVelocity! < 0) {
                         // swipe left
                         setState(() {
-                          year=year+1;
+                          filter.year = filter.year + 1;
                         });
+                        _getSelectedPeriodTransactions(filter);
                       }
                     },
                     child: Container(
@@ -172,9 +167,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       padding: EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: Theme.of(context).hoverColor, // Background color
-                        borderRadius: BorderRadius.circular(10), // Border radius
+                        borderRadius:
+                            BorderRadius.circular(10), // Border radius
                       ),
-                      child: Center(child: Text(year.toString())),
+                      child: Center(child: Text(filter.year.toString())),
                     ),
                   ),
                   GestureDetector(
@@ -182,20 +178,23 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       if (details.primaryVelocity! > 0) {
                         // swipe right
                         setState(() {
-                          if(monthIndex==1){
-                            monthIndex=12;
+                          if (filter.month == 1) {
+                            filter.month = 12;
+                          } else {
+                            filter.month = filter.month - 1;
                           }
-                          monthIndex=monthIndex-1;
                         });
                       } else if (details.primaryVelocity! < 0) {
                         // swipe left
                         setState(() {
-                          if(monthIndex==12){
-                            monthIndex=1;
+                          if (filter.month == 12) {
+                            filter.month = 1;
+                          } else {
+                            filter.month = filter.month + 1;
                           }
-                          monthIndex=monthIndex+1;
                         });
                       }
+                      _getSelectedPeriodTransactions(filter);
                     },
                     child: Container(
                       width: 150,
@@ -204,17 +203,16 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                           : EdgeInsets.all(0),
                       decoration: BoxDecoration(
                         color: Theme.of(context).hoverColor, // Background color
-                        borderRadius: BorderRadius.circular(10), // Border radius
+                        borderRadius:
+                            BorderRadius.circular(10), // Border radius
                       ),
                       child: selectedPeriod == monthly
-                          ? Center(child: Text(DateService.monthNames[monthIndex]))
+                          ? Center(child: Text(filter.getMonthName()))
                           : Container(),
                     ),
                   ),
-
                 ],
               ),
-              // TagTableWidget(selectedTransactions: _selectedTransactions),
               AnalyticsTitleWidget(
                 text: 'Expense Trend',
               ),
@@ -250,7 +248,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             dateWiseAggregatedData[0],
                             monthlyAggregatedData[1],
                             false)),
-              )
+              ),
+              AnalyticsTitleWidget(
+                text: 'Tag wise split',
+              ),
+              TagTableWidget(selectedTransactions: _selectedTransactions),
             ],
           ))
         ],
@@ -299,19 +301,31 @@ class TagTableWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DataTable(
-      columns: const [
-        DataColumn(label: Text('Tag Name')),
-        DataColumn(label: Text('Amount')),
-      ],
-      rows: _selectedTransactions.take(10).map((entry) {
-        return DataRow(
-          cells: [
-            DataCell(Text(entry.tag)),
-            DataCell(Text(entry.amount.toString())),
-          ],
-        );
-      }).toList(),
+    final aggregatedData =
+        AnalyticsService.aggregateDataByTag(_selectedTransactions);
+
+    return SizedBox(
+      height: 200,
+      child: Scrollbar(
+        child: SingleChildScrollView(
+          child: DataTable(
+            columns: const [
+              DataColumn(label: Text('Tag Name')),
+              DataColumn(label: Text('Expense')),
+              DataColumn(label: Text('Income')),
+            ],
+            rows: aggregatedData.map((e) {
+              return DataRow(
+                cells: [
+                  DataCell(Text(e[0].toString())),
+                  DataCell(Text(e[1].toString())),
+                  DataCell(Text(e[2].toString())),
+                ],
+              );
+            }).toList(),
+          ),
+        ),
+      ),
     );
   }
 }
