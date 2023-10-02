@@ -2,41 +2,58 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:journal/models/Transaction.dart';
 
 class AnalyticsService {
-  static List<List<FlSpot>> aggregateDataDateWise(
-      List<Transaction> transactionList) {
-    final Map<DateTime, double> aggregatedIncomeData = {};
-    final Map<DateTime, double> aggregatedExpenseData = {};
 
-    for (final transaction in transactionList) {
-      final date = DateTime(
-          transaction.date.year, transaction.date.month, transaction.date.day);
+  static aggregateDataDateWise(List<Transaction> transactionList, int targetMonth, int targetYear) {
+    // Filter transactions for the target month and year
+    List<Transaction> filteredTransactions = transactionList.where((transaction) {
+      return transaction.date.month == targetMonth && transaction.date.year == targetYear;
+    }).toList();
+
+    // Create a map to hold the daily sums for income and expenses
+    Map<int, double> dailyIncomeSums = {};
+    Map<int, double> dailyExpenseSums = {};
+
+    // Iterate through all days in the target month and set initial values to 0
+    for (int day = 1; day <= DateTime(targetYear, targetMonth + 1, 0).day; day++) {
+      dailyIncomeSums[day] = 0;
+      dailyExpenseSums[day] = 0;
+    }
+
+    // Iterate through filtered transactions and aggregate them by date
+    for (final transaction in filteredTransactions) {
+      final day = transaction.date.day;
+
+      // Add the transaction amount to the corresponding date's sum
       if (transaction.isExpense) {
-        if (aggregatedExpenseData.containsKey(date)) {
-          aggregatedExpenseData[date] =
-              aggregatedExpenseData[date]! + transaction.amount;
-        } else {
-          aggregatedExpenseData[date] = transaction.amount;
-        }
+        dailyExpenseSums[day] = (dailyExpenseSums[day] ?? 0) + transaction.amount;
       } else {
-        if (aggregatedIncomeData.containsKey(date)) {
-          aggregatedIncomeData[date] =
-              aggregatedIncomeData[date]! + transaction.amount;
-        } else {
-          aggregatedIncomeData[date] = transaction.amount;
-        }
+        dailyIncomeSums[day] = (dailyIncomeSums[day] ?? 0) + transaction.amount;
       }
     }
 
-    final List<FlSpot> incomeSpots = aggregatedIncomeData.entries.map((entry) {
-      return FlSpot(entry.key.millisecondsSinceEpoch.toDouble(), entry.value);
-    }).toList();
-
+    double maxExpense = double.negativeInfinity;
     final List<FlSpot> expenseSpots =
-    aggregatedExpenseData.entries.map((entry) {
-      return FlSpot(entry.key.millisecondsSinceEpoch.toDouble(), entry.value);
+    dailyExpenseSums.entries.map((entry) {
+      final day = entry.key;
+      final value = entry.value;
+      if (maxExpense < value) {
+        maxExpense = value;
+      }
+      return FlSpot(day.toDouble(), value.abs());
     }).toList();
 
-    return [incomeSpots, expenseSpots];
+    double maxIncome = 0;
+    final List<FlSpot> incomeSpots =
+    dailyIncomeSums.entries.map((entry) {
+      final day = entry.key;
+      final value = entry.value;
+      if (maxIncome < value) {
+        maxIncome = value;
+      }
+      return FlSpot(day.toDouble(), value);
+    }).toList();
+
+    return [incomeSpots, maxIncome, expenseSpots, maxExpense.abs()];
   }
 
   static aggregateDataMonthWise(List<Transaction> transactionList) {
@@ -69,7 +86,7 @@ class AnalyticsService {
       if (maxExpense > value) {
         maxExpense = value;
       }
-      return FlSpot(index.toDouble()+1, -1*value);
+      return FlSpot(index.toDouble()+1, value.abs());
     }).toList();
 
     double maxIncome = 0;
@@ -87,6 +104,8 @@ class AnalyticsService {
       return FlSpot(index.toDouble()+1, value);
     }).toList();
 
-    return [incomeSpots, maxIncome, expenseSpots,  maxExpense];
+    return [incomeSpots, maxIncome, expenseSpots,  maxExpense.abs()];
   }
 }
+
+
