@@ -140,4 +140,34 @@ class AnalyticsService {
 
     return [incomeSpots, maxIncome, expenseSpots, maxExpense.abs()];
   }
+
+  static Map<String, double> calculateStatistics(List<Transaction> transactions) {
+    int transactionCount = transactions.length;
+    double totalExpense = transactions.where((transaction) => transaction.isExpense).fold(0, (sum, transaction) => sum + transaction.amount);
+    double totalIncome = transactions.where((transaction) => !transaction.isExpense).fold(0, (sum, transaction) => sum + transaction.amount);
+    double averageTransaction = transactionCount > 0 ? (totalIncome + totalExpense) / transactionCount : 0;
+
+    double maxTransactionAmount = transactions.isNotEmpty
+        ? transactions.map((transaction) => transaction.amount).reduce((max, amount) => amount > max ? amount : max)
+        : 0;
+
+    double minTransactionAmount = transactions.isNotEmpty
+        ? transactions.map((transaction) => transaction.amount).reduce((min, amount) => amount < min ? amount : min)
+        : 0;
+
+    double expenseToIncomeRatio = totalIncome != 0 ? totalExpense / totalIncome : 0;
+
+    double savingsRate = totalIncome > 0 ? ((totalIncome - totalExpense) / totalIncome) * 100 : 0;
+
+    return {
+      'transactionCount': transactionCount.toDouble(),
+      'totalExpense': totalExpense,
+      'totalIncome': totalIncome,
+      'averageTransaction': averageTransaction,
+      'maxTransactionAmount': maxTransactionAmount,
+      'minTransactionAmount': minTransactionAmount,
+      'expenseToIncomeRatio': expenseToIncomeRatio,
+      'savingsRate': savingsRate,
+    };
+  }
 }

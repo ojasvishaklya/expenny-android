@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:journal/models/Filter.dart';
 import 'package:journal/models/Transaction.dart';
 import 'package:journal/widgets/LineChartWidget.dart';
+import 'package:journal/widgets/StatisticsDisplayWidget.dart';
 
 import '../controllers/TransactionController.dart';
 import '../service/AnalyticsService.dart';
@@ -250,9 +251,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             false)),
               ),
               AnalyticsTitleWidget(
-                text: 'Tag wise split',
+                text: 'Tag wise expense patterns',
               ),
               TagTableWidget(selectedTransactions: _selectedTransactions),
+              AnalyticsTitleWidget(
+                  text: 'General Statistics'
+              ),
+              StatisticsDisplayWidget(statistics: AnalyticsService.calculateStatistics(_selectedTransactions)),
             ],
           ))
         ],
