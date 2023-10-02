@@ -9,7 +9,6 @@ class StatisticsDisplayWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).hoverColor,
         borderRadius: BorderRadius.circular(2.0), // Set the BorderRadius
       ),
       margin: EdgeInsets.only(top: 16),

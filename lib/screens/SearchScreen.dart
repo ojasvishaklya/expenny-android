@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:journal/models/Filter.dart';
 import 'package:journal/models/Transaction.dart';
 
 import '../controllers/TransactionController.dart';
@@ -17,12 +18,20 @@ class _SearchScreenState extends State<SearchScreen> {
   final _searchController = TextEditingController();
   List<Transaction> _searchResults = [];
   final _controller = Get.find<TransactionController>();
+  final Filter filter = Filter.defaults();
 
-  void _performSearch() async {
-    String searchString = _searchController.text;
-    _searchResults = await _controller.searchTransaction(searchString);
-    print(_searchResults);
-    print(searchString);
+  void _performSearch(Filter filter) async {
+    if (filter.month == -1) {
+      // handles search all the DB case
+      _searchResults = await _controller.getTransactionsBetweenDates(
+          tagSet: filter.tagSet, searchString: _searchController.text);
+    } else {
+      _searchResults = await _controller.getTransactionsBetweenDates(
+          startDate: DateTime(filter.year, filter.month, 1),
+          endDate: DateTime(filter.year, filter.month + 1, 0),
+          tagSet: filter.tagSet,
+          searchString: _searchController.text);
+    }
     setState(() {});
   }
 
@@ -35,12 +44,27 @@ class _SearchScreenState extends State<SearchScreen> {
         children: [
           ScreenHeaderWidget(text: 'Search Transactions'),
           buildSearchBar(context),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _searchResults.length,
-              itemBuilder: (context, index) {
-                return TransactionCard(transaction: _searchResults[index]);
-              },
+          Visibility(
+            visible: _searchResults.isNotEmpty,
+            child: Expanded(
+              child: ListView.builder(
+                itemCount: _searchResults.length,
+                itemBuilder: (context, index) {
+                  return TransactionCard(transaction: _searchResults[index]);
+                },
+              ),
+            ),
+            replacement: Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                'leave the search string blank to get all the transactions of selected period ${filter.getMonthName()} ${filter.year}',
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(fontStyle: FontStyle.italic),
+                textAlign: TextAlign
+                    .center, // Optional: Center the text within the Text widget
+              ),
             ),
           ),
         ],
@@ -51,7 +75,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget buildSearchBar(BuildContext context) {
     return TextField(
         onSubmitted: (_) {
-          _performSearch();
+          _performSearch(filter);
         },
         controller: _searchController,
         decoration: InputDecoration(
@@ -67,7 +91,9 @@ class _SearchScreenState extends State<SearchScreen> {
               : null,
           suffixIcon: IconButton(
             icon: Icon(Icons.search),
-            onPressed: _performSearch,
+            onPressed: () {
+              _performSearch(filter);
+            },
           ),
           filled: true,
           fillColor: Theme.of(context).hoverColor,

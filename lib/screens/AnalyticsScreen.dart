@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:journal/models/Filter.dart';
 import 'package:journal/models/Transaction.dart';
@@ -6,6 +7,7 @@ import 'package:journal/widgets/LineChartWidget.dart';
 import 'package:journal/widgets/StatisticsDisplayWidget.dart';
 
 import '../controllers/TransactionController.dart';
+import '../models/TransactionTag.dart';
 import '../service/AnalyticsService.dart';
 import '../widgets/FilterSelectorWidget.dart';
 import '../widgets/PopupWidget.dart';
@@ -46,7 +48,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       startDate = DateTime(filter.year, filter.month, 1);
       endDate = DateTime(filter.year, filter.month + 1, 0);
     }
-    print('fethcing data for $startDate to $endDate');
     var transactionList = await _controller.getTransactionsBetweenDates(
         startDate: startDate, endDate: endDate, tagSet: filter.tagSet);
     setState(() {
@@ -141,6 +142,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 ),
               ),
             ],
+          ),
+          SizedBox(
+            height: 10,
           ),
           Expanded(
               child: ListView(
@@ -251,13 +255,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             false)),
               ),
               AnalyticsTitleWidget(
-                text: 'Tag wise expense patterns',
+                text: 'Tag wise transaction patterns',
               ),
               TagTableWidget(selectedTransactions: _selectedTransactions),
-              AnalyticsTitleWidget(
-                  text: 'General Statistics'
-              ),
-              StatisticsDisplayWidget(statistics: AnalyticsService.calculateStatistics(_selectedTransactions)),
+              AnalyticsTitleWidget(text: 'General Statistics'),
+              StatisticsDisplayWidget(
+                  statistics: AnalyticsService.calculateStatistics(
+                      _selectedTransactions)),
             ],
           ))
         ],
@@ -310,19 +314,27 @@ class TagTableWidget extends StatelessWidget {
         AnalyticsService.aggregateDataByTag(_selectedTransactions);
 
     return SizedBox(
-      height: 200,
+      height: 250,
       child: Scrollbar(
         child: SingleChildScrollView(
           child: DataTable(
+            columnSpacing: 10,
             columns: const [
               DataColumn(label: Text('Tag Name')),
               DataColumn(label: Text('Expense')),
               DataColumn(label: Text('Income')),
             ],
             rows: aggregatedData.map((e) {
+              TransactionTag tag = e[0];
               return DataRow(
                 cells: [
-                  DataCell(Text(e[0].toString())),
+                  DataCell(Row(
+                  children: [
+                      Icon(tag.icon),
+                      SizedBox(width: 20,),
+                      Text(tag.name),
+                    ],
+                  )),
                   DataCell(Text(e[1].toString())),
                   DataCell(Text(e[2].toString())),
                 ],

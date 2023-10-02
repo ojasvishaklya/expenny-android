@@ -82,7 +82,7 @@ class AnalyticsService {
     List<List<dynamic>> aggregatedData = [];
 
     for (String tagId in tagExpenseMap.keys) {
-      String tagName = TransactionTag.getTagById(tagId).name;
+      TransactionTag tagName = TransactionTag.getTagById(tagId);
       double expense = tagExpenseMap[tagId] ?? 0;
       double income = tagIncomeMap[tagId] ?? 0;
 

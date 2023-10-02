@@ -47,22 +47,28 @@ class TransactionController extends GetxController {
 
   Future<List<Transaction>> getTransactionsBetweenDates({
     DateTime? startDate, // older date
-    DateTime? endDate,  // newer date
+    DateTime? endDate, // newer date
+    String? searchString,
     required Set<TransactionTag>? tagSet,
   }) async {
-    if (startDate == null || endDate == null) {
-      return await transactionRepository.getTransactions();
+    String sqlQuery = 'SELECT * FROM tableName WHERE 1=1';
+    List<dynamic> params = [];
+
+    if (startDate != null && endDate != null) {
+      sqlQuery += ' AND date BETWEEN ? AND ?';
+      params.add(startDate.toIso8601String());
+      params.add(endDate.toIso8601String());
     }
 
-    // this is done since we are fetching data between these two dates included
-    startDate = startDate.add(Duration(days: -1));
-    endDate = endDate.add(Duration(days: 1));
+    if (searchString != null && searchString.isNotEmpty) {
+      // Search with description matching searchString
+      sqlQuery += ' AND Description LIKE ?';
+      searchString = '%$searchString%';
+      params.add(searchString);
+    }
 
     List<Transaction> transactions =
-        await transactionRepository.getTransactionsRawQuery('''
-    SELECT * FROM tableName
-    WHERE date BETWEEN ? AND ?
-  ''', [startDate.toIso8601String(), endDate.toIso8601String()]);
+        await transactionRepository.getTransactionsRawQuery(sqlQuery, params);
 
     if (tagSet == null || tagSet.isEmpty) {
       return transactions;

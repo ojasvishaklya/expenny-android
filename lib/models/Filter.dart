@@ -21,7 +21,7 @@ class Filter {
         searchString = '';
 
   String getMonthName() {
-    return DateService.monthNames[month]!;
+    return DateService.monthNames[month];
   }
 
   Filter copyWith({
