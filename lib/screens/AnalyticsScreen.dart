@@ -69,7 +69,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               ScreenHeaderWidget(text: 'Analytics'),
               Spacer(),
@@ -89,9 +89,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       ),
                     );
                   },
-                  icon: Icon(Icons.filter_alt)),
+                  icon: Icon(Icons.tune)),
             ],
           ),
+          SizedBox(height: 16,),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [

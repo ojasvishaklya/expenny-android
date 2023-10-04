@@ -28,8 +28,13 @@ class TransactionController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
+    final date = DateTime.now();
 
-    transactionList.value = await transactionRepository.getTransactions();
+    // fetching current months transactions only
+    transactionList.value = await getTransactionsBetweenDates(
+        startDate: DateTime(date.year, date.month, 1),
+        endDate: DateTime(date.year, date.month + 1, 0),
+        tagSet: null);
   }
 
   void insertRandomData() {
@@ -69,7 +74,6 @@ class TransactionController extends GetxController {
 
     List<Transaction> transactions =
         await transactionRepository.getTransactionsRawQuery(sqlQuery, params);
-
     if (tagSet == null || tagSet.isEmpty) {
       return transactions;
     }
@@ -105,6 +109,10 @@ class TransactionController extends GetxController {
     refreshTransactionList();
   }
 
+  addMultipleTransactionsToUI(List<Transaction> transactions){
+    transactionList+=transactions;
+    refreshTransactionList();
+  }
   void refreshTransactionList() {
     transactionList.sort((a, b) => b.date.compareTo(a.date));
     transactionList.refresh();

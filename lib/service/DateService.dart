@@ -34,4 +34,12 @@ class DateService {
     final now = DateTime.now();
     return DateTime(now.year, now.month, 1);
   }
+
+  static getFormattedPeriodString(DateTime date) {
+    String monthName = DateService.monthNames[date.month];
+    String year = date.year.toString();
+    return monthName.toUpperCase().split('').join(' ') +
+        '  ' +
+        year.toUpperCase().split('').join(' ');
+  }
 }

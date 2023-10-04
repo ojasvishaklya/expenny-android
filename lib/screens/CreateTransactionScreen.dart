@@ -97,6 +97,7 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                   text: isNewTransaction
                       ? 'Create Transaction'
                       : 'Update Transaction'),
+              SizedBox(height: 32,),
               Form(
                 key: _formKey,
                 child: Column(

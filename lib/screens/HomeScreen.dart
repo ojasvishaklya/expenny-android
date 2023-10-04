@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:journal/screens/SearchScreen.dart';
 import 'package:journal/screens/TransactionsScreen.dart';
 import 'package:journal/widgets/BottomNavBarWidget.dart';
@@ -40,11 +41,11 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-    //     overlays: [SystemUiOverlay.top]);
+    //     overlays: []);
     return Scaffold(
       // appBar: buildAppBar(),
       body: Padding(
-        padding: const EdgeInsets.only(top: 70.0),
+        padding: const EdgeInsets.only(top: 50.0),
         child: PageView(
           controller: _pageController,
           children: _screens,

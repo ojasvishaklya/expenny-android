@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:journal/controllers/TransactionController.dart';
+import 'package:journal/service/DateService.dart';
 
 class DisplayCard extends StatelessWidget {
   @override
@@ -10,7 +11,10 @@ class DisplayCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text('B A L A N C E', style: TextStyle(fontSize: 12)),
+          SizedBox(
+            height: 20,
+          ),
+          Text('B A L A N C E', style: TextStyle(fontSize: 14)),
           Text(
             controller.balance.toString(),
             style: TextStyle(fontSize: 32),

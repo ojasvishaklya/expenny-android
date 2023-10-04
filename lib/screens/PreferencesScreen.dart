@@ -37,6 +37,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ScreenHeaderWidget(text: 'Preferences'),
+          SizedBox(height: 16,),
           Row(
             children: [
               Expanded(
