@@ -43,7 +43,6 @@ class _HomeScreenState extends State<HomeScreen> {
     // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
     //     overlays: []);
     return Scaffold(
-      // appBar: buildAppBar(),
       body: Padding(
         padding: const EdgeInsets.only(top: 50.0),
         child: PageView(

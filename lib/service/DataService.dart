@@ -2,7 +2,8 @@ import 'dart:io';
 
 import 'package:excel/excel.dart';
 import 'package:get/get.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../controllers/TransactionController.dart';
 
@@ -18,11 +19,6 @@ class DataService {
 
   Future<DataServiceResponse> exportToExcel() async {
     try {
-      var status = await Permission.storage.request();
-      if (status.isDenied) {
-        return DataServiceResponse(
-            isError: true, response: 'Storage permission is required');
-      }
 
       final transactionList =
           await _controller.getTransactionsBetweenDates(tagSet: null);
@@ -31,7 +27,7 @@ class DataService {
         return DataServiceResponse(
             isError: true, response: 'There are no transactions');
       }
-      Directory? destinationFolder = Directory('/storage/emulated/0/Download');
+      Directory destinationFolder = await getTemporaryDirectory();
 
       // Create a new Excel file
       final excel = Excel.createExcel();
@@ -73,6 +69,8 @@ class DataService {
       // Save the Excel file to the selected destination folder
       final excelFile = File('${destinationFolder.path}/transaction_data.xlsx');
       await excelFile.writeAsBytes(excel.encode()!);
+
+      Share.shareFiles([excelFile.path], text: 'Transactions Data');
 
       // Provide feedback to the user
       return DataServiceResponse(

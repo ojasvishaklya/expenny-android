@@ -165,8 +165,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         setState(() {
                           filter.year = filter.year + 1;
                         });
-                        _getSelectedPeriodTransactions(filter);
                       }
+                      _getSelectedPeriodTransactions(filter);
                     },
                     child: Container(
                       width: 150,
