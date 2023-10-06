@@ -4,6 +4,8 @@ import 'package:journal/service/ThemeService.dart';
 import 'package:journal/widgets/ScreenHeaderWidget.dart';
 
 import '../widgets/PopupWidget.dart';
+import 'PreferencesWidgets/AlertContent.dart';
+import 'PreferencesWidgets/PreferenceTile.dart';
 
 class PreferencesScreen extends StatefulWidget {
   const PreferencesScreen({Key? key}) : super(key: key);
@@ -101,86 +103,5 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
   }
 }
 
-class PreferenceTileWidget extends StatelessWidget {
-  final String text;
-  final IconData icon;
-  final onTap;
 
-  const PreferenceTileWidget(
-      {Key? key, required this.text, required this.icon, this.onTap})
-      : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8.0), // Make the border round
-      ),
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 8),
-          child: Row(
-            children: [
-              Icon(icon),
-              SizedBox(width: 16.0),
-              Text(text),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class AlertContent extends StatelessWidget {
-  const AlertContent({Key? key,
-    required this.text,
-    required this.showButtons,
-    required this.onTap})
-      : super(key: key);
-
-  final String text;
-  final bool showButtons;
-  final onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 120,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Text(text, style: Theme
-              .of(context)
-              .textTheme
-              .bodyLarge),
-          showButtons == true ? SizedBox(height: 10.0) : Container(),
-          // Add spacing between the message and buttons
-          showButtons == true
-              ? Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // Close the dialog
-                },
-                child: Text('cancel'),
-              ),
-              SizedBox(width: 16.0), // Add spacing between the buttons
-              TextButton(
-                onPressed: () {
-                  onTap();
-                  Navigator.of(context).pop(); // Close the dialog
-                },
-                child: Text('delete'),
-              ),
-            ],
-          )
-              : Container(),
-        ],
-      ),
-    );
-  }
-}

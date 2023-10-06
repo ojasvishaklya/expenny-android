@@ -11,12 +11,9 @@ class ScreenHeaderWidget extends StatelessWidget {
         .textTheme
         .apply(displayColor: Theme.of(context).colorScheme.onSurface);
 
-    return Container(
-      // margin: EdgeInsets.only(bottom: 32),
-      child: Text(
-        text,
-        style: textTheme.headlineSmall,
-      ),
+    return Text(
+      text,
+      style: textTheme.headlineSmall,
     );
   }
 }

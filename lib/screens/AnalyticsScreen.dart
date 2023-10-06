@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:journal/models/Filter.dart';
 import 'package:journal/models/Transaction.dart';
 import 'package:journal/widgets/LineChartWidget.dart';
 import 'package:journal/widgets/StatisticsDisplayWidget.dart';
-
 import '../controllers/TransactionController.dart';
 import '../models/TransactionTag.dart';
 import '../service/AnalyticsService.dart';
 import '../widgets/FilterSelectorWidget.dart';
 import '../widgets/PopupWidget.dart';
 import '../widgets/ScreenHeaderWidget.dart';
+import 'Analytics Widgets/AnalyticsTitle.dart';
+import 'Analytics Widgets/TagTable.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({Key? key}) : super(key: key);
@@ -71,7 +71,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              ScreenHeaderWidget(text: 'Analytics'),
+              ScreenHeaderWidget(text: 'Analytics',),
               Spacer(),
               IconButton(
                   onPressed: () {
@@ -104,8 +104,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   _getSelectedPeriodTransactions(filter);
                 },
                 child: Container(
-                  width: 150,
-                  padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  width: 140,
+                  padding: EdgeInsets.symmetric(vertical: 7, horizontal: 16),
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: selectedPeriod == yearly
@@ -127,7 +127,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   _getSelectedPeriodTransactions(filter);
                 },
                 child: Container(
-                  width: 150,
+                  width: 140,
                   padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                   decoration: BoxDecoration(
                     border: Border.all(
@@ -144,15 +144,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               ),
             ],
           ),
-          SizedBox(
-            height: 10,
-          ),
           Expanded(
               child: ListView(
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+            
                   GestureDetector(
                     onHorizontalDragEnd: (details) {
                       if (details.primaryVelocity! > 0) {
@@ -271,106 +269,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   }
 }
 
-class SideArrowWidget extends StatelessWidget {
-  const SideArrowWidget({
-    Key? key,
-    required this.shouldShow,
-    required this.text,
-    this.onTap,
-  }) : super(key: key);
 
-  final bool shouldShow;
-  final String text;
-  final onTap;
 
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 30,
-        padding: shouldShow == true ? EdgeInsets.all(8) : EdgeInsets.all(0),
-        decoration: BoxDecoration(
-          color: Theme.of(context).hoverColor, // Background color
-          borderRadius: BorderRadius.circular(100), // Border radius
-        ),
-        child: shouldShow == true ? Center(child: Text(text)) : Container(),
-      ),
-    );
-  }
-}
 
-class TagTableWidget extends StatelessWidget {
-  const TagTableWidget({
-    Key? key,
-    required List<Transaction> selectedTransactions,
-  })  : _selectedTransactions = selectedTransactions,
-        super(key: key);
-
-  final List<Transaction> _selectedTransactions;
-
-  @override
-  Widget build(BuildContext context) {
-    final aggregatedData =
-        AnalyticsService.aggregateDataByTag(_selectedTransactions);
-
-    return SizedBox(
-      height: 250,
-      child: Scrollbar(
-        child: SingleChildScrollView(
-          child: DataTable(
-            columnSpacing: 10,
-            columns: const [
-              DataColumn(label: Text('Tag Name')),
-              DataColumn(label: Text('Expense')),
-              DataColumn(label: Text('Income')),
-            ],
-            rows: aggregatedData.map((e) {
-              TransactionTag tag = e[0];
-              return DataRow(
-                cells: [
-                  DataCell(Row(
-                  children: [
-                      Icon(tag.icon),
-                      SizedBox(width: 20,),
-                      Text(tag.name),
-                    ],
-                  )),
-                  DataCell(Text(e[1].toString())),
-                  DataCell(Text(e[2].toString())),
-                ],
-              );
-            }).toList(),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class AnalyticsTitleWidget extends StatelessWidget {
-  final String text;
-
-  const AnalyticsTitleWidget({
-    Key? key,
-    required this.text,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: Theme.of(context).hoverColor,
-        borderRadius: BorderRadius.circular(2.0), // Set the BorderRadius
-      ),
-      margin: EdgeInsets.only(top: 10),
-      child: Center(
-        child: Text(
-          text,
-          style: Theme.of(context).textTheme.bodyLarge,
-        ),
-      ),
-    );
-  }
-}
