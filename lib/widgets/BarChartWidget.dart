@@ -1,6 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:journal/service/AnalyticsService.dart';
+import 'package:expenny/service/AnalyticsService.dart';
 
 import '../models/Transaction.dart';
 

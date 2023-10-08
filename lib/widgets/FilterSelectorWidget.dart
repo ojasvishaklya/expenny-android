@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:journal/models/Filter.dart';
+import 'package:expenny/models/Filter.dart';
 
 import '../models/TransactionTag.dart';
 import 'DateTextWidget.dart';

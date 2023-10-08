@@ -1,4 +1,4 @@
-import 'package:journal/models/PaymentMethod.dart';
+import 'package:expenny/models/PaymentMethod.dart';
 
 class Transaction {
   int? id;

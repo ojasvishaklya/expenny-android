@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:journal/controllers/TransactionController.dart';
-import 'package:journal/service/DateService.dart';
+import 'package:expenny/controllers/TransactionController.dart';
+import 'package:expenny/service/DateService.dart';
 
 class DisplayCard extends StatelessWidget {
   @override

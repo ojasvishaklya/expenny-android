@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:journal/models/Transaction.dart';
+import 'package:expenny/models/Transaction.dart';
 
 import '../models/TransactionTag.dart';
 import '../repository/TransactionRepository.dart';

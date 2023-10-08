@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:journal/models/Filter.dart';
-import 'package:journal/models/Transaction.dart';
+import 'package:expenny/models/Filter.dart';
+import 'package:expenny/models/Transaction.dart';
 
 import '../controllers/TransactionController.dart';
 import '../widgets/FetchMoreButtonWidget.dart';

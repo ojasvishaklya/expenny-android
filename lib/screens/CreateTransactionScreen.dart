@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:journal/models/PaymentMethod.dart';
-import 'package:journal/widgets/ScreenHeaderWidget.dart';
+import 'package:expenny/models/PaymentMethod.dart';
+import 'package:expenny/widgets/ScreenHeaderWidget.dart';
 
 import '../controllers/TransactionController.dart';
 import '../models/Transaction.dart';

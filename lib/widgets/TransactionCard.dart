@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:journal/models/Transaction.dart';
-import 'package:journal/models/TransactionTag.dart';
-import 'package:journal/service/DateService.dart';
+import 'package:expenny/models/Transaction.dart';
+import 'package:expenny/models/TransactionTag.dart';
+import 'package:expenny/service/DateService.dart';
 
 import '../constants/routes.dart';
 

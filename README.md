@@ -1,4 +1,4 @@
-# Journal: Transaction Manager Flutter App
+# expenny: Transaction Manager Flutter App
 
 Welcome to the Daily Transaction Manager Flutter App repository! This Flutter application is
 designed to help you manage your daily Transactions efficiently.
@@ -41,9 +41,9 @@ designed to help you manage your daily Transactions efficiently.
 
 Follow these steps to get the app up and running on your local machine:
 
-1. **Clone the Repository:** `git clone https://github.com/ojasvishaklya/journal-android.git`
+1. **Clone the Repository:** `git clone https://github.com/ojasvishaklya/expenny-android.git`
 
-2. **Navigate to the Project Directory:** `cd journal-android`
+2. **Navigate to the Project Directory:** `cd expenny-android`
 
 3. **Install Dependencies:** `flutter pub get`
 
@@ -51,4 +51,4 @@ Follow these steps to get the app up and running on your local machine:
 
 ---
 
-Happy Transaction tracking with the journal-android Flutter App! 📊💰
+Happy Transaction tracking with the expenny-android Flutter App! 📊💰

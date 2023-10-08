@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:journal/models/Filter.dart';
-import 'package:journal/models/Transaction.dart';
-import 'package:journal/widgets/LineChartWidget.dart';
-import 'package:journal/widgets/StatisticsDisplayWidget.dart';
+import 'package:expenny/models/Filter.dart';
+import 'package:expenny/models/Transaction.dart';
+import 'package:expenny/widgets/LineChartWidget.dart';
+import 'package:expenny/widgets/StatisticsDisplayWidget.dart';
 
 import '../controllers/TransactionController.dart';
 import '../models/TransactionTag.dart';

@@ -1,7 +1,7 @@
+import 'package:expenny/service/DataService.dart';
+import 'package:expenny/service/ThemeService.dart';
+import 'package:expenny/widgets/ScreenHeaderWidget.dart';
 import 'package:flutter/material.dart';
-import 'package:journal/service/DataService.dart';
-import 'package:journal/service/ThemeService.dart';
-import 'package:journal/widgets/ScreenHeaderWidget.dart';
 
 import '../widgets/PopupWidget.dart';
 
@@ -70,11 +70,13 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
               icon: Icons.arrow_downward,
               onTap: () async {
                 final response = await _dataService.exportToExcel();
-                showSnackBar(
-                    context: context,
-                    textContent: response.response,
-                    color: response.isError ? Colors.redAccent : Colors.green,
-                    duration: 5);
+                if(response.isError) {
+                  showSnackBar(
+                      context: context,
+                      textContent: response.response,
+                      color: response.isError ? Colors.redAccent : Colors.green,
+                      duration: 5);
+                }
               }),
           PreferenceTileWidget(
               text: 'Delete all data',

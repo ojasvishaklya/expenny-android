@@ -3,7 +3,8 @@ import 'package:lottie/lottie.dart';
 
 class LoadingWidget extends StatelessWidget {
   final String animationName;
-  const LoadingWidget({Key? key, required this.animationName})
+  final double size;
+  const LoadingWidget({Key? key, required this.animationName, required this.size})
       : super(key: key);
 
   @override
@@ -12,7 +13,7 @@ class LoadingWidget extends StatelessWidget {
       child: Lottie.asset(
           ''
           'animations/$animationName.json',
-          height: 200,
+          height: size,
           repeat: true,
           reverse: false,
           fit: BoxFit.contain),

@@ -1,6 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
-import 'package:journal/models/Transaction.dart';
-import 'package:journal/models/TransactionTag.dart';
+import 'package:expenny/models/Transaction.dart';
+import 'package:expenny/models/TransactionTag.dart';
 
 class AnalyticsService {
   static aggregateDataDateWise(

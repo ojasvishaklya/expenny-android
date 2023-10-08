@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:journal/screens/SearchScreen.dart';
-import 'package:journal/screens/TransactionsScreen.dart';
-import 'package:journal/widgets/BottomNavBarWidget.dart';
+import 'package:expenny/screens/SearchScreen.dart';
+import 'package:expenny/screens/TransactionsScreen.dart';
+import 'package:expenny/widgets/BottomNavBarWidget.dart';
 
 import 'AnalyticsScreen.dart';
 import 'PreferencesScreen.dart';
@@ -40,8 +40,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-    //     overlays: []);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.only(top: 50.0),

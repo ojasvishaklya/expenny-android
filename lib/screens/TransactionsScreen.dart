@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:journal/constants/routes.dart';
-import 'package:journal/models/Transaction.dart';
-import 'package:journal/service/DateService.dart';
-import 'package:journal/widgets/DisplayCard.dart';
-import 'package:journal/widgets/FabWidget.dart';
-import 'package:journal/widgets/TransactionCard.dart';
+import 'package:expenny/constants/routes.dart';
+import 'package:expenny/models/Transaction.dart';
+import 'package:expenny/service/DateService.dart';
+import 'package:expenny/widgets/DisplayCard.dart';
+import 'package:expenny/widgets/FabWidget.dart';
+import 'package:expenny/widgets/TransactionCard.dart';
 
 import '../controllers/TransactionController.dart';
 import '../widgets/FetchMoreButtonWidget.dart';
@@ -25,7 +25,7 @@ class TransactionsScreen extends StatelessWidget {
             Expanded(
               child: GetX<TransactionController>(builder: (controller) {
                 if (controller.transactionList.isEmpty) {
-                  return LoadingWidget(animationName: 'home_screen_loader');
+                  return LoadingWidget(animationName: 'home_screen_loader',size: 200,);
                 }
                 return ListView.builder(
                     scrollDirection: Axis.vertical,

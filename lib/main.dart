@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:journal/constants/routes.dart';
-import 'package:journal/repository/TransactionRepository.dart';
-import 'package:journal/service/ThemeService.dart';
+import 'package:expenny/constants/routes.dart';
+import 'package:expenny/repository/TransactionRepository.dart';
+import 'package:expenny/service/ThemeService.dart';
 
 import 'constants/Theme.dart';
 import 'controllers/TransactionController.dart';
@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
       theme: themeData(context),
       darkTheme: darkThemeData(context),
       themeMode: ThemeService.getThemeMode(),
-      initialRoute: RouteClass.home,
+      initialRoute: RouteClass.welcome,
       getPages: RouteClass.routes,
     );
   }

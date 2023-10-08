@@ -1,6 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:journal/service/DateService.dart';
+import 'package:expenny/service/DateService.dart';
 
 
 const height = 180.0;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:journal/models/Transaction.dart';
+import 'package:expenny/models/Transaction.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 

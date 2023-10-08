@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/journal.iml" filepath="$PROJECT_DIR$/journal.iml" />
+      <module fileurl="file://$PROJECT_DIR$/expeny.iml" filepath="$PROJECT_DIR$/expeny.iml" />
       <module fileurl="file://$PROJECT_DIR$/android/journal_android.iml" filepath="$PROJECT_DIR$/android/journal_android.iml" />
     </modules>
   </component>
