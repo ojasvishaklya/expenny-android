@@ -1,54 +1,57 @@
-# expenny: Transaction Manager Flutter App
+# Expenny: Smart Transaction Manager
 
-Welcome to the Daily Transaction Manager Flutter App repository! This Flutter application is
-designed to help you manage your daily Transactions efficiently.
+[![Expenny App Icon](/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png)](https://play.google.com/store/apps/details?id=com.ojasvishaklya.expenny)
+
+Welcome to Expenny, your companion for managing daily transactions efficiently! This sleek Flutter application is designed to simplify your financial life, helping you stay on top of your expenses with ease.
 
 ## Features
 
-- **Transaction Tracking:** Keep track of your daily Transactions by adding, editing, and deleting
-  individual transactions.
-
-- **Categorization:** Organize your Transactions into different categories (e.g., Food,
-  Transportation, Entertainment) for better insights.
-
-- **Statistics:** View graphical representations of your Transactions over time, helping you
-  identify spending trends and areas where you can save.
-
-## Todo
-
-- [X] Implement state management solution (e.g., Provider, Riverpod, Bloc) for efficient data
-  handling and responsiveness.
-- [X] Add the ability to categorize Transactions using tags (e.g., Food, Transportation,
-  Entertainment).
-- [X] Create an Transaction entry form to input date, amount, description, and associated tags.
-- [X] Display a list of Transactions, including sorting and filtering options for better navigation.
-- [ ] Develop visual charts and graphs to depict spending patterns and trends over time.
-- [ ] Implement a budget-setting feature with notifications for approaching/exceeding limits.
-- [ ] Provide support for currency conversion to track Transactions in different currencies.
-- [ ] Integrate user authentication to secure sensitive financial data.
-- [X] Implement data export functionality in formats like CSV or PDF.
-- [ ] Set up reminder notifications to prompt users to regularly input their Transactions.
-- [X] Include a dark mode option for improved usability in low-light conditions.
-- [X] Implement a search functionality to quickly locate specific Transactions based on various
-  criteria.
-- [ ] Provide option for lazy loading monthly transactions.
+- **Transaction Tracking:** Seamlessly track your daily expenses, enabling quick additions, edits, and deletions of individual transactions.
+- **Categorization:** Organize transactions into categories like Food, Transportation, and Entertainment for insightful analysis.
+- **Visual Insights:** Gain valuable insights with interactive charts and graphs, allowing you to identify spending patterns and areas for potential savings.
 
 ## Screenshots
 
-![App Screenshot 1](/screenshots/img.png)
+![Expenny Screenshot 1](/screenshots/image1.jpeg) ![Expenny Screenshot 2](/screenshots/image2.jpeg) ![Expenny Screenshot 3](/screenshots/image3.jpeg) ![Expenny Screenshot 4](/screenshots/image4.jpeg)
+
+## Features Highlights
+
+- **Smart Reminders:** Stay on track with regular input reminders, ensuring no transaction goes unnoticed.
+- **Budget Management:** Set and monitor your budget with notifications for approaching or exceeding limits, enabling smarter financial decisions.
+- **Global Currency Support:** Easily track transactions in different currencies with integrated currency conversion features.
+- **Secure & Private:** Safeguard sensitive financial data with robust user authentication, ensuring your information remains confidential.
+
+## To-Dos
+
+- [ ] Set up reminder notifications to prompt users to regularly input their transactions.
+- [ ] Implement a budget-setting feature with notifications for approaching/exceeding limits.
+- [ ] Provide support for currency conversion to track Transactions in different currencies.
 
 ## Getting Started
 
-Follow these steps to get the app up and running on your local machine:
+From the repository:
 
-1. **Clone the Repository:** `git clone https://github.com/ojasvishaklya/expenny-android.git`
+- **Clone the Repository:** `git clone https://github.com/ojasvishaklya/expenny-android.git`
+- **Navigate to the Project Directory:** `cd expenny-android`
+- **Install Dependencies:** `flutter pub get`
+- **Run the App:** `flutter run`
 
-2. **Navigate to the Project Directory:** `cd expenny-android`
+Get ready to embark on a seamless financial journey with Expenny! Download now on [Google Play Store](https://play.google.com/store/apps/details?id=com.ojasvishaklya.expenny) and elevate your transaction management game to new heights.
 
-3. **Install Dependencies:** `flutter pub get`
 
-4. **Run the App:** `flutter run`
+## Contributing
 
----
+Expenny welcomes contributions from developers of all skill levels. Whether you're a beginner looking to make your first open-source contribution or an experienced developer eager to improve Expenny's features, your help is invaluable.
 
-Happy Transaction tracking with the expenny-android Flutter App! 📊💰
+**How to Contribute:**
+- **Fork the Repository:** Click on the "Fork" button at the top right of this page to create your own copy of the repository.
+- **Clone Your Fork:** Clone your forked repository to your local machine.
+- **Make Changes:** Make your desired changes in the codebase.
+- **Test Your Changes:** Ensure your changes work as intended.
+- **Create a Pull Request:** Describe your changes and submit the pull request.
+
+
+**Issues and Feature Requests:**
+If you find a bug or have a feature request, create an issue on the [Issues](https://github.com/ojasvishaklya/expenny-android/issues) page.
+
+Thank you for considering contributing to Expenny! Your support helps make this app even better for users worldwide.
