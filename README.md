@@ -1,4 +1,4 @@
-# Expenny: Smart Transaction Manager
+# Expenny: Transaction Tracking Flutter App
 
 [![Expenny App Icon](/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png)](https://play.google.com/store/apps/details?id=com.ojasvishaklya.expenny)
 
