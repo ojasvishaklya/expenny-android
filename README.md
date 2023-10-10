@@ -12,7 +12,7 @@ Welcome to Expenny, your companion for managing daily transactions efficiently! 
 
 ## Screenshots
 
-![Expenny Screenshot 1](/screenshots/image1.jpeg) ![Expenny Screenshot 2](/screenshots/image2.jpeg) ![Expenny Screenshot 3](/screenshots/image3.jpeg) ![Expenny Screenshot 4](/screenshots/image4.jpeg)
+<img src="/screenshots/image1.jpeg" alt="Expenny Screenshot 1" width="200"/> <img src="/screenshots/image2.jpeg" alt="Expenny Screenshot 2" width="200"/> <img src="/screenshots/image3.jpeg" alt="Expenny Screenshot 3" width="200"/> <img src="/screenshots/image4.jpeg" alt="Expenny Screenshot 4" width="200"/>
 
 ## Features Highlights
 
