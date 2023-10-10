@@ -1,15 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:expenny/constants/routes.dart';
 import 'package:expenny/models/Transaction.dart';
 import 'package:expenny/service/DateService.dart';
 import 'package:expenny/widgets/DisplayCard.dart';
 import 'package:expenny/widgets/FabWidget.dart';
 import 'package:expenny/widgets/TransactionCard.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../controllers/TransactionController.dart';
 import '../widgets/FetchMoreButtonWidget.dart';
 import '../widgets/LoadingWidget.dart';
+import '../widgets/PopupWidget.dart';
 
 class TransactionsScreen extends StatelessWidget {
   TransactionsScreen({Key? key}) : super(key: key);
@@ -25,7 +26,10 @@ class TransactionsScreen extends StatelessWidget {
             Expanded(
               child: GetX<TransactionController>(builder: (controller) {
                 if (controller.transactionList.isEmpty) {
-                  return LoadingWidget(animationName: 'home_screen_loader',size: 200,);
+                  return LoadingWidget(
+                    animationName: 'home_screen_loader',
+                    size: 200,
+                  );
                 }
                 return ListView.builder(
                     scrollDirection: Axis.vertical,
@@ -47,13 +51,23 @@ class TransactionsScreen extends StatelessWidget {
                                     .getTransactionsBetweenDates(
                                         startDate: DateTime(
                                             lastTransaction.date.year,
-                                            lastTransaction.date.month-1,
+                                            lastTransaction.date.month - 1,
                                             1),
                                         endDate: DateTime(
                                             lastTransaction.date.year,
                                             lastTransaction.date.month,
                                             0),
                                         tagSet: null);
+
+                                if (newList.isEmpty) {
+                                  showSnackBar(
+                                      context: context,
+                                      textContent:
+                                          'No transactions found for ${DateService.monthNames[lastTransaction.date.month]} ${lastTransaction.date.year}',
+                                      color: Colors.orange,
+                                      duration: 5);
+                                  return;
+                                }
                                 controller.addMultipleTransactionsToUI(newList);
                               }),
                         );

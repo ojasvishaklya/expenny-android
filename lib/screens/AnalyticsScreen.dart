@@ -73,11 +73,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             children: [
               ScreenHeaderWidget(text: 'Analytics'),
               Spacer(),
-              IconButton(
-                  onPressed: () {
-                    _controller.insertRandomData();
-                  },
-                  icon: Icon(Icons.add)),
+              // IconButton(
+              //     onPressed: () {
+              //       _controller.insertRandomData();
+              //     },
+              //     icon: Icon(Icons.add)),
               IconButton(
                   onPressed: () {
                     showAlertContent(

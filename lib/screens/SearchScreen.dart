@@ -98,7 +98,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         .bodySmall
                         ?.copyWith(fontStyle: FontStyle.italic),
                     textAlign: TextAlign
-                        .center, // Optional: Center the text within the Text widget
+                        .center, // Optional: Center the text within thex Text widget
                   ),
                 )
               : buildFetchMoreButton(context: context,text: 'Search All time', onTap: _performSearchAllTime),
