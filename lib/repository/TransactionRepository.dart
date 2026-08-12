@@ -1,6 +1,8 @@
 import 'package:expenny/models/Transaction.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
+import 'package:expenny/models/PaymentMethod.dart';
+
 
 class TransactionRepository {
   late sqflite.Database _database;
@@ -9,8 +11,8 @@ class TransactionRepository {
   Future<void> open() async {
     _database = await sqflite.openDatabase(
       join(await sqflite.getDatabasesPath(), tableName + '.db'),
-      onCreate: (db, version) {
-        return db.execute(
+      onCreate: (db, version) async {
+        await db.execute(
           '''
           CREATE TABLE $tableName(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,9 +22,15 @@ class TransactionRepository {
             isStarred INTEGER,
             description TEXT,
             tag TEXT,
-            paymentMethod TEXT
+            paymentMethod TEXT,
+            smsId TEXT,
+            source TEXT DEFAULT 'manual',
+            bank TEXT
           )
           ''',
+        );
+        await db.execute(
+          'CREATE UNIQUE INDEX IF NOT EXISTS idx_sms_id ON $tableName(smsId)',
         );
       },
       version: 1,
@@ -75,6 +83,27 @@ class TransactionRepository {
 
   Future<void> deleteAllTransactions() async {
     await _database.delete(tableName);
+  }
+
+  Future<Set<String>> getExistingSmsIds() async {
+    final results = await _database.query(
+      tableName,
+      columns: ['smsId'],
+      where: 'smsId IS NOT NULL',
+    );
+    return results.map((row) => row['smsId'] as String).toSet();
+  }
+
+  Future<void> batchInsertTransactions(List<Transaction> transactions) async {
+    final batch = _database.batch();
+    for (final txn in transactions) {
+      batch.insert(
+        tableName,
+        txn.toMap(),
+        conflictAlgorithm: sqflite.ConflictAlgorithm.ignore,
+      );
+    }
+    await batch.commit(noResult: true);
   }
 
   Future<void> close() async {

@@ -9,6 +9,9 @@ class Transaction {
   String description;
   String tag;
   String paymentMethod;
+  String? smsId;       // SMS message ID for deduplication (null for manual)
+  String? source;      // 'manual' | 'sms'
+  String? bank;        // Bank/sender name from SMS (null for manual)
 
   // Default constructor
   Transaction({
@@ -20,6 +23,9 @@ class Transaction {
     required this.isStarred,
     required this.tag,
     required this.paymentMethod,
+    this.smsId,
+    this.source,
+    this.bank,
   });
 
   setAmount(double amount) {
@@ -39,7 +45,10 @@ class Transaction {
         isStarred = false,
         isExpense = true,
         tag = 'miscellaneous',
-        paymentMethod = PaymentMethod.CASH.name;
+        paymentMethod = PaymentMethod.CASH.name,
+        smsId = null,
+        source = 'manual',
+        bank = null;
 
   // Convert a JSON map to a Transaction object
   factory Transaction.fromJson(Map<String, dynamic> json) {
@@ -52,6 +61,9 @@ class Transaction {
       isStarred: json['isStarred'],
       tag: json['tag'],
       paymentMethod: json['paymentMethod'],
+      smsId: json['smsId'],
+      source: json['source'] ?? 'manual',
+      bank: json['bank'],
     );
   }
 
@@ -66,6 +78,9 @@ class Transaction {
       'isStarred': isStarred,
       'tag': tag,
       'paymentMethod': paymentMethod,
+      'smsId': smsId,
+      'source': source,
+      'bank': bank,
     };
   }
 
@@ -79,6 +94,9 @@ class Transaction {
       'description': description,
       'tag': tag,
       'paymentMethod': paymentMethod,
+      'smsId': smsId,
+      'source': source,
+      'bank': bank,
     };
   }
 
@@ -92,6 +110,9 @@ class Transaction {
       description: map['description'],
       tag: map['tag'],
       paymentMethod: map['paymentMethod'],
+      smsId: map['smsId'],
+      source: map['source'] ?? 'manual',
+      bank: map['bank'],
     );
   }
 
@@ -106,7 +127,10 @@ class Transaction {
   "isExpense": $isExpense,
   "isStarred": $isStarred,
   "tag": "$tag",
-  "paymentMethod": "$paymentMethod"
+  "paymentMethod": "$paymentMethod",
+  "smsId": "$smsId",
+  "source": "$source",
+  "bank": "$bank"
 }
     ''';
   }

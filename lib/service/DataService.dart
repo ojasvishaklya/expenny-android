@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:excel/excel.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -86,11 +87,12 @@ class DataService {
   deleteAllTransactions() async {
     try {
       _controller.deleteAllTransactions();
+      await GetStorage().erase();
       return DataServiceResponse(
-          isError: false, response: 'All transactions deleted');
+          isError: false, response: 'All data deleted');
     } catch (e) {
       return DataServiceResponse(
-          isError: true, response: 'Error deleting transactions: $e');
+          isError: true, response: 'Error deleting data: $e');
     }
   }
 }

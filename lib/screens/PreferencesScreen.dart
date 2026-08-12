@@ -1,7 +1,10 @@
 import 'package:expenny/service/DataService.dart';
 import 'package:expenny/service/ThemeService.dart';
+import 'package:expenny/service/SmsSyncService.dart';
+import 'package:expenny/models/SyncResult.dart';
 import 'package:expenny/widgets/ScreenHeaderWidget.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../widgets/PopupWidget.dart';
 
@@ -14,6 +17,7 @@ class PreferencesScreen extends StatefulWidget {
 
 class _PreferencesScreenState extends State<PreferencesScreen> {
   bool _isDarkMode = false;
+  bool _isSyncing = false;
   final _dataService = DataService();
 
   void _toggleDarkMode(bool value) {
@@ -55,6 +59,35 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
             ],
           ),
           Spacer(),
+          PreferenceTileWidget(
+              text: _isSyncing ? 'Importing...' : 'Import from Messages',
+              icon: Icons.sms_outlined,
+              onTap: _isSyncing ? null : () async {
+                setState(() => _isSyncing = true);
+
+                final smsSyncService = Get.find<SmsSyncService>();
+                final result = await smsSyncService.syncFromSms();
+
+                setState(() => _isSyncing = false);
+
+                if (result.error == SyncError.permissionDenied) {
+                  showSnackBar(
+                    context: context,
+                    textContent: 'SMS permission required. Enable in Settings → Apps → Expenny → Permissions',
+                    color: Colors.orange,
+                    duration: 5,
+                  );
+                } else {
+                  showSnackBar(
+                    context: context,
+                    textContent: result.imported > 0
+                        ? 'Imported ${result.imported} new transactions'
+                        : 'No new transactions found',
+                    color: Colors.green,
+                    duration: 3,
+                  );
+                }
+              }),
           PreferenceTileWidget(
               text: 'Import transaction data',
               icon: Icons.arrow_upward,
