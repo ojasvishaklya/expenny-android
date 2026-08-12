@@ -19,7 +19,7 @@ class SmsSyncService {
   final TransactionController _controller;
 
   static final _keywordFilter = RegExp(
-    r'debit|credit|withdraw|deposit|transfer',
+    r'debit|credit|withdraw|deposit|transfer|spent',
     caseSensitive: false,
   );
 
