@@ -64,7 +64,7 @@ Widget buildLineChartWidget(BuildContext context, List<FlSpot> dataSpots,
             color: color,
             dotData: FlDotData(show: true),
             belowBarData: BarAreaData(
-              color: color.withOpacity(0.5),
+              color: color.withValues(alpha: 0.5),
               show: true,
             ),
           ),

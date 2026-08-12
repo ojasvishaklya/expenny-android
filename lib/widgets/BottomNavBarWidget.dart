@@ -13,7 +13,7 @@ class BottomNavBarWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.background,
+        color: Theme.of(context).colorScheme.surface,
         border: Border(),
       ),
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
