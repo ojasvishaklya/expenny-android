@@ -20,6 +20,9 @@ dependencies:
   path_provider: ^2.1.5
   share_plus: ^10.1.4
   path: ^1.9.0
+  transaction_sms_parser: ^0.0.1
+  another_telephony: ^0.4.1
+  permission_handler: ^11.3.1
 
 
 dev_dependencies:
