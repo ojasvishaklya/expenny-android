@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:expenny/models/Filter.dart';
 
 import '../models/TransactionTag.dart';
-import 'DateTextWidget.dart';
 
 class FilterSelectorWidget extends StatefulWidget {
   Function(Filter filter) getSelectedPeriodTransactions;

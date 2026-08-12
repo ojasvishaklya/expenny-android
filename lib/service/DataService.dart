@@ -70,7 +70,7 @@ class DataService {
       final excelFile = File('${destinationFolder.path}/transaction_data.xlsx');
       await excelFile.writeAsBytes(excel.encode()!);
 
-      Share.shareFiles([excelFile.path], text: 'Transactions Data');
+      Share.shareXFiles([XFile(excelFile.path)], text: 'Transactions Data');
 
       // Provide feedback to the user
       return DataServiceResponse(

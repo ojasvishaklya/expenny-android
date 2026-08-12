@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:expenny/models/Filter.dart';
 import 'package:expenny/models/Transaction.dart';
@@ -109,7 +108,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: selectedPeriod == yearly
-                          ? Theme.of(context).colorScheme.onBackground
+                          ? Theme.of(context).colorScheme.onSurface
                           : Colors.transparent,
                       width: 1.0,
                     ),
@@ -132,7 +131,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: selectedPeriod == monthly
-                          ? Theme.of(context).colorScheme.onBackground
+                          ? Theme.of(context).colorScheme.onSurface
                           : Colors.transparent,
                       width: 1.0,
                     ),

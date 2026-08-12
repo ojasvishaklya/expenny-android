@@ -7,11 +7,11 @@ Container buildFetchMoreButton({required BuildContext context, required String t
     child: TextButton(
       onPressed: onTap,
       style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all<Color>(
+        backgroundColor: WidgetStateProperty.all<Color>(
             Theme.of(context)
                 .colorScheme
-                .onBackground), // Set background color
-        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                .onSurface), // Set background color
+        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
           RoundedRectangleBorder(
             borderRadius:
             BorderRadius.circular(2.0), // Set border radius
