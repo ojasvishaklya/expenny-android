@@ -25,7 +25,8 @@ class TransactionRepository {
             paymentMethod TEXT,
             smsId TEXT,
             source TEXT DEFAULT 'manual',
-            bank TEXT
+            bank TEXT,
+            rawSms TEXT
           )
           ''',
         );

@@ -138,6 +138,7 @@ class SmsSyncService {
       smsId: record.sms.id,
       source: 'sms',
       bank: record.sms.sender,
+      rawSms: record.sms.body,
     );
   }
 

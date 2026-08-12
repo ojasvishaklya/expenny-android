@@ -12,6 +12,7 @@ class Transaction {
   String? smsId;       // SMS message ID for deduplication (null for manual)
   String? source;      // 'manual' | 'sms'
   String? bank;        // Bank/sender name from SMS (null for manual)
+  String? rawSms;      // Original SMS body for user verification (null for manual)
 
   // Default constructor
   Transaction({
@@ -26,6 +27,7 @@ class Transaction {
     this.smsId,
     this.source,
     this.bank,
+    this.rawSms,
   });
 
   setAmount(double amount) {
@@ -48,7 +50,8 @@ class Transaction {
         paymentMethod = PaymentMethod.CASH.name,
         smsId = null,
         source = 'manual',
-        bank = null;
+        bank = null,
+        rawSms = null;
 
   // Convert a JSON map to a Transaction object
   factory Transaction.fromJson(Map<String, dynamic> json) {
@@ -64,6 +67,7 @@ class Transaction {
       smsId: json['smsId'],
       source: json['source'] ?? 'manual',
       bank: json['bank'],
+      rawSms: json['rawSms'],
     );
   }
 
@@ -81,6 +85,7 @@ class Transaction {
       'smsId': smsId,
       'source': source,
       'bank': bank,
+      'rawSms': rawSms,
     };
   }
 
@@ -97,6 +102,7 @@ class Transaction {
       'smsId': smsId,
       'source': source,
       'bank': bank,
+      'rawSms': rawSms,
     };
   }
 
@@ -113,6 +119,7 @@ class Transaction {
       smsId: map['smsId'],
       source: map['source'] ?? 'manual',
       bank: map['bank'],
+      rawSms: map['rawSms'],
     );
   }
 
@@ -130,7 +137,8 @@ class Transaction {
   "paymentMethod": "$paymentMethod",
   "smsId": "$smsId",
   "source": "$source",
-  "bank": "$bank"
+  "bank": "$bank",
+  "rawSms": "$rawSms"
 }
     ''';
   }
