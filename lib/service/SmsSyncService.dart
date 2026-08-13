@@ -18,6 +18,11 @@ class SmsSyncService {
   final TransactionRepository _repository;
   final TransactionController _controller;
 
+  /// Re-read window applied to [lastSyncedAt] so messages arriving between the
+  /// inbox read and the timestamp write are not skipped permanently.
+  /// Overlap is free — smsId dedup filters anything already imported.
+  static const _syncOverlapBuffer = Duration(days: 1);
+
   SmsSyncService({
     required SmsReaderService smsReader,
     required SmsParserService smsParser,
@@ -50,7 +55,9 @@ class SmsSyncService {
   Future<SyncResult> _executeSyncPipeline() async {
     // Read inbox with lastSyncedAt or default 3-month lookback
     final lastSyncedStr = GetStorage().read<String>('lastSyncedAt');
-    final since = lastSyncedStr != null ? DateTime.parse(lastSyncedStr) : null;
+    final since = lastSyncedStr != null
+        ? DateTime.parse(lastSyncedStr).subtract(_syncOverlapBuffer)
+        : null;
 
     final allSms = await _smsReader.readInbox(since: since);
 
@@ -92,14 +99,7 @@ class SmsSyncService {
 
     // Reload transactions from DB (batch insert doesn't return IDs,
     // and the UI needs objects with valid DB ids for editing)
-    final date = DateTime.now();
-    _controller.transactionList.value =
-        await _controller.getTransactionsBetweenDates(
-      startDate: DateTime(date.year, date.month, 1),
-      endDate: DateTime(date.year, date.month + 1, 0),
-      tagSet: null,
-    );
-    _controller.refreshTransactionList();
+    await _controller.loadCurrentMonthTransactions();
 
     // Store timestamp
     _storeLastSyncTimestamp();

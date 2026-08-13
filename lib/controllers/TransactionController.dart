@@ -25,9 +25,12 @@ class TransactionController extends GetxController {
         return sum;
       }).toStringAsFixed(2));
 
-  @override
-  void onInit() async {
-    super.onInit();
+  /// Loads the current month's transactions from the DB, replacing the list.
+  ///
+  /// This is the single owned path for wholesale list replacement. Callers must
+  /// await it so concurrent writers (startup load vs. SMS sync reload) stay
+  /// ordered — an unawaited load can resolve after a sync and clobber imports.
+  Future<void> loadCurrentMonthTransactions() async {
     final date = DateTime.now();
 
     // fetching current months transactions only
@@ -35,6 +38,7 @@ class TransactionController extends GetxController {
         startDate: DateTime(date.year, date.month, 1),
         endDate: DateTime(date.year, date.month + 1, 0),
         tagSet: null);
+    refreshTransactionList();
   }
 
   void insertRandomData() {

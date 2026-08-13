@@ -23,6 +23,11 @@ void main() async {
   await GetStorage.init(); // this is my cache storage
   Get.put(transactionController); // Register controller to be used globally
 
+  // Load the initial list before starting any sync. Awaiting here serialises
+  // the two writers to transactionList, so a sync reload can never be
+  // overwritten by a slower startup query.
+  await transactionController.loadCurrentMonthTransactions();
+
   // Initialize SMS sync service
   final smsSyncService = SmsSyncService(
     smsReader: TelephonySmsReaderService(),
