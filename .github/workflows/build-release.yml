@@ -14,16 +14,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
+      # Java and Flutter are pinned to match the local dev toolchain exactly, so
+      # a green local build predicts a green CI build. An unpinned
+      # `channel: stable` previously let CI drift onto a newer Flutter that
+      # promoted the Gradle version check from a warning to a hard error.
+      - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: "17"
+          distribution: corretto
+          java-version: "21"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: 3.44.9
 
       - name: Get dependencies
         run: flutter pub get
