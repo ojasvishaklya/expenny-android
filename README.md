@@ -6,13 +6,17 @@ A minimal expense tracker for Android. Log transactions by hand, or let Expenny 
 
 Available on the [Google Play Store](https://play.google.com/store/apps/details?id=com.ojasvishaklya.expenny).
 
+## Screenshots
+
+<img src="/screenshots/image1.jpeg" alt="Expenny Screenshot 1" width="200"/> <img src="/screenshots/image2.jpeg" alt="Expenny Screenshot 2" width="200"/> <img src="/screenshots/image3.jpeg" alt="Expenny Screenshot 3" width="200"/> <img src="/screenshots/image4.jpeg" alt="Expenny Screenshot 4" width="200"/>
+
 ## Features
 
 - **SMS auto-import** — Reads bank transaction alerts from your inbox and turns them into transactions, no typing required.
 - **Transaction tracking** — Add, edit, and delete transactions.
 - **Categorization** — Tag transactions as Food, Transportation, Entertainment, and more.
 - **Visual insights** — Charts and tag-wise breakdowns to see where the money goes.
-- **Offline by design** — No network calls, no accounts, no telemetry. The app doesn't request the `INTERNET` permission at all.
+- **Offline by design** — No network calls, no accounts, no telemetry. The app doesn't request the `INTERNET` permission at all. Only `READ_SMS` is requested. Messages are read locally and never leave the device.
 
 ## SMS Auto-Import
 
@@ -24,14 +28,6 @@ Grant SMS access once from **Preferences → Import from Messages**, and Expenny
 - **Verifiable** — The original message is saved with the transaction and shown on the edit screen, so you can always check what a figure came from.
 
 Imported transactions land under the `miscellaneous` tag with `Card/UPI` as the payment method — retag them from the edit screen as you like.
-
-Parsing is handled by [`transaction_sms_parser`](https://pub.dev/packages/transaction_sms_parser), which targets Indian bank and UPI alert formats. Messages it can't confidently read are skipped rather than guessed at.
-
-Only `READ_SMS` is requested. Messages are read locally and never leave the device.
-
-## Screenshots
-
-<img src="/screenshots/image1.jpeg" alt="Expenny Screenshot 1" width="200"/> <img src="/screenshots/image2.jpeg" alt="Expenny Screenshot 2" width="200"/> <img src="/screenshots/image3.jpeg" alt="Expenny Screenshot 3" width="200"/> <img src="/screenshots/image4.jpeg" alt="Expenny Screenshot 4" width="200"/>
 
 ## Getting Started
 
