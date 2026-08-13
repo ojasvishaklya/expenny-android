@@ -2,56 +2,61 @@
 
 [![Expenny App Icon](/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png)](https://play.google.com/store/apps/details?id=com.ojasvishaklya.expenny)
 
-Welcome to Expenny, your companion for managing daily transactions efficiently! This sleek Flutter application is designed to simplify your financial life, helping you stay on top of your expenses with ease.
+A minimal expense tracker for Android. Log transactions by hand, or let Expenny import them automatically from your bank's SMS alerts. Everything stays on your device.
+
+Available on the [Google Play Store](https://play.google.com/store/apps/details?id=com.ojasvishaklya.expenny).
 
 ## Features
 
-- **Transaction Tracking:** Seamlessly track your daily expenses, enabling quick additions, edits, and deletions of individual transactions.
-- **Categorization:** Organize transactions into categories like Food, Transportation, and Entertainment for insightful analysis.
-- **Visual Insights:** Gain valuable insights with interactive charts and graphs, allowing you to identify spending patterns and areas for potential savings.
+- **SMS auto-import** — Reads bank transaction alerts from your inbox and turns them into transactions, no typing required.
+- **Transaction tracking** — Add, edit, and delete transactions.
+- **Categorization** — Tag transactions as Food, Transportation, Entertainment, and more.
+- **Visual insights** — Charts and tag-wise breakdowns to see where the money goes.
+- **Offline by design** — No network calls, no accounts, no telemetry. The app doesn't request the `INTERNET` permission at all.
+
+## SMS Auto-Import
+
+Grant SMS access once from **Preferences → Import from Messages**, and Expenny handles the rest:
+
+- **Automatic** — Syncs silently on app start. New alerts appear as transactions without any action.
+- **No duplicates** — Each message is tracked by its SMS id, so re-syncing never double-counts. Editing an imported transaction won't cause it to reappear.
+- **Incremental** — Looks back three months on first import, then only reads what's new.
+- **Verifiable** — The original message is saved with the transaction and shown on the edit screen, so you can always check what a figure came from.
+
+Imported transactions land under the `miscellaneous` tag with `Card/UPI` as the payment method — retag them from the edit screen as you like.
+
+Parsing is handled by [`transaction_sms_parser`](https://pub.dev/packages/transaction_sms_parser), which targets Indian bank and UPI alert formats. Messages it can't confidently read are skipped rather than guessed at.
+
+Only `READ_SMS` is requested. Messages are read locally and never leave the device.
 
 ## Screenshots
 
 <img src="/screenshots/image1.jpeg" alt="Expenny Screenshot 1" width="200"/> <img src="/screenshots/image2.jpeg" alt="Expenny Screenshot 2" width="200"/> <img src="/screenshots/image3.jpeg" alt="Expenny Screenshot 3" width="200"/> <img src="/screenshots/image4.jpeg" alt="Expenny Screenshot 4" width="200"/>
 
-## Features Highlights
-
-- **Smart Reminders:** Stay on track with regular input reminders, ensuring no transaction goes unnoticed.
-- **Budget Management:** Set and monitor your budget with notifications for approaching or exceeding limits, enabling smarter financial decisions.
-- **Global Currency Support:** Easily track transactions in different currencies with integrated currency conversion features.
-- **Secure & Private:** Safeguard sensitive financial data with robust user authentication, ensuring your information remains confidential.
-
-## To-Dos
-
-- [ ] Set up reminder notifications to prompt users to regularly input their transactions.
-- [ ] Implement a budget-setting feature with notifications for approaching/exceeding limits.
-- [ ] Provide support for currency conversion to track Transactions in different currencies.
-
 ## Getting Started
 
-From the repository:
+```bash
+git clone https://github.com/ojasvishaklya/expenny-android.git
+cd expenny-android
+flutter pub get
+flutter run
+```
 
-- **Clone the Repository:** `git clone https://github.com/ojasvishaklya/expenny-android.git`
-- **Navigate to the Project Directory:** `cd expenny-android`
-- **Install Dependencies:** `flutter pub get`
-- **Run the App:** `flutter run`
+## Roadmap
 
-Get ready to embark on a seamless financial journey with Expenny! Download now on [Google Play Store](https://play.google.com/store/apps/details?id=com.ojasvishaklya.expenny) and elevate your transaction management game to new heights.
-
+- [ ] Reminder notifications to prompt regular transaction entry
+- [ ] Budget limits with notifications when approaching or exceeding them
+- [ ] Multi-currency support with conversion
+- [ ] App lock for sensitive financial data
+- [ ] Sync on app resume, so alerts arriving while backgrounded are picked up immediately
 
 ## Contributing
 
-Expenny welcomes contributions from developers of all skill levels. Whether you're a beginner looking to make your first open-source contribution or an experienced developer eager to improve Expenny's features, your help is invaluable.
+Contributions are welcome at any skill level, whether it's your first open-source PR or a deep change.
 
-**How to Contribute:**
-- **Fork the Repository:** Click on the "Fork" button at the top right of this page to create your own copy of the repository.
-- **Clone Your Fork:** Clone your forked repository to your local machine.
-- **Make Changes:** Make your desired changes in the codebase.
-- **Test Your Changes:** Ensure your changes work as intended.
-- **Create a Pull Request:** Describe your changes and submit the pull request.
+1. Fork the repository and clone your fork
+2. Make your changes
+3. Verify them — `flutter analyze` and `flutter build apk --release` should both pass
+4. Open a pull request describing what changed
 
-
-**Issues and Feature Requests:**
-If you find a bug or have a feature request, create an issue on the [Issues](https://github.com/ojasvishaklya/expenny-android/issues) page.
-
-Thank you for considering contributing to Expenny! Your support helps make this app even better for users worldwide.
+Found a bug or have an idea? Open an issue on the [Issues](https://github.com/ojasvishaklya/expenny-android/issues) page.
