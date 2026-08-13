@@ -18,11 +18,6 @@ class SmsSyncService {
   final TransactionRepository _repository;
   final TransactionController _controller;
 
-  static final _keywordFilter = RegExp(
-    r'debit|credit|withdraw|deposit|transfer|spent',
-    caseSensitive: false,
-  );
-
   SmsSyncService({
     required SmsReaderService smsReader,
     required SmsParserService smsParser,
@@ -59,16 +54,11 @@ class SmsSyncService {
 
     final allSms = await _smsReader.readInbox(since: since);
 
-    // Keyword pre-filter
-    final candidates = allSms
-        .where((sms) => _keywordFilter.hasMatch(sms.body))
-        .toList();
-
-    // Parse each candidate
+    // Parse each SMS — the parser's validity gate rejects non-transaction messages
     final List<_ParsedRecord> parsed = [];
     int unparsedCount = 0;
 
-    for (final sms in candidates) {
+    for (final sms in allSms) {
       final result = _smsParser.parse(sms.body);
       if (result != null) {
         parsed.add(_ParsedRecord(sms: sms, parsed: result));
