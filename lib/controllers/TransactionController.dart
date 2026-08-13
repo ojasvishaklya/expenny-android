@@ -13,21 +13,24 @@ class TransactionController extends GetxController {
   var transactionList = List<Transaction>.empty().obs;
 
   double get balance =>
-      transactionList.fold(0, (sum, transaction) => sum + transaction.amount);
+      double.parse(transactionList.fold(0.0, (sum, transaction) => sum + transaction.amount).toStringAsFixed(2));
 
-  double get income => transactionList.fold(0, (sum, transaction) {
+  double get income => double.parse(transactionList.fold(0.0, (sum, transaction) {
         if (transaction.amount > 0) return sum + transaction.amount;
         return sum;
-      });
+      }).toStringAsFixed(2));
 
-  double get expense => transactionList.fold(0, (sum, transaction) {
+  double get expense => double.parse(transactionList.fold(0.0, (sum, transaction) {
         if (transaction.amount <= 0) return sum + transaction.amount;
         return sum;
-      });
+      }).toStringAsFixed(2));
 
-  @override
-  void onInit() async {
-    super.onInit();
+  /// Loads the current month's transactions from the DB, replacing the list.
+  ///
+  /// This is the single owned path for wholesale list replacement. Callers must
+  /// await it so concurrent writers (startup load vs. SMS sync reload) stay
+  /// ordered — an unawaited load can resolve after a sync and clobber imports.
+  Future<void> loadCurrentMonthTransactions() async {
     final date = DateTime.now();
 
     // fetching current months transactions only
@@ -35,6 +38,7 @@ class TransactionController extends GetxController {
         startDate: DateTime(date.year, date.month, 1),
         endDate: DateTime(date.year, date.month + 1, 0),
         tagSet: null);
+    refreshTransactionList();
   }
 
   void insertRandomData() {

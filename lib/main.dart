@@ -4,6 +4,9 @@ import 'package:get_storage/get_storage.dart';
 import 'package:expenny/constants/routes.dart';
 import 'package:expenny/repository/TransactionRepository.dart';
 import 'package:expenny/service/ThemeService.dart';
+import 'package:expenny/service/SmsReaderService.dart';
+import 'package:expenny/service/SmsParserService.dart';
+import 'package:expenny/service/SmsSyncService.dart';
 
 import 'constants/Theme.dart';
 import 'controllers/TransactionController.dart';
@@ -19,6 +22,23 @@ void main() async {
   await transactionRepository.open(); // this initializes the DB
   await GetStorage.init(); // this is my cache storage
   Get.put(transactionController); // Register controller to be used globally
+
+  // Load the initial list before starting any sync. Awaiting here serialises
+  // the two writers to transactionList, so a sync reload can never be
+  // overwritten by a slower startup query.
+  await transactionController.loadCurrentMonthTransactions();
+
+  // Initialize SMS sync service
+  final smsSyncService = SmsSyncService(
+    smsReader: TelephonySmsReaderService(),
+    smsParser: SmsParserService(),
+    repository: transactionRepository,
+    controller: transactionController,
+  );
+  Get.put(smsSyncService);
+
+  // Auto-sync on startup (silent, no permission prompt)
+  smsSyncService.syncIfPermissionGranted();
 
   runApp(const MyApp());
 }

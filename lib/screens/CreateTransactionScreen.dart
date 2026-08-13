@@ -295,6 +295,35 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                     SizedBox(
                       height: 10,
                     ),
+                    if (_transaction.rawSms != null) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).hoverColor,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.sms_outlined, size: 16),
+                                SizedBox(width: 8),
+                                Text('Original SMS',
+                                    style: Theme.of(context).textTheme.bodySmall),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              _transaction.rawSms!,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                    ],
                     TagSelectorWidget(
                       updateTransactionTag: updateTransactionTag,
                       transaction: _transaction,
