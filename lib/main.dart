@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:expenny/constants/routes.dart';
 import 'package:expenny/repository/TransactionRepository.dart';
 import 'package:expenny/service/ThemeService.dart';
@@ -40,11 +41,51 @@ void main() async {
   // Auto-sync on startup (silent, no permission prompt)
   smsSyncService.syncIfPermissionGranted();
 
+  // Refresh home screen widget with latest data
+  _updateHomeWidget();
+
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+/// Triggers the native widget provider's onUpdate() which reads fresh data
+/// from the SQLite database. Fire-and-forget — widget update failure should
+/// never block app startup.
+void _updateHomeWidget() {
+  try {
+    HomeWidget.updateWidget(
+      androidName: 'SpendWidgetProvider',
+    );
+  } catch (_) {
+    // Silently fail — widget may not be placed on home screen
+  }
+}
+
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _updateHomeWidget();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -6,78 +6,81 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
+    android:gravity="center_vertical"
     android:background="@drawable/widget_background">
 
-    <!-- Month name -->
+    <!-- Header: Month + Budget label -->
     <TextView
         android:id="@+id/widget_month"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
+        android:textSize="14sp"
         android:textStyle="bold"
-        android:textColor="#1C1B1F"
-        android:text="June" />
+        android:textColor="@color/widget_text_secondary"
+        android:text="JUNE BUDGET"
+        android:letterSpacing="0.05" />
 
-    <!-- Spacer -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
-
-    <!-- Spent and Budget Left row -->
+    <!-- Main amount: spent / total -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/widget_spent_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/widget_text_primary"
+            android:text="₹12,500" />
+
+        <TextView
+            android:id="@+id/widget_budget_total"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:textSize="13sp"
+            android:textColor="@color/widget_text_secondary"
+            android:text="/ ₹40,000" />
+    </LinearLayout>
+
+    <!-- Progress bar -->
+    <ProgressBar
+        android:id="@+id/widget_progress"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="8dp"
+        android:layout_marginTop="10dp"
+        android:max="100"
+        android:progress="31"
+        android:progressDrawable="@drawable/widget_progress_drawable" />
+
+    <!-- Footer: remaining + percentage -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
         android:orientation="horizontal">
 
-        <!-- Left column: Spent -->
-        <LinearLayout
+        <TextView
+            android:id="@+id/widget_remaining"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:textSize="12sp"
+            android:textColor="@color/widget_budget_positive"
+            android:text="₹27,500 remaining" />
 
-            <TextView
-                android:id="@+id/widget_spent_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="11sp"
-                android:textColor="#666666"
-                android:text="Spent" />
-
-            <TextView
-                android:id="@+id/widget_spent_amount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="#D32F2F"
-                android:text="₹0" />
-        </LinearLayout>
-
-        <!-- Right column: Budget Left -->
-        <LinearLayout
-            android:layout_width="0dp"
+        <TextView
+            android:id="@+id/widget_percentage"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/widget_budget_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="11sp"
-                android:textColor="#666666"
-                android:text="Budget Left" />
-
-            <TextView
-                android:id="@+id/widget_budget_amount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="#388E3C"
-                android:text="₹40,000" />
-        </LinearLayout>
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@color/widget_text_secondary"
+            android:text="31%" />
     </LinearLayout>
 </LinearLayout>
