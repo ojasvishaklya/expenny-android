@@ -3,7 +3,6 @@
     <color name="widget_background">#FFFFFF</color>
     <color name="widget_text_primary">#1C1B1F</color>
     <color name="widget_text_secondary">#5F5F5F</color>
-    <color name="widget_spent_color">#D32F2F</color>
     <color name="widget_budget_positive">#2E7D32</color>
     <color name="widget_budget_negative">#C62828</color>
     <color name="widget_progress_track">#E8E8E8</color>

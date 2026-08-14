@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="widget_background">#333</color>
+    <color name="widget_background">#000</color>
     <color name="widget_text_primary">#E6E1E5</color>
     <color name="widget_text_secondary">#A0A0A0</color>
-    <color name="widget_spent_color">#EF5350</color>
     <color name="widget_budget_positive">#66BB6A</color>
     <color name="widget_budget_negative">#EF5350</color>
     <color name="widget_progress_track">#2D2D3D</color>
