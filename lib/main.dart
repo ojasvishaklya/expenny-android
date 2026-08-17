@@ -3,10 +3,10 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:expenny/constants/routes.dart';
 import 'package:expenny/repository/TransactionRepository.dart';
-import 'package:expenny/service/ThemeService.dart';
 import 'package:expenny/service/SmsReaderService.dart';
 import 'package:expenny/service/SmsParserService.dart';
 import 'package:expenny/service/SmsSyncService.dart';
+import 'package:expenny/service/ConfigService.dart';
 
 import 'constants/Theme.dart';
 import 'controllers/TransactionController.dart';
@@ -21,6 +21,7 @@ void main() async {
 
   await transactionRepository.open(); // this initializes the DB
   await GetStorage.init(); // this is my cache storage
+  Get.put(ConfigService()); // Register config service before other controllers
   Get.put(transactionController); // Register controller to be used globally
 
   // Load the initial list before starting any sync. Awaiting here serialises
@@ -52,7 +53,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: themeData(context),
       darkTheme: darkThemeData(context),
-      themeMode: ThemeService.getThemeMode(),
+      themeMode: Get.find<ConfigService>().themeMode,
       initialRoute: RouteClass.home,
       getPages: RouteClass.routes,
     );

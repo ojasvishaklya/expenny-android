@@ -1,6 +1,7 @@
 import 'package:expenny/constants/routes.dart';
 import 'package:expenny/models/Transaction.dart';
 import 'package:expenny/service/DateService.dart';
+import 'package:expenny/widgets/BudgetProgressWidget.dart';
 import 'package:expenny/widgets/DisplayCard.dart';
 import 'package:expenny/widgets/FabWidget.dart';
 import 'package:expenny/widgets/TransactionCard.dart';
@@ -23,6 +24,7 @@ class TransactionsScreen extends StatelessWidget {
         Column(
           children: [
             DisplayCard(),
+            const BudgetProgressWidget(),
             Expanded(
               child: GetX<TransactionController>(builder: (controller) {
                 if (controller.transactionList.isEmpty) {

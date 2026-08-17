@@ -1,4 +1,4 @@
-import 'package:get_storage/get_storage.dart';
+import 'package:get/get.dart';
 
 import '../controllers/TransactionController.dart';
 import '../models/ParseResult.dart';
@@ -7,6 +7,7 @@ import '../models/SmsRecord.dart';
 import '../models/SyncResult.dart';
 import '../models/Transaction.dart';
 import '../repository/TransactionRepository.dart';
+import 'ConfigService.dart';
 import 'SmsParserService.dart';
 import 'SmsReaderService.dart';
 
@@ -54,7 +55,7 @@ class SmsSyncService {
 
   Future<SyncResult> _executeSyncPipeline() async {
     // Read inbox with lastSyncedAt or default 3-month lookback
-    final lastSyncedStr = GetStorage().read<String>('lastSyncedAt');
+    final lastSyncedStr = Get.find<ConfigService>().lastSyncedAt.value;
     final since = lastSyncedStr != null
         ? DateTime.parse(lastSyncedStr).subtract(_syncOverlapBuffer)
         : null;
@@ -133,7 +134,7 @@ class SmsSyncService {
   }
 
   void _storeLastSyncTimestamp() {
-    GetStorage().write('lastSyncedAt', DateTime.now().toIso8601String());
+    Get.find<ConfigService>().setLastSyncedAt(DateTime.now().toIso8601String());
   }
 }
 
