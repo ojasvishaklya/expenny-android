@@ -3,7 +3,6 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 import 'package:expenny/models/PaymentMethod.dart';
 
-
 class TransactionRepository {
   late sqflite.Database _database;
   final String tableName = 'transactions';

@@ -9,10 +9,10 @@ class Transaction {
   String description;
   String tag;
   String paymentMethod;
-  String? smsId;       // SMS message ID for deduplication (null for manual)
-  String? source;      // 'manual' | 'sms'
-  String? bank;        // Bank/sender name from SMS (null for manual)
-  String? rawSms;      // Original SMS body for user verification (null for manual)
+  String? smsId; // SMS message ID for deduplication (null for manual)
+  String? source; // 'manual' | 'sms'
+  String? bank; // Bank/sender name from SMS (null for manual)
+  String? rawSms; // Original SMS body for user verification (null for manual)
 
   // Default constructor
   Transaction({

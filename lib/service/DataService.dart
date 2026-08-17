@@ -20,7 +20,6 @@ class DataService {
 
   Future<DataServiceResponse> exportToExcel() async {
     try {
-
       final transactionList =
           await _controller.getTransactionsBetweenDates(tagSet: null);
 
@@ -88,8 +87,7 @@ class DataService {
     try {
       _controller.deleteAllTransactions();
       await GetStorage().erase();
-      return DataServiceResponse(
-          isError: false, response: 'All data deleted');
+      return DataServiceResponse(isError: false, response: 'All data deleted');
     } catch (e) {
       return DataServiceResponse(
           isError: true, response: 'Error deleting data: $e');

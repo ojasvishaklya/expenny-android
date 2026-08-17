@@ -4,7 +4,8 @@ import 'package:lottie/lottie.dart';
 class LoadingWidget extends StatelessWidget {
   final String animationName;
   final double size;
-  const LoadingWidget({Key? key, required this.animationName, required this.size})
+  const LoadingWidget(
+      {Key? key, required this.animationName, required this.size})
       : super(key: key);
 
   @override

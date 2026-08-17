@@ -26,7 +26,8 @@ class ConfigService extends GetxController {
   }
 
   // --- Dark Mode ---
-  ThemeMode get themeMode => isDarkMode.value ? ThemeMode.dark : ThemeMode.light;
+  ThemeMode get themeMode =>
+      isDarkMode.value ? ThemeMode.dark : ThemeMode.light;
 
   /// Flips the current dark mode setting, persists it, and applies the theme
   /// change live via GetX.

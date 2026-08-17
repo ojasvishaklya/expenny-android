@@ -43,7 +43,8 @@ class WidgetService {
           ? Get.find<TransactionController>().expense.abs()
           : 0.0;
 
-      final monthName = DateService.monthNames[DateTime.now().month].toUpperCase();
+      final monthName =
+          DateService.monthNames[DateTime.now().month].toUpperCase();
 
       await HomeWidget.saveWidgetData<String>(_keyMonth, '$monthName BUDGET');
       await HomeWidget.saveWidgetData<String>(_keySpent, spend.toString());

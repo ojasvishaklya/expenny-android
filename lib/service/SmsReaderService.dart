@@ -39,15 +39,22 @@ class TelephonySmsReaderService implements SmsReaderService {
           .greaterThanOrEqualTo(cutoff.millisecondsSinceEpoch.toString());
 
       final messages = await _telephony.getInboxSms(
-        columns: [SmsColumn.ID, SmsColumn.ADDRESS, SmsColumn.BODY, SmsColumn.DATE],
+        columns: [
+          SmsColumn.ID,
+          SmsColumn.ADDRESS,
+          SmsColumn.BODY,
+          SmsColumn.DATE
+        ],
         filter: filter,
       );
-      return messages.map((sms) => SmsRecord(
-        id: sms.id?.toString() ?? '',
-        sender: sms.address,
-        body: sms.body ?? '',
-        date: DateTime.fromMillisecondsSinceEpoch(sms.date ?? 0),
-      )).toList();
+      return messages
+          .map((sms) => SmsRecord(
+                id: sms.id?.toString() ?? '',
+                sender: sms.address,
+                body: sms.body ?? '',
+                date: DateTime.fromMillisecondsSinceEpoch(sms.date ?? 0),
+              ))
+          .toList();
     } catch (e) {
       return [];
     }
