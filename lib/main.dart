@@ -42,10 +42,10 @@ void main() async {
   // Auto-sync on startup (silent, no permission prompt)
   smsSyncService.syncIfPermissionGranted();
 
-  // Refresh home screen widget on cold start. The WidgetsBindingObserver in
-  // MyApp also triggers on resume, but that doesn't fire on the very first
-  // launch before the engine is fully attached.
-  _updateHomeWidget();
+  // Note: no explicit widget refresh here — loadCurrentMonthTransactions()
+  // above already pushed one via refreshTransactionList() ->
+  // WidgetService.updateBudgetWidget(). The WidgetsBindingObserver in MyApp
+  // covers subsequent resumes.
 
   runApp(const MyApp());
 }

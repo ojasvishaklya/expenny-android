@@ -2,6 +2,7 @@ import 'package:expenny/service/ConfigService.dart';
 import 'package:expenny/service/DataService.dart';
 import 'package:expenny/service/SmsSyncService.dart';
 import 'package:expenny/models/SyncResult.dart';
+import 'package:expenny/utils/CurrencyFormatter.dart';
 import 'package:expenny/widgets/BudgetProgressWidget.dart';
 import 'package:expenny/widgets/ScreenHeaderWidget.dart';
 import 'package:flutter/material.dart';
@@ -41,46 +42,50 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     );
     String? errorText;
 
-    await showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('Monthly Budget'),
-          content: TextField(
-            controller: textController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              hintText: 'Enter budget amount (leave empty to clear)',
-              prefixText: '₹ ',
-              errorText: errorText,
+    try {
+      await showDialog(
+        context: context,
+        builder: (ctx) => StatefulBuilder(
+          builder: (ctx, setDialogState) => AlertDialog(
+            title: const Text('Monthly Budget'),
+            content: TextField(
+              controller: textController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                hintText: 'Enter budget amount (leave empty to clear)',
+                prefixText: '₹ ',
+                errorText: errorText,
+              ),
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  final text = textController.text.trim();
+                  final validationError = validateBudgetInput(text);
+                  if (validationError != null) {
+                    setDialogState(() => errorText = validationError);
+                    return;
+                  }
+                  if (text.isEmpty) {
+                    configService.setMonthlyBudget(null);
+                  } else {
+                    configService.setMonthlyBudget(double.parse(text));
+                  }
+                  Navigator.pop(ctx);
+                },
+                child: const Text('Save'),
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                final text = textController.text.trim();
-                final validationError = validateBudgetInput(text);
-                if (validationError != null) {
-                  setDialogState(() => errorText = validationError);
-                  return;
-                }
-                if (text.isEmpty) {
-                  configService.setMonthlyBudget(null);
-                } else {
-                  configService.setMonthlyBudget(double.parse(text));
-                }
-                Navigator.pop(ctx);
-              },
-              child: const Text('Save'),
-            ),
-          ],
         ),
-      ),
-    );
+      );
+    } finally {
+      textController.dispose();
+    }
   }
 
   @override
@@ -112,7 +117,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
             final budget = Get.find<ConfigService>().monthlyBudget.value;
             return PreferenceTileWidget(
               text: budget != null
-                  ? 'Monthly Budget: ₹${budget.toStringAsFixed(0)}'
+                  ? 'Monthly Budget: ${formatRupees(budget)}'
                   : 'Set Monthly Budget',
               icon: Icons.account_balance_wallet_outlined,
               onTap: () => _showBudgetDialog(context),

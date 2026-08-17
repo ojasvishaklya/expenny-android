@@ -33,16 +33,16 @@ void main() {
   });
 
   group('formatBudgetLabel', () {
-    test('formats expense and budget with rupee symbol', () {
-      expect(formatBudgetLabel(12000, 50000), '₹12000 / ₹50000');
+    test('formats expense and budget with rupee symbol and Indian grouping', () {
+      expect(formatBudgetLabel(12000, 50000), '₹12,000 / ₹50,000');
     });
 
     test('formats zero expense', () {
-      expect(formatBudgetLabel(0, 50000), '₹0 / ₹50000');
+      expect(formatBudgetLabel(0, 50000), '₹0 / ₹50,000');
     });
 
     test('rounds to integer', () {
-      expect(formatBudgetLabel(12345.67, 50000.99), '₹12346 / ₹50001');
+      expect(formatBudgetLabel(12345.67, 50000.99), '₹12,346 / ₹50,001');
     });
   });
 
@@ -87,6 +87,10 @@ void main() {
 
     test('returns error for negative number', () {
       expect(validateBudgetInput('-100'), 'Budget must be a positive amount');
+    });
+
+    test('returns error for a value that parses to infinity', () {
+      expect(validateBudgetInput('1e400'), 'Please enter a valid number');
     });
   });
 }

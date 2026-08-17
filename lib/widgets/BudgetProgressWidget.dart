@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/TransactionController.dart';
 import '../service/ConfigService.dart';
+import '../utils/CurrencyFormatter.dart';
 
 class BudgetProgressWidget extends StatelessWidget {
   const BudgetProgressWidget({Key? key}) : super(key: key);
@@ -58,7 +59,7 @@ double computeProgress(double expense, double budget) {
 
 /// Pure computation: formats the label string.
 String formatBudgetLabel(double expense, double budget) {
-  return '₹${expense.toStringAsFixed(0)} / ₹${budget.toStringAsFixed(0)}';
+  return '${formatRupees(expense)} / ${formatRupees(budget)}';
 }
 
 /// Pure computation: returns whether expense has met or exceeded budget.
@@ -71,7 +72,7 @@ String? validateBudgetInput(String input) {
   final trimmed = input.trim();
   if (trimmed.isEmpty) return null; // empty means "clear"
   final parsed = double.tryParse(trimmed);
-  if (parsed == null) return 'Please enter a valid number';
+  if (parsed == null || !parsed.isFinite) return 'Please enter a valid number';
   if (parsed <= 0) return 'Budget must be a positive amount';
   return null;
 }
