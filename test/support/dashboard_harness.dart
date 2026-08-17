@@ -85,7 +85,13 @@ Future<void> setSurface(WidgetTester tester, Size size) async {
 /// implementation under flutter_test, so the channel is mocked to a fresh temp
 /// directory. Each call uses its own container, so state cannot leak between
 /// tests. No production code is modified.
-Future<ConfigService> registerConfigService({double? monthlyBudget}) async {
+/// Registers a [ConfigService] so widgets that observe the configured budget
+/// can be pumped. The budget is left unset.
+///
+/// Seeding a budget is deliberately not offered: it would go through
+/// `ConfigService.setMonthlyBudget`, which awaits `home_widget` platform
+/// channels that never complete under `flutter_test` and hangs the run.
+Future<ConfigService> registerConfigService() async {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   // GetStorage persists through path_provider, whose platform channel has no
@@ -108,9 +114,6 @@ Future<ConfigService> registerConfigService({double? monthlyBudget}) async {
   await GetStorage().erase();
 
   final service = Get.put(ConfigService());
-  if (monthlyBudget != null) {
-    service.setMonthlyBudget(monthlyBudget);
-  }
 
   addTearDown(Get.reset);
   return service;

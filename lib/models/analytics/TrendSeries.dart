@@ -49,10 +49,6 @@ class TrendSeries {
             [max, point.income, point.expense].reduce((a, b) => a > b ? a : b),
       );
 
-  /// True when the six months span more than one calendar year.
-  bool get spansTwoYears =>
-      points.isNotEmpty && points.first.year != points.last.year;
-
   @override
   String toString() => 'TrendSeries($points)';
 }

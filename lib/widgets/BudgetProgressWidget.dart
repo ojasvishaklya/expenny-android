@@ -56,13 +56,14 @@ class _BudgetBody extends StatelessWidget {
     final progress = computeProgress(expense, budget);
     final over = isOverBudget(expense, budget);
     final usedPercent = budgetUsedPercent(expense, budget);
+    final difference = budgetDifference(expense, budget);
 
     // At exact equality the threshold is considered reached, so status styling
     // activates, while the remaining label still reads zero rather than an
     // overage. This preserves the existing isOverBudget contract.
-    final statusLabel = expense > budget
-        ? 'Over budget by ${formatRupees(expense - budget)}'
-        : 'Remaining ${formatRupees(budget - expense)}';
+    final statusLabel = difference < 0
+        ? 'Over budget by ${formatRupees(difference.abs())}'
+        : 'Remaining ${formatRupees(difference)}';
 
     final statusColor = over ? colors.error : colors.onSurfaceVariant;
 
@@ -145,11 +146,6 @@ double computeProgress(double expense, double budget) {
   return ratio.clamp(0.0, 1.0);
 }
 
-/// Pure computation: formats the label string.
-String formatBudgetLabel(double expense, double budget) {
-  return '${formatRupees(expense)} / ${formatRupees(budget)}';
-}
-
 /// Pure computation: returns whether expense has met or exceeded budget.
 bool isOverBudget(double expense, double budget) {
   return expense >= budget;
@@ -164,11 +160,10 @@ double budgetUsedPercent(double expense, double budget) {
 }
 
 /// Pure computation: how much budget is left, or how far past it the spend is.
-String formatBudgetRemainder(double expense, double budget) {
-  final difference = budget - expense;
-  if (difference >= 0) return '${formatRupees(difference)} left';
-  return '${formatRupees(difference.abs())} over';
-}
+///
+/// The dashboard states this as `Remaining {amount}` or `Over budget by
+/// {amount}`; this returns the signed difference those labels are built from.
+double budgetDifference(double expense, double budget) => budget - expense;
 
 /// Returns null if valid, error message string if invalid.
 String? validateBudgetInput(String input) {

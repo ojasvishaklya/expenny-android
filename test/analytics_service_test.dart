@@ -254,7 +254,6 @@ void main() {
         series.points.map((point) => '${point.year}-${point.month}').toList(),
         ['2025-9', '2025-10', '2025-11', '2025-12', '2026-1', '2026-2'],
       );
-      expect(series.spansTwoYears, isTrue);
     });
 
     test('buckets transactions into their own calendar month', () {

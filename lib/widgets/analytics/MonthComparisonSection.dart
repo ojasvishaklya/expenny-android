@@ -98,6 +98,8 @@ class MonthComparisonSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final heading = headingFor(displayedMonth);
 
     if (!comparison.isAvailable) {
@@ -120,9 +122,9 @@ class MonthComparisonSection extends StatelessWidget {
               changes.length == 1
                   ? '1 notable change'
                   : '${changes.length} notable changes',
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: colors.onSurfaceVariant,
+              ),
             ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -131,10 +133,7 @@ class MonthComparisonSection extends StatelessWidget {
             icon: isIncrease(comparison.direction)
                 ? Icons.trending_up
                 : Icons.trending_down,
-            iconColor: _statusColor(
-              comparison.direction,
-              Theme.of(context).colorScheme,
-            ),
+            iconColor: _statusColor(comparison.direction, colors),
             sentence: headline(comparison),
             detail: comparison.direction == ChangeDirection.noChange
                 ? null
@@ -143,28 +142,28 @@ class MonthComparisonSection extends StatelessWidget {
                 ? formatRupees(comparison.difference)
                 : formatPercent(comparison.percentChange!.abs()),
             directionText: directionLabel(comparison.direction),
-            statusColor: _statusColor(
-              comparison.direction,
-              Theme.of(context).colorScheme,
-            ),
+            statusColor: _statusColor(comparison.direction, colors),
           ),
-          for (final change in changes)
-            _InsightRow(
-              icon: TransactionTag.getTagById(change.tagId).icon,
-              iconColor: TransactionTag.getTagById(change.tagId).color,
-              sentence: categorySentence(change),
-              detail: '${formatRupees(change.difference)} vs last month',
-              changeValue: change.percentChange == null
-                  ? formatRupees(change.difference)
-                  : formatPercent(change.percentChange!.abs()),
-              directionText: directionLabel(change.direction),
-              statusColor: _statusColor(
-                change.direction,
-                Theme.of(context).colorScheme,
-              ),
-            ),
+          for (final change in changes) _categoryRow(change, colors),
         ],
       ),
+    );
+  }
+
+  /// Builds one category row, resolving the tag once for both icon and colour.
+  Widget _categoryRow(CategoryChange change, ColorScheme colors) {
+    final tag = TransactionTag.getTagById(change.tagId);
+
+    return _InsightRow(
+      icon: tag.icon,
+      iconColor: tag.color,
+      sentence: categorySentence(change),
+      detail: '${formatRupees(change.difference)} vs last month',
+      changeValue: change.percentChange == null
+          ? formatRupees(change.difference)
+          : formatPercent(change.percentChange!.abs()),
+      directionText: directionLabel(change.direction),
+      statusColor: _statusColor(change.direction, colors),
     );
   }
 }
@@ -217,24 +216,24 @@ class _InsightRow extends StatelessWidget {
 
     // Direction is always written out, so the value block can be dropped below
     // the narrative on narrow screens without losing meaning.
-    final valueBlock = Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(
-          changeValue,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: statusColor,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          directionText,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: colors.onSurfaceVariant,
-          ),
-        ),
-      ],
-    );
+    Widget valueBlock(CrossAxisAlignment alignment) => Column(
+          crossAxisAlignment: alignment,
+          children: [
+            Text(
+              changeValue,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: statusColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              directionText,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.onSurfaceVariant,
+              ),
+            ),
+          ],
+        );
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
@@ -260,27 +259,7 @@ class _InsightRow extends StatelessWidget {
                     children: [
                       narrative,
                       const SizedBox(height: 4),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              changeValue,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: statusColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              directionText,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: colors.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      valueBlock(CrossAxisAlignment.start),
                     ],
                   ),
                 ),
@@ -294,7 +273,7 @@ class _InsightRow extends StatelessWidget {
               leading,
               Expanded(child: narrative),
               const SizedBox(width: 10),
-              valueBlock,
+              valueBlock(CrossAxisAlignment.end),
             ],
           );
         },

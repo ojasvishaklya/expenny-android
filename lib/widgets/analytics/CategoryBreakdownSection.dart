@@ -27,7 +27,10 @@ class CategoryBreakdownSection extends StatelessWidget {
     if (group.isOther) {
       return _GroupIdentity(Icons.more_horiz, colors.onSurfaceVariant);
     }
-    final tag = TransactionTag.getTagById(group.tagIds.first);
+    // A named group holds exactly one tag; fall back defensively rather than
+    // throwing if that ever stops holding.
+    final tag =
+        TransactionTag.getTagById(group.singleTagId ?? group.tagIds.first);
     return _GroupIdentity(tag.icon, tag.color);
   }
 

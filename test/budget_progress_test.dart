@@ -40,21 +40,6 @@ void main() {
     });
   });
 
-  group('formatBudgetLabel', () {
-    test('formats expense and budget with rupee symbol and Indian grouping',
-        () {
-      expect(formatBudgetLabel(12000, 50000), '₹12,000 / ₹50,000');
-    });
-
-    test('formats zero expense', () {
-      expect(formatBudgetLabel(0, 50000), '₹0 / ₹50,000');
-    });
-
-    test('rounds to integer', () {
-      expect(formatBudgetLabel(12345.67, 50000.99), '₹12,346 / ₹50,001');
-    });
-  });
-
   group('isOverBudget', () {
     test('returns false when expense is below budget', () {
       expect(isOverBudget(500, 1000), false);
@@ -90,17 +75,17 @@ void main() {
     });
   });
 
-  group('formatBudgetRemainder', () {
-    test('reports what is left when under budget', () {
-      expect(formatBudgetRemainder(12000, 50000), '₹38,000 left');
+  group('budgetDifference', () {
+    test('is positive when under budget', () {
+      expect(budgetDifference(12000, 50000), 38000);
     });
 
-    test('reports zero left when exactly on budget', () {
-      expect(formatBudgetRemainder(50000, 50000), '₹0 left');
+    test('is zero when exactly on budget', () {
+      expect(budgetDifference(50000, 50000), 0);
     });
 
-    test('reports the overage when over budget', () {
-      expect(formatBudgetRemainder(52000, 50000), '₹2,000 over');
+    test('is negative when over budget', () {
+      expect(budgetDifference(52000, 50000), -2000);
     });
   });
 
