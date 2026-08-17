@@ -77,9 +77,8 @@ class SmsSyncService {
 
     // Dedup against existing SMS IDs
     final existingSmsIds = await _repository.getExistingSmsIds();
-    final newRecords = parsed
-        .where((r) => !existingSmsIds.contains(r.sms.id))
-        .toList();
+    final newRecords =
+        parsed.where((r) => !existingSmsIds.contains(r.sms.id)).toList();
 
     final skippedCount = parsed.length - newRecords.length;
 
@@ -114,9 +113,8 @@ class SmsSyncService {
 
   Transaction _buildTransaction(_ParsedRecord record) {
     final isExpense = record.parsed.type == 'debit';
-    final description = record.parsed.merchant
-        ?? record.sms.sender
-        ?? 'Bank transaction';
+    final description =
+        record.parsed.merchant ?? record.sms.sender ?? 'Bank transaction';
 
     return Transaction(
       date: record.sms.date,

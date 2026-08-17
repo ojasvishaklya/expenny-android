@@ -13,15 +13,18 @@ class TransactionController extends GetxController {
 
   var transactionList = List<Transaction>.empty().obs;
 
-  double get balance =>
-      double.parse(transactionList.fold(0.0, (sum, transaction) => sum + transaction.amount).toStringAsFixed(2));
+  double get balance => double.parse(transactionList
+      .fold(0.0, (sum, transaction) => sum + transaction.amount)
+      .toStringAsFixed(2));
 
-  double get income => double.parse(transactionList.fold(0.0, (sum, transaction) {
+  double get income =>
+      double.parse(transactionList.fold(0.0, (sum, transaction) {
         if (transaction.amount > 0) return sum + transaction.amount;
         return sum;
       }).toStringAsFixed(2));
 
-  double get expense => double.parse(transactionList.fold(0.0, (sum, transaction) {
+  double get expense =>
+      double.parse(transactionList.fold(0.0, (sum, transaction) {
         if (transaction.amount <= 0) return sum + transaction.amount;
         return sum;
       }).toStringAsFixed(2));
@@ -114,10 +117,11 @@ class TransactionController extends GetxController {
     refreshTransactionList();
   }
 
-  addMultipleTransactionsToUI(List<Transaction> transactions){
-    transactionList+=transactions;
+  addMultipleTransactionsToUI(List<Transaction> transactions) {
+    transactionList += transactions;
     refreshTransactionList();
   }
+
   void refreshTransactionList() {
     transactionList.sort((a, b) => b.date.compareTo(a.date));
     transactionList.refresh();

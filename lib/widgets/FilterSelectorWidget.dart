@@ -48,7 +48,8 @@ class _FilterSelectorWidgetState extends State<FilterSelectorWidget> {
                 GestureDetector(
                   onTap: () {
                     setState(() {
-                      _filter.year--; // Decrement year when left arrow is tapped
+                      _filter
+                          .year--; // Decrement year when left arrow is tapped
                     });
                   },
                   child: Icon(Icons.arrow_left), // Left arrow icon
@@ -65,7 +66,8 @@ class _FilterSelectorWidgetState extends State<FilterSelectorWidget> {
                 GestureDetector(
                   onTap: () {
                     setState(() {
-                      _filter.year++; // Increment year when right arrow is tapped
+                      _filter
+                          .year++; // Increment year when right arrow is tapped
                     });
                   },
                   child: Icon(Icons.arrow_right), // Right arrow icon
@@ -73,17 +75,17 @@ class _FilterSelectorWidgetState extends State<FilterSelectorWidget> {
               ],
             ),
             SizedBox(height: 10),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 GestureDetector(
                   onTap: () {
                     setState(() {
-                      if(_filter.month==1){
-                        _filter.month=12;
-                      }else {
-                        _filter.month--; // Decrement year when left arrow is tapped
+                      if (_filter.month == 1) {
+                        _filter.month = 12;
+                      } else {
+                        _filter
+                            .month--; // Decrement year when left arrow is tapped
                       }
                     });
                   },
@@ -94,17 +96,16 @@ class _FilterSelectorWidgetState extends State<FilterSelectorWidget> {
                   padding: EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: Theme.of(context).hoverColor, // Background color
-                    borderRadius:
-                    BorderRadius.circular(10), // Border radius
+                    borderRadius: BorderRadius.circular(10), // Border radius
                   ),
                   child: Center(child: Text(_filter.getMonthName())),
                 ),
                 GestureDetector(
                   onTap: () {
                     setState(() {
-                      if(_filter.month==12){
-                        _filter.month=1;
-                      }else {
+                      if (_filter.month == 12) {
+                        _filter.month = 1;
+                      } else {
                         _filter.month++;
                       }
                     });
@@ -113,8 +114,6 @@ class _FilterSelectorWidgetState extends State<FilterSelectorWidget> {
                 ),
               ],
             ),
-
-
             SizedBox(height: 40),
             Text(
               'Select tags',

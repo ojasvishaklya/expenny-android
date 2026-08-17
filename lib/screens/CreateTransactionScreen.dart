@@ -97,7 +97,9 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                   text: isNewTransaction
                       ? 'Create Transaction'
                       : 'Update Transaction'),
-              SizedBox(height: 32,),
+              SizedBox(
+                height: 32,
+              ),
               Form(
                 key: _formKey,
                 child: Column(
@@ -311,7 +313,8 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                                 Icon(Icons.sms_outlined, size: 16),
                                 SizedBox(width: 8),
                                 Text('Original SMS',
-                                    style: Theme.of(context).textTheme.bodySmall),
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall),
                               ],
                             ),
                             SizedBox(height: 8),

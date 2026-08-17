@@ -101,7 +101,10 @@ class _SearchScreenState extends State<SearchScreen> {
                         .center, // Optional: Center the text within thex Text widget
                   ),
                 )
-              : buildFetchMoreButton(context: context,text: 'Search All time', onTap: _performSearchAllTime),
+              : buildFetchMoreButton(
+                  context: context,
+                  text: 'Search All time',
+                  onTap: _performSearchAllTime),
           Expanded(
             child: ListView.builder(
               itemCount: _searchResults.length,
@@ -114,7 +117,6 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
-
 
   Widget buildSearchBar(BuildContext context) {
     return TextField(

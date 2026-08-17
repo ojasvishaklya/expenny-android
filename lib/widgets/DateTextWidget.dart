@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../service/DateService.dart';
 
-
-Widget buildDateText(BuildContext context,DateTime date, Function(DateTime date) updateStartDate) {
+Widget buildDateText(BuildContext context, DateTime date,
+    Function(DateTime date) updateStartDate) {
   return GestureDetector(
     onTap: () async {
       DateTime? pickedDate = await showDatePicker(
