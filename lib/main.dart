@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:home_widget/home_widget.dart';
 import 'package:expenny/constants/routes.dart';
 import 'package:expenny/repository/TransactionRepository.dart';
 import 'package:expenny/service/SmsReaderService.dart';
 import 'package:expenny/service/SmsParserService.dart';
 import 'package:expenny/service/SmsSyncService.dart';
 import 'package:expenny/service/ConfigService.dart';
+import 'package:expenny/service/WidgetService.dart';
 
 import 'constants/Theme.dart';
 import 'controllers/TransactionController.dart';
@@ -50,17 +50,11 @@ void main() async {
   runApp(const MyApp());
 }
 
-/// Triggers the native widget provider's onUpdate() which reads fresh data
-/// from the SQLite database. Fire-and-forget — widget update failure should
-/// never block app startup.
+/// Recomputes spend + budget in Dart and pushes them to the native widget via
+/// WidgetService. Fire-and-forget — widget update failure should never block
+/// app startup.
 void _updateHomeWidget() {
-  try {
-    HomeWidget.updateWidget(
-      androidName: 'SpendWidgetProvider',
-    );
-  } catch (_) {
-    // Silently fail — widget may not be placed on home screen
-  }
+  WidgetService.updateBudgetWidget();
 }
 
 class MyApp extends StatefulWidget {

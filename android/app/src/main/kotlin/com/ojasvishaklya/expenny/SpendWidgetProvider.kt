@@ -6,18 +6,24 @@ import android.content.Context
 import android.widget.RemoteViews
 import android.app.PendingIntent
 import android.content.Intent
-import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import androidx.core.content.ContextCompat
 import java.text.NumberFormat
-import java.util.Calendar
 import java.util.Locale
 
 class SpendWidgetProvider : AppWidgetProvider() {
 
     companion object {
         private const val TAG = "SpendWidget"
-        private const val MONTHLY_BUDGET = 40000.0
+
+        // SharedPreferences file used by the home_widget Flutter plugin.
+        private const val PREFS_NAME = "HomeWidgetPreferences"
+
+        // Keys pushed from Dart (see WidgetService.dart). Numbers are stored as
+        // strings for robust cross-version parsing.
+        private const val KEY_MONTH = "widget_month"
+        private const val KEY_SPENT = "widget_spent"
+        private const val KEY_BUDGET = "widget_budget"
     }
 
     override fun onUpdate(
@@ -29,64 +35,77 @@ class SpendWidgetProvider : AppWidgetProvider() {
             try {
                 val views = RemoteViews(context.packageName, R.layout.spend_widget)
 
-                // Get current month info
-                val calendar = Calendar.getInstance()
-                val year = calendar.get(Calendar.YEAR)
-                val month = calendar.get(Calendar.MONTH) + 1
-                val monthName = calendar.getDisplayName(
-                    Calendar.MONTH, Calendar.LONG, Locale.ENGLISH
-                )?.uppercase() ?: "UNKNOWN"
+                // Read the values Flutter pushed into the home_widget prefs.
+                val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                val monthHeader = prefs.getString(KEY_MONTH, "BUDGET") ?: "BUDGET"
+                val totalSpend = prefs.getString(KEY_SPENT, "0")?.toDoubleOrNull() ?: 0.0
+                val budget = prefs.getString(KEY_BUDGET, "-1")?.toDoubleOrNull() ?: -1.0
 
-                // Query SQLite for current month expenses
-                val totalSpend = queryMonthlySpend(context, year, month)
-                val budgetLeft = MONTHLY_BUDGET - totalSpend
-                val percentage = ((totalSpend / MONTHLY_BUDGET) * 100).coerceIn(0.0, 100.0).toInt()
+                val budgetSet = budget > 0
 
-                Log.d(TAG, "Month: $monthName, Spend: $totalSpend, Left: $budgetLeft, %: $percentage")
+                Log.d(TAG, "Month: $monthHeader, Spend: $totalSpend, Budget: $budget, set: $budgetSet")
 
-                // Format amounts
-                val spentFormatted = formatCurrency(totalSpend)
-                val budgetTotalFormatted = "/ " + formatCurrency(MONTHLY_BUDGET)
-                val remainingFormatted = formatCurrency(Math.abs(budgetLeft))
+                // Header (e.g., "JUNE BUDGET"), pushed pre-formatted from Dart.
+                views.setTextViewText(R.id.widget_month, monthHeader)
 
-                // Set header (e.g., "JUNE BUDGET")
-                views.setTextViewText(R.id.widget_month, "$monthName BUDGET")
+                // Main spent amount is always shown.
+                views.setTextViewText(R.id.widget_spent_amount, formatCurrency(totalSpend))
 
-                // Set main spent amount
-                views.setTextViewText(R.id.widget_spent_amount, spentFormatted)
-                views.setTextViewText(R.id.widget_budget_total, budgetTotalFormatted)
+                if (budgetSet) {
+                    val budgetLeft = budget - totalSpend
+                    val percentage =
+                        ((totalSpend / budget) * 100).coerceIn(0.0, 100.0).toInt()
 
-                // Set progress bar
-                views.setProgressBar(R.id.widget_progress, 100, percentage, false)
+                    views.setTextViewText(
+                        R.id.widget_budget_total, "/ " + formatCurrency(budget)
+                    )
 
-                // Set remaining text
-                val remainingText = if (budgetLeft >= 0) {
-                    "$remainingFormatted remaining"
+                    // Progress bar.
+                    views.setProgressBar(R.id.widget_progress, 100, percentage, false)
+
+                    // Remaining / over-budget text.
+                    val remainingFormatted = formatCurrency(Math.abs(budgetLeft))
+                    val remainingText = if (budgetLeft >= 0) {
+                        "$remainingFormatted remaining"
+                    } else {
+                        "$remainingFormatted over budget"
+                    }
+                    views.setTextViewText(R.id.widget_remaining, remainingText)
+
+                    val remainingColorRes = if (budgetLeft >= 0) {
+                        R.color.widget_budget_positive
+                    } else {
+                        R.color.widget_budget_negative
+                    }
+                    views.setTextColor(
+                        R.id.widget_remaining,
+                        ContextCompat.getColor(context, remainingColorRes)
+                    )
+
+                    // Percentage text + threshold colouring.
+                    views.setTextViewText(R.id.widget_percentage, "$percentage%")
+                    val percentColorRes = when {
+                        percentage >= 100 -> R.color.widget_progress_danger
+                        percentage >= 80 -> R.color.widget_progress_warning
+                        else -> R.color.widget_text_secondary
+                    }
+                    views.setTextColor(
+                        R.id.widget_percentage,
+                        ContextCompat.getColor(context, percentColorRes)
+                    )
                 } else {
-                    "$remainingFormatted over budget"
+                    // No budget configured — render spend gracefully, prompt to set one.
+                    views.setTextViewText(R.id.widget_budget_total, "/ \u2014") // "/ —"
+                    views.setProgressBar(R.id.widget_progress, 100, 0, false)
+                    views.setTextViewText(R.id.widget_remaining, "Set a budget")
+                    views.setTextColor(
+                        R.id.widget_remaining,
+                        ContextCompat.getColor(context, R.color.widget_text_secondary)
+                    )
+                    views.setTextViewText(R.id.widget_percentage, "")
                 }
-                views.setTextViewText(R.id.widget_remaining, remainingText)
 
-                // Color the remaining text
-                val remainingColorRes = if (budgetLeft >= 0) {
-                    R.color.widget_budget_positive
-                } else {
-                    R.color.widget_budget_negative
-                }
-                views.setTextColor(R.id.widget_remaining, ContextCompat.getColor(context, remainingColorRes))
-
-                // Set percentage
-                views.setTextViewText(R.id.widget_percentage, "$percentage%")
-
-                // Color percentage based on thresholds
-                val percentColorRes = when {
-                    percentage >= 100 -> R.color.widget_progress_danger
-                    percentage >= 80 -> R.color.widget_progress_warning
-                    else -> R.color.widget_text_secondary
-                }
-                views.setTextColor(R.id.widget_percentage, ContextCompat.getColor(context, percentColorRes))
-
-                // Tap to open
+                // Tap to open.
                 val intent = Intent(context, MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 }
@@ -104,9 +123,9 @@ class SpendWidgetProvider : AppWidgetProvider() {
                     val fallback = RemoteViews(context.packageName, R.layout.spend_widget)
                     fallback.setTextViewText(R.id.widget_month, "BUDGET")
                     fallback.setTextViewText(R.id.widget_spent_amount, "\u20B90")
-                    fallback.setTextViewText(R.id.widget_budget_total, "/ \u20B940,000")
-                    fallback.setTextViewText(R.id.widget_remaining, "\u20B940,000 remaining")
-                    fallback.setTextViewText(R.id.widget_percentage, "0%")
+                    fallback.setTextViewText(R.id.widget_budget_total, "/ \u2014")
+                    fallback.setTextViewText(R.id.widget_remaining, "Set a budget")
+                    fallback.setTextViewText(R.id.widget_percentage, "")
                     fallback.setProgressBar(R.id.widget_progress, 100, 0, false)
                     appWidgetManager.updateAppWidget(appWidgetId, fallback)
                 } catch (fallbackError: Exception) {
@@ -114,40 +133,6 @@ class SpendWidgetProvider : AppWidgetProvider() {
                 }
             }
         }
-    }
-
-    private fun queryMonthlySpend(context: Context, year: Int, month: Int): Double {
-        var totalSpend = 0.0
-        try {
-            val dbPath = context.getDatabasePath("transactions.db").absolutePath
-            Log.d(TAG, "DB path: $dbPath")
-
-            val dbFile = java.io.File(dbPath)
-            if (!dbFile.exists()) {
-                Log.d(TAG, "DB file does not exist yet")
-                return 0.0
-            }
-
-            val db = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY)
-            val startDate = String.format("%04d-%02d-01T00:00:00.000", year, month)
-
-            Log.d(TAG, "Querying expenses since: $startDate")
-            val cursor = db.rawQuery(
-                "SELECT SUM(amount) FROM transactions WHERE isExpense = 1 AND date >= ?",
-                arrayOf(startDate)
-            )
-
-            if (cursor.moveToFirst() && !cursor.isNull(0)) {
-                totalSpend = Math.abs(cursor.getDouble(0))
-            }
-            cursor.close()
-            db.close()
-            Log.d(TAG, "Total spend: $totalSpend")
-        } catch (e: Exception) {
-            Log.e(TAG, "DB query failed", e)
-            totalSpend = 0.0
-        }
-        return totalSpend
     }
 
     private fun formatCurrency(amount: Double): String {

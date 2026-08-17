@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
+import 'WidgetService.dart';
+
 class ConfigService extends GetxController {
   final _storage = GetStorage();
 
@@ -57,5 +59,9 @@ class ConfigService extends GetxController {
       _storage.write(_keyMonthlyBudget, value);
     }
     monthlyBudget.value = value;
+
+    // Keep the home screen widget in sync with the new budget.
+    // Fire-and-forget — do not await; failures are swallowed internally.
+    WidgetService.updateBudgetWidget();
   }
 }
