@@ -14,12 +14,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 1;
+  /// Analytics is the landing destination, sitting between Transactions on the
+  /// left and Search / Preferences on the right. Keep this index in step with
+  /// the order of [_screens] and the tabs in [BottomNavBarWidget].
+  static const int _analyticsIndex = 1;
+
+  int _selectedIndex = _analyticsIndex;
   PageController _pageController = PageController();
 
   final List<Widget> _screens = <Widget>[
-    AnalyticsScreen(),
     TransactionsScreen(),
+    AnalyticsScreen(),
     SearchScreen(),
     PreferencesScreen()
   ];

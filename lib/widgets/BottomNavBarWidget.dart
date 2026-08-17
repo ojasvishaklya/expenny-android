@@ -26,12 +26,12 @@ class BottomNavBarWidget extends StatelessWidget {
         padding: EdgeInsets.all(12),
         tabs: const [
           GButton(
-            icon: Icons.analytics_outlined,
-            text: 'Analytics',
+            icon: Icons.receipt_long,
+            text: 'Transactions',
           ),
           GButton(
-            icon: Icons.home,
-            text: 'Home',
+            icon: Icons.analytics_outlined,
+            text: 'Analytics',
           ),
           GButton(
             icon: Icons.search,

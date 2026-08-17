@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:expenny/models/Filter.dart';
 import 'package:expenny/models/Transaction.dart';
-import 'package:expenny/widgets/LineChartWidget.dart';
-import 'package:expenny/widgets/StatisticsDisplayWidget.dart';
+import 'package:expenny/models/analytics/CategoryBreakdown.dart';
+import 'package:expenny/models/analytics/MonthComparison.dart';
+import 'package:expenny/models/analytics/MonthlySummary.dart';
+import 'package:expenny/models/analytics/TrendSeries.dart';
 
 import '../controllers/TransactionController.dart';
-import '../models/TransactionTag.dart';
 import '../service/AnalyticsService.dart';
-import '../widgets/FilterSelectorWidget.dart';
-import '../widgets/PopupWidget.dart';
+import '../service/DateService.dart';
+import '../widgets/BudgetProgressWidget.dart';
 import '../widgets/ScreenHeaderWidget.dart';
+import '../widgets/analytics/CategoryBreakdownSection.dart';
+import '../widgets/analytics/MonthComparisonSection.dart';
+import '../widgets/analytics/MonthTrendSection.dart';
+import '../widgets/analytics/MonthlySummarySection.dart';
 
+/// The month's money story: what came in and went out, how it tracks against
+/// the budget, where it went, how it compares with recent months, and what
+/// changed since last month.
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({Key? key}) : super(key: key);
 
@@ -20,356 +27,203 @@ class AnalyticsScreen extends StatefulWidget {
 }
 
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
-  late List<Transaction> _selectedTransactions = [];
   final _controller = Get.find<TransactionController>();
-  final String yearly = 'Y e a r l y';
-  final String monthly = 'M o n t h l y';
-  late String selectedPeriod;
-  late Filter filter;
+
+  /// First day of the month currently being shown.
+  late DateTime _selectedMonth;
+
+  _AnalyticsData? _data;
+  bool _isLoading = true;
+
+  /// Incremented on every load so a slow earlier request cannot overwrite the
+  /// results of a newer one when the user steps through months quickly.
+  int _requestId = 0;
 
   @override
   void initState() {
-    selectedPeriod = yearly;
-    filter = Filter.defaults();
-
-    if (_selectedTransactions.isEmpty) {
-      _getSelectedPeriodTransactions(filter);
-    }
-
     super.initState();
+    final now = DateTime.now();
+    _selectedMonth = DateTime(now.year, now.month, 1);
+    _load();
   }
 
-  _getSelectedPeriodTransactions(Filter filter) async {
-    DateTime startDate = DateTime(filter.year, 1, 1);
-    DateTime endDate = DateTime(filter.year, 12, 31);
+  /// True when the selected month is the current calendar month, meaning there
+  /// is no later month worth showing.
+  bool get _isAtCurrentMonth {
+    final now = DateTime.now();
+    return _selectedMonth.year == now.year && _selectedMonth.month == now.month;
+  }
 
-    if (selectedPeriod == monthly) {
-      startDate = DateTime(filter.year, filter.month, 1);
-      endDate = DateTime(filter.year, filter.month + 1, 0);
-    }
-    var transactionList = await _controller.getTransactionsBetweenDates(
-        startDate: startDate, endDate: endDate, tagSet: filter.tagSet);
+  Future<void> _load() async {
+    final requestId = ++_requestId;
+    final month = _selectedMonth;
+
+    setState(() => _isLoading = true);
+
+    // The six-month trend window starts five months before the selected month;
+    // the previous month is included in it, so one query covers the trend and
+    // the comparison baseline.
+    final trendStart = DateTime(month.year, month.month - 5, 1);
+    final monthEnd = DateTime(month.year, month.month + 1, 1);
+
+    final rangeTransactions = await _controller.getTransactionsBetweenDates(
+      startDate: trendStart,
+      endDate: monthEnd,
+      tagSet: null,
+    );
+
+    // Discard a stale response: the user moved to a different month while this
+    // query was in flight.
+    if (!mounted || requestId != _requestId) return;
+
+    final selected = _transactionsIn(rangeTransactions, month);
+    final previousMonth = DateTime(month.year, month.month - 1, 1);
+    final previous = _transactionsIn(rangeTransactions, previousMonth);
+
     setState(() {
-      _selectedTransactions = transactionList;
-      this.filter = filter;
+      _isLoading = false;
+      _data = _AnalyticsData(
+        summary: AnalyticsService.summarize(selected),
+        breakdown: AnalyticsService.categoryBreakdown(selected),
+        trend: AnalyticsService.trend(
+          year: month.year,
+          month: month.month,
+          transactions: rangeTransactions,
+        ),
+        comparison: AnalyticsService.compare(
+          current: selected,
+          previous: previous,
+        ),
+      );
     });
+  }
+
+  /// Filters [transactions] down to the calendar month starting at [month].
+  ///
+  /// The repository query uses an inclusive upper bound, so the exclusive end
+  /// of the month is enforced here: a transaction timestamped exactly at the
+  /// first instant of the next month belongs to that next month.
+  List<Transaction> _transactionsIn(
+    List<Transaction> transactions,
+    DateTime month,
+  ) {
+    return transactions
+        .where((transaction) =>
+            transaction.date.year == month.year &&
+            transaction.date.month == month.month)
+        .toList();
+  }
+
+  void _stepMonth(int offset) {
+    setState(() {
+      _selectedMonth =
+          DateTime(_selectedMonth.year, _selectedMonth.month + offset, 1);
+    });
+    _load();
   }
 
   @override
   Widget build(BuildContext context) {
-    var monthlyAggregatedData =
-        AnalyticsService.aggregateDataMonthWise(_selectedTransactions);
-    var dateWiseAggregatedData = AnalyticsService.aggregateDataDateWise(
-        _selectedTransactions, filter.month, filter.year);
+    final data = _data;
 
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               ScreenHeaderWidget(text: 'Analytics'),
-              Spacer(),
-              // IconButton(
-              //     onPressed: () {
-              //       _controller.insertRandomData();
-              //     },
-              //     icon: Icon(Icons.add)),
-              IconButton(
-                  onPressed: () {
-                    showAlertContent(
-                      context: context,
-                      content: FilterSelectorWidget(
-                        getSelectedPeriodTransactions:
-                            _getSelectedPeriodTransactions,
-                        filter: filter,
-                      ),
-                    );
-                  },
-                  icon: Icon(Icons.tune)),
             ],
           ),
-          SizedBox(height: 16,),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    selectedPeriod = yearly;
-                  });
-                  _getSelectedPeriodTransactions(filter);
-                },
-                child: Container(
-                  width: 150,
-                  padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: selectedPeriod == yearly
-                          ? Theme.of(context).colorScheme.onSurface
-                          : Colors.transparent,
-                      width: 1.0,
-                    ),
-                    borderRadius:
-                        BorderRadius.circular(2.0), // Set the BorderRadius
-                  ),
-                  child: Center(child: Text(yearly.toUpperCase())),
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    selectedPeriod = monthly;
-                  });
-                  _getSelectedPeriodTransactions(filter);
-                },
-                child: Container(
-                  width: 150,
-                  padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: selectedPeriod == monthly
-                          ? Theme.of(context).colorScheme.onSurface
-                          : Colors.transparent,
-                      width: 1.0,
-                    ),
-                    borderRadius:
-                        BorderRadius.circular(2.0), // Set the BorderRadius
-                  ),
-                  child: Center(child: Text(monthly.toUpperCase())),
-                ),
-              ),
-            ],
+          const SizedBox(height: 16),
+          _MonthSelector(
+            month: _selectedMonth,
+            canGoForward: !_isAtCurrentMonth,
+            onPrevious: () => _stepMonth(-1),
+            onNext: () => _stepMonth(1),
           ),
-          SizedBox(
-            height: 10,
-          ),
-          Expanded(
+          if (_isLoading && data == null)
+            const Expanded(
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (data != null)
+            Expanded(
               child: ListView(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                padding: const EdgeInsets.only(bottom: 32),
                 children: [
-                  GestureDetector(
-                    onHorizontalDragEnd: (details) {
-                      if (details.primaryVelocity! > 0) {
-                        // swipe right
-                        setState(() {
-                          filter.year = filter.year - 1;
-                        });
-                      } else if (details.primaryVelocity! < 0) {
-                        // swipe left
-                        setState(() {
-                          filter.year = filter.year + 1;
-                        });
-                      }
-                      _getSelectedPeriodTransactions(filter);
-                    },
-                    child: Container(
-                      width: 150,
-                      padding: EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).hoverColor, // Background color
-                        borderRadius:
-                            BorderRadius.circular(10), // Border radius
-                      ),
-                      child: Center(child: Text(filter.year.toString())),
-                    ),
-                  ),
-                  GestureDetector(
-                    onHorizontalDragEnd: (details) {
-                      if (details.primaryVelocity! > 0) {
-                        // swipe right
-                        setState(() {
-                          if (filter.month == 1) {
-                            filter.month = 12;
-                          } else {
-                            filter.month = filter.month - 1;
-                          }
-                        });
-                      } else if (details.primaryVelocity! < 0) {
-                        // swipe left
-                        setState(() {
-                          if (filter.month == 12) {
-                            filter.month = 1;
-                          } else {
-                            filter.month = filter.month + 1;
-                          }
-                        });
-                      }
-                      _getSelectedPeriodTransactions(filter);
-                    },
-                    child: Container(
-                      width: 150,
-                      padding: selectedPeriod == monthly
-                          ? EdgeInsets.all(8)
-                          : EdgeInsets.all(0),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).hoverColor, // Background color
-                        borderRadius:
-                            BorderRadius.circular(10), // Border radius
-                      ),
-                      child: selectedPeriod == monthly
-                          ? Center(child: Text(filter.getMonthName()))
-                          : Container(),
-                    ),
-                  ),
+                  MonthlySummarySection(summary: data.summary),
+                  BudgetProgressWidget(expense: data.summary.expense),
+                  CategoryBreakdownSection(breakdown: data.breakdown),
+                  MonthTrendSection(series: data.trend),
+                  MonthComparisonSection(comparison: data.comparison),
                 ],
               ),
-              AnalyticsTitleWidget(
-                text: 'Expense Trend',
-              ),
-              Scrollbar(
-                child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: selectedPeriod == yearly
-                        ? buildLineChartWidget(
-                            context,
-                            monthlyAggregatedData[2],
-                            monthlyAggregatedData[3],
-                            true)
-                        : buildLineChartWidget(
-                            context,
-                            dateWiseAggregatedData[2],
-                            monthlyAggregatedData[3],
-                            false)),
-              ),
-              AnalyticsTitleWidget(
-                text: 'Income Trend',
-              ),
-              Scrollbar(
-                child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: selectedPeriod == yearly
-                        ? buildLineChartWidget(
-                            context,
-                            monthlyAggregatedData[0],
-                            monthlyAggregatedData[1],
-                            true)
-                        : buildLineChartWidget(
-                            context,
-                            dateWiseAggregatedData[0],
-                            monthlyAggregatedData[1],
-                            false)),
-              ),
-              AnalyticsTitleWidget(
-                text: 'Tag wise transaction patterns',
-              ),
-              TagTableWidget(selectedTransactions: _selectedTransactions),
-              AnalyticsTitleWidget(text: 'General Statistics'),
-              StatisticsDisplayWidget(
-                  statistics: AnalyticsService.calculateStatistics(
-                      _selectedTransactions)),
-            ],
-          ))
+            )
+          else
+            const Expanded(child: SizedBox.shrink()),
         ],
       ),
     );
   }
 }
 
-class SideArrowWidget extends StatelessWidget {
-  const SideArrowWidget({
-    Key? key,
-    required this.shouldShow,
-    required this.text,
-    this.onTap,
-  }) : super(key: key);
+/// Everything the screen renders for one selected month, computed together so
+/// all five sections always describe the same period.
+class _AnalyticsData {
+  final MonthlySummary summary;
+  final CategoryBreakdown breakdown;
+  final TrendSeries trend;
+  final MonthComparison comparison;
 
-  final bool shouldShow;
-  final String text;
-  final onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 30,
-        padding: shouldShow == true ? EdgeInsets.all(8) : EdgeInsets.all(0),
-        decoration: BoxDecoration(
-          color: Theme.of(context).hoverColor, // Background color
-          borderRadius: BorderRadius.circular(100), // Border radius
-        ),
-        child: shouldShow == true ? Center(child: Text(text)) : Container(),
-      ),
-    );
-  }
+  const _AnalyticsData({
+    required this.summary,
+    required this.breakdown,
+    required this.trend,
+    required this.comparison,
+  });
 }
 
-class TagTableWidget extends StatelessWidget {
-  const TagTableWidget({
-    Key? key,
-    required List<Transaction> selectedTransactions,
-  })  : _selectedTransactions = selectedTransactions,
-        super(key: key);
+/// Month stepper. Moving past the current month is disabled because there is
+/// no future data to show.
+class _MonthSelector extends StatelessWidget {
+  final DateTime month;
+  final bool canGoForward;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
 
-  final List<Transaction> _selectedTransactions;
+  const _MonthSelector({
+    required this.month,
+    required this.canGoForward,
+    required this.onPrevious,
+    required this.onNext,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final aggregatedData =
-        AnalyticsService.aggregateDataByTag(_selectedTransactions);
+    final theme = Theme.of(context);
 
-    return SizedBox(
-      height: 250,
-      child: Scrollbar(
-        child: SingleChildScrollView(
-          child: DataTable(
-            columnSpacing: 10,
-            columns: const [
-              DataColumn(label: Text('Tag Name')),
-              DataColumn(label: Text('Expense')),
-              DataColumn(label: Text('Income')),
-            ],
-            rows: aggregatedData.map((e) {
-              TransactionTag tag = e[0];
-              return DataRow(
-                cells: [
-                  DataCell(Row(
-                  children: [
-                      Icon(tag.icon),
-                      SizedBox(width: 20,),
-                      Text(tag.name),
-                    ],
-                  )),
-                  DataCell(Text(e[1].toString())),
-                  DataCell(Text(e[2].toString())),
-                ],
-              );
-            }).toList(),
+    return Row(
+      children: [
+        IconButton(
+          onPressed: onPrevious,
+          icon: const Icon(Icons.chevron_left),
+          tooltip: 'Previous month',
+        ),
+        Expanded(
+          child: Text(
+            '${DateService.monthNames[month.month]} ${month.year}',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.bold),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class AnalyticsTitleWidget extends StatelessWidget {
-  final String text;
-
-  const AnalyticsTitleWidget({
-    Key? key,
-    required this.text,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: Theme.of(context).hoverColor,
-        borderRadius: BorderRadius.circular(2.0), // Set the BorderRadius
-      ),
-      margin: EdgeInsets.only(top: 10),
-      child: Center(
-        child: Text(
-          text,
-          style: Theme.of(context).textTheme.bodyLarge,
+        IconButton(
+          onPressed: canGoForward ? onNext : null,
+          icon: const Icon(Icons.chevron_right),
+          tooltip: 'Next month',
         ),
-      ),
+      ],
     );
   }
 }
