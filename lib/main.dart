@@ -50,13 +50,6 @@ void main() async {
   runApp(const MyApp());
 }
 
-/// Recomputes spend + budget in Dart and pushes them to the native widget via
-/// WidgetService. Fire-and-forget — widget update failure should never block
-/// app startup.
-void _updateHomeWidget() {
-  WidgetService.updateBudgetWidget();
-}
-
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -80,7 +73,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _updateHomeWidget();
+      // Fire-and-forget — widget update failure should never block resume.
+      WidgetService.updateBudgetWidget();
     }
   }
 

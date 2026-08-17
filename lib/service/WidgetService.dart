@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../controllers/TransactionController.dart';
 import 'ConfigService.dart';
+import 'DateService.dart';
 
 /// Bridges the app's config-and-budget state to the native Android home screen
 /// widget using the "SharedPreferences bridge" pattern: Flutter computes both
@@ -15,10 +16,12 @@ import 'ConfigService.dart';
 /// version-specific to read back from a custom AppWidgetProvider. Storing the
 /// values as strings and parsing them in Kotlin is robust across versions.
 class WidgetService {
-  // Keys shared with the native SpendWidgetProvider. Keep in sync.
-  static const String keyMonth = 'widget_month';
-  static const String keySpent = 'widget_spent';
-  static const String keyBudget = 'widget_budget';
+  // Keys shared with the native SpendWidgetProvider (see the matching
+  // KEY_MONTH/KEY_SPENT/KEY_BUDGET constants in SpendWidgetProvider.kt).
+  // Private: nothing outside this class should read/write these directly.
+  static const String _keyMonth = 'widget_month';
+  static const String _keySpent = 'widget_spent';
+  static const String _keyBudget = 'widget_budget';
 
   static const String _androidProviderName = 'SpendWidgetProvider';
 
@@ -40,12 +43,12 @@ class WidgetService {
           ? Get.find<TransactionController>().expense.abs()
           : 0.0;
 
-      final String monthName = _currentMonthName();
+      final monthName = DateService.monthNames[DateTime.now().month].toUpperCase();
 
-      await HomeWidget.saveWidgetData<String>(keyMonth, '$monthName BUDGET');
-      await HomeWidget.saveWidgetData<String>(keySpent, spend.toString());
+      await HomeWidget.saveWidgetData<String>(_keyMonth, '$monthName BUDGET');
+      await HomeWidget.saveWidgetData<String>(_keySpent, spend.toString());
       await HomeWidget.saveWidgetData<String>(
-        keyBudget,
+        _keyBudget,
         budget == null ? _unsetBudget : budget.toString(),
       );
 
@@ -54,24 +57,5 @@ class WidgetService {
       // Swallow — widget may not be placed on the home screen, or services
       // may not be registered yet during cold start.
     }
-  }
-
-  /// Uppercase English month name for DateTime.now(), e.g. "JANUARY".
-  static String _currentMonthName() {
-    const months = [
-      'JANUARY',
-      'FEBRUARY',
-      'MARCH',
-      'APRIL',
-      'MAY',
-      'JUNE',
-      'JULY',
-      'AUGUST',
-      'SEPTEMBER',
-      'OCTOBER',
-      'NOVEMBER',
-      'DECEMBER',
-    ];
-    return months[DateTime.now().month - 1];
   }
 }
