@@ -5,43 +5,91 @@ import 'package:expenny/service/DateService.dart';
 import 'package:expenny/utils/CurrencyFormatter.dart';
 import 'package:expenny/widgets/analytics/AnalyticsSection.dart';
 
-/// Six months of income against expense, oldest to newest, so a single
-/// month's figures can be read in context.
+/// Six months of income against expense, oldest to newest, so a single month's
+/// figures can be read in context.
 ///
-/// The selected month is emphasised by opacity and marked with a bullet in its
-/// axis label, so it is identifiable without relying on colour alone.
+/// The displayed month is marked with a bullet and a bold label as well as
+/// stronger bars, and every value is repeated in one semantic summary, so the
+/// chart never depends on colour or bar height alone.
 class MonthTrendSection extends StatelessWidget {
+  const MonthTrendSection({super.key, required this.series});
+
   final TrendSeries series;
 
-  const MonthTrendSection({Key? key, required this.series}) : super(key: key);
+  static const double _chartHeight = 215;
 
-  static const double _chartHeight = 180;
-
-  /// Three-letter month abbreviation for the given 1-indexed month.
+  /// Three-letter month abbreviation for a 1-indexed month.
   static String monthAbbreviation(int month) =>
-      DateService.monthNames[month].substring(0, 3);
+      DateService.monthAbbreviation(month);
 
-  /// Heading suffix naming the years the range covers, e.g. "2025 - 2026".
+  /// Range label covering both bounds with year context, e.g.
+  /// `Mar 2026 – Aug 2026` or `Sep 2025 – Feb 2026`.
   static String rangeLabel(TrendSeries series) {
     if (series.points.isEmpty) return '';
     final first = series.points.first;
     final last = series.points.last;
-    return series.spansTwoYears
-        ? '${first.year} - ${last.year}'
-        : '${last.year}';
+    return '${monthAbbreviation(first.month)} ${first.year} – '
+        '${monthAbbreviation(last.month)} ${last.year}';
+  }
+
+  /// Compact axis label for a monetary value, e.g. `₹0`, `₹10k`, `₹1.5L`.
+  ///
+  /// Used only for axis readability; full values remain in the legend rows and
+  /// the semantic summary.
+  static String compactAxisLabel(double value) {
+    if (value <= 0) return '₹0';
+    if (value >= 100000) {
+      final lakhs = value / 100000;
+      final text = lakhs >= 10 || lakhs == lakhs.roundToDouble()
+          ? lakhs.round().toString()
+          : lakhs.toStringAsFixed(1);
+      return '₹${text}L';
+    }
+    if (value >= 1000) {
+      final thousands = value / 1000;
+      final text = thousands >= 10 || thousands == thousands.roundToDouble()
+          ? thousands.round().toString()
+          : thousands.toStringAsFixed(1);
+      return '₹${text}k';
+    }
+    return '₹${value.round()}';
+  }
+
+  /// A rounded ceiling at or above the largest value, so gridlines land on
+  /// readable numbers.
+  static double axisCeiling(double maxValue) {
+    if (maxValue <= 0) return 0;
+    final magnitude = maxValue < 1000
+        ? 100.0
+        : maxValue < 10000
+            ? 1000.0
+            : maxValue < 100000
+                ? 10000.0
+                : 100000.0;
+    return (maxValue / magnitude).ceil() * magnitude;
+  }
+
+  /// The complete spoken equivalent of the chart.
+  static String semanticSummary(TrendSeries series) {
+    final parts = series.points.map((point) {
+      final prefix = point.isSelected ? 'Selected month ' : '';
+      return '$prefix${monthAbbreviation(point.month)} ${point.year}, '
+          'income ${formatRupees(point.income)}, '
+          'expense ${formatRupees(point.expense)}';
+    });
+    return 'Six month trend. ${parts.join('. ')}.';
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final incomeColor = Colors.green;
-    final expenseColor = Colors.red;
+    final colors = theme.colorScheme;
 
     if (series.isEmpty) {
       final first = series.points.first;
       final last = series.points.last;
       return AnalyticsSection(
-        title: 'Last 6 months',
+        title: 'Six-month trend',
         child: AnalyticsEmptyHint(
           message: 'No transactions between '
               '${monthAbbreviation(first.month)} ${first.year} and '
@@ -50,133 +98,199 @@ class MonthTrendSection extends StatelessWidget {
       );
     }
 
+    final incomeColor = colors.tertiary;
+    final expenseColor = colors.error;
+    final ceiling = axisCeiling(series.maxValue);
+
     return AnalyticsSection(
-      title: 'Last 6 months',
+      title: 'Six-month trend',
       trailing: Text(
         rangeLabel(series),
         style: theme.textTheme.labelMedium?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant,
+          color: colors.onSurfaceVariant,
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              _LegendDot(color: incomeColor, label: 'Income'),
-              const SizedBox(width: 16),
-              _LegendDot(color: expenseColor, label: 'Expense'),
-            ],
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: _chartHeight,
-            child: BarChart(
-              BarChartData(
-                minY: 0,
-                // Headroom above the tallest bar so it doesn't touch the top.
-                maxY: series.maxValue * 1.15,
-                gridData: const FlGridData(show: false),
-                borderData: FlBorderData(show: false),
-                barTouchData: BarTouchData(enabled: false),
-                titlesData: FlTitlesData(
-                  topTitles: const AxisTitles(),
-                  rightTitles: const AxisTitles(),
-                  leftTitles: const AxisTitles(),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 28,
-                      getTitlesWidget: (value, meta) {
-                        final index = value.toInt();
-                        if (index < 0 || index >= series.points.length) {
-                          return const SizedBox.shrink();
-                        }
-                        final point = series.points[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            point.isSelected
-                                ? '• ${monthAbbreviation(point.month)}'
-                                : monthAbbreviation(point.month),
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              fontWeight: point.isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              color: point.isSelected
-                                  ? theme.colorScheme.onSurface
-                                  : theme.colorScheme.onSurfaceVariant,
+      semanticLabel: semanticSummary(series),
+      child: ExcludeSemantics(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Wrap(
+              spacing: 16,
+              runSpacing: 4,
+              children: [
+                _LegendKey(
+                  color: incomeColor,
+                  label: 'Income',
+                  isRounded: true,
+                ),
+                _LegendKey(
+                  color: expenseColor,
+                  label: 'Expense',
+                  isRounded: false,
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              height: _chartHeight,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // Six groups of two rods must fit the available width, so rod
+                  // width is derived from constraints rather than fixed.
+                  final perGroup = (constraints.maxWidth - 40) / 6;
+                  final rodWidth = (perGroup / 3).clamp(5.0, 12.0);
+
+                  return BarChart(
+                    BarChartData(
+                      minY: 0,
+                      maxY: ceiling,
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                        horizontalInterval: ceiling / 4,
+                        getDrawingHorizontalLine: (value) => FlLine(
+                          color: colors.outlineVariant,
+                          strokeWidth: 1,
+                        ),
+                      ),
+                      borderData: FlBorderData(show: false),
+                      barTouchData: BarTouchData(enabled: false),
+                      titlesData: FlTitlesData(
+                        topTitles: const AxisTitles(),
+                        rightTitles: const AxisTitles(),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 40,
+                            interval: ceiling / 4,
+                            getTitlesWidget: (value, meta) => Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: Text(
+                                compactAxisLabel(value),
+                                textAlign: TextAlign.right,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: colors.onSurfaceVariant,
+                                  fontSize: 9,
+                                ),
+                              ),
                             ),
                           ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                barGroups: [
-                  for (var i = 0; i < series.points.length; i++)
-                    BarChartGroupData(
-                      x: i,
-                      barsSpace: 3,
-                      barRods: [
-                        BarChartRodData(
-                          toY: series.points[i].income,
-                          width: 7,
-                          borderRadius: BorderRadius.circular(2),
-                          // Unselected months are dimmed so the selected month
-                          // reads as the focus of the chart.
-                          color: series.points[i].isSelected
-                              ? incomeColor
-                              : incomeColor.withValues(alpha: 0.4),
                         ),
-                        BarChartRodData(
-                          toY: series.points[i].expense,
-                          width: 7,
-                          borderRadius: BorderRadius.circular(2),
-                          color: series.points[i].isSelected
-                              ? expenseColor
-                              : expenseColor.withValues(alpha: 0.4),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 26,
+                            getTitlesWidget: (value, meta) {
+                              final index = value.toInt();
+                              if (index < 0 || index >= series.points.length) {
+                                return const SizedBox.shrink();
+                              }
+                              final point = series.points[index];
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Text(
+                                  point.isSelected
+                                      ? '• ${monthAbbreviation(point.month)}'
+                                      : monthAbbreviation(point.month),
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    fontWeight: point.isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    color: point.isSelected
+                                        ? colors.onSurface
+                                        : colors.onSurfaceVariant,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                         ),
+                      ),
+                      barGroups: [
+                        for (var i = 0; i < series.points.length; i++)
+                          _barGroup(
+                            index: i,
+                            point: series.points[i],
+                            rodWidth: rodWidth,
+                            incomeColor: incomeColor,
+                            expenseColor: expenseColor,
+                            outline: colors.onSurface,
+                          ),
                       ],
                     ),
-                ],
+                  );
+                },
               ),
             ),
-          ),
-          const SizedBox(height: 8),
-          // Text equivalent of the chart: the same six months and figures are
-          // available without interpreting bar heights or colours.
-          Semantics(
-            label: series.points
-                .map((point) =>
-                    '${monthAbbreviation(point.month)} ${point.year}: '
-                    'income ${formatRupees(point.income)}, '
-                    'expense ${formatRupees(point.expense)}')
-                .join('. '),
-            child: const SizedBox.shrink(),
-          ),
-        ],
+          ],
+        ),
       ),
+    );
+  }
+
+  BarChartGroupData _barGroup({
+    required int index,
+    required TrendPoint point,
+    required double rodWidth,
+    required Color incomeColor,
+    required Color expenseColor,
+    required Color outline,
+  }) {
+    // Unselected months are dimmed and unoutlined; the selected month keeps
+    // full colour, a wider rod, and a border, so it stands out by shape as
+    // well as tone.
+    final selected = point.isSelected;
+    final border = selected
+        ? BorderSide(color: outline, width: 1)
+        : const BorderSide(width: 0);
+
+    BarChartRodData rod(double value, Color color) => BarChartRodData(
+          toY: value,
+          width: selected ? rodWidth + 1 : rodWidth,
+          borderRadius: BorderRadius.circular(2),
+          borderSide: border,
+          color: selected ? color : color.withValues(alpha: 0.4),
+        );
+
+    return BarChartGroupData(
+      x: index,
+      barsSpace: 3,
+      barRods: [
+        rod(point.income, incomeColor),
+        rod(point.expense, expenseColor),
+      ],
     );
   }
 }
 
-class _LegendDot extends StatelessWidget {
+/// A legend key using both colour and shape, so the two series remain
+/// distinguishable without colour perception.
+class _LegendKey extends StatelessWidget {
+  const _LegendKey({
+    required this.color,
+    required this.label,
+    required this.isRounded,
+  });
+
   final Color color;
   final String label;
-
-  const _LegendDot({required this.color, required this.label});
+  final bool isRounded;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: color,
+            shape: isRounded ? BoxShape.circle : BoxShape.rectangle,
+          ),
         ),
         const SizedBox(width: 6),
         Text(

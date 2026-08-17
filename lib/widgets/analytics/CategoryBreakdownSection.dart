@@ -1,23 +1,47 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:expenny/models/TransactionTag.dart';
 import 'package:expenny/models/analytics/CategoryBreakdown.dart';
 import 'package:expenny/utils/CurrencyFormatter.dart';
 import 'package:expenny/widgets/analytics/AnalyticsSection.dart';
 
-/// Where the month's money went: the biggest spending categories first, each
-/// with its amount and share of total expense.
+/// Where the month's money went, as a donut paired with a complete text legend.
 ///
-/// Each row shows the amount and percentage as text, so the proportional bar
-/// is a visual aid rather than the only way to read the data.
+/// The chart is decorative: every group's label, amount, and share is also
+/// written out in the legend and in one semantic summary, so the breakdown is
+/// fully readable without interpreting colour or arc size.
 class CategoryBreakdownSection extends StatelessWidget {
+  const CategoryBreakdownSection({super.key, required this.breakdown});
+
   final CategoryBreakdown breakdown;
 
-  const CategoryBreakdownSection({Key? key, required this.breakdown})
-      : super(key: key);
+  /// Width below which the donut and legend stack instead of sharing a row.
+  static const double stackBelowWidth = 400;
+
+  static const double _chartSize = 150;
+  static const double _ringThickness = 26;
+
+  /// Icon and colour identity for a group. `Other` has no single tag, so it
+  /// takes a neutral theme colour rather than a category identity.
+  static _GroupIdentity identityFor(CategoryGroup group, ColorScheme colors) {
+    if (group.isOther) {
+      return _GroupIdentity(Icons.more_horiz, colors.onSurfaceVariant);
+    }
+    final tag = TransactionTag.getTagById(group.tagIds.first);
+    return _GroupIdentity(tag.icon, tag.color);
+  }
+
+  /// The complete spoken equivalent of the chart and legend.
+  static String semanticSummary(CategoryBreakdown breakdown) {
+    final parts = breakdown.groups
+        .map((group) => '${group.label}, ${formatRupees(group.amount)}, '
+            '${formatPercent(group.percent)}');
+    return 'Spending by category. ${parts.join('. ')}.';
+  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colors = Theme.of(context).colorScheme;
 
     if (breakdown.isEmpty) {
       return const AnalyticsSection(
@@ -28,92 +52,189 @@ class CategoryBreakdownSection extends StatelessWidget {
       );
     }
 
-    // Bars are scaled against the largest group so the leading category fills
-    // the row; scaling against 100% would leave every bar short and hard to
-    // compare when spending is spread across many categories.
-    final largest = breakdown.groups.first.amount;
+    final donut = _Donut(breakdown: breakdown);
+    final legend = _Legend(breakdown: breakdown);
 
     return AnalyticsSection(
       title: 'Spending by category',
       trailing: Text(
-        formatRupees(breakdown.totalExpense),
-        style: theme.textTheme.labelMedium?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
+        '${formatRupees(breakdown.totalExpense)} total',
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: colors.onSurfaceVariant,
+            ),
       ),
-      child: Column(
-        children: breakdown.groups
-            .map((group) => _CategoryRow(group: group, largestAmount: largest))
-            .toList(),
+      semanticLabel: semanticSummary(breakdown),
+      child: ExcludeSemantics(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth < stackBelowWidth) {
+              return Column(
+                children: [
+                  Center(child: donut),
+                  const SizedBox(height: 16),
+                  legend,
+                ],
+              );
+            }
+
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                donut,
+                const SizedBox(width: 20),
+                Expanded(child: legend),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 }
 
-class _CategoryRow extends StatelessWidget {
-  final CategoryGroup group;
-  final double largestAmount;
+class _GroupIdentity {
+  const _GroupIdentity(this.icon, this.color);
 
-  const _CategoryRow({required this.group, required this.largestAmount});
+  final IconData icon;
+  final Color color;
+}
+
+class _Donut extends StatelessWidget {
+  const _Donut({required this.breakdown});
+
+  final CategoryBreakdown breakdown;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
-    // The folded "Other" bucket has no single tag, so it uses a neutral colour
-    // and a generic icon instead of a category identity.
-    final tag =
-        group.isOther ? null : TransactionTag.getTagById(group.tagIds.first);
-    final color = tag?.color ?? theme.colorScheme.onSurfaceVariant;
-    final icon = tag?.icon ?? Icons.more_horiz;
-
-    final fill = largestAmount <= 0
-        ? 0.0
-        : (group.amount / largestAmount).clamp(0.0, 1.0);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+    return SizedBox(
+      width: CategoryBreakdownSection._chartSize,
+      height: CategoryBreakdownSection._chartSize,
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          Row(
+          PieChart(
+            PieChartData(
+              sectionsSpace: 2,
+              startDegreeOffset: -90,
+              // Must be set explicitly: the default is double.infinity, which
+              // would collapse the ring.
+              centerSpaceRadius: CategoryBreakdownSection._chartSize / 2 -
+                  CategoryBreakdownSection._ringThickness,
+              pieTouchData: PieTouchData(enabled: false),
+              borderData: FlBorderData(show: false),
+              sections: [
+                for (final group in breakdown.groups)
+                  PieChartSectionData(
+                    value: group.amount,
+                    color: CategoryBreakdownSection.identityFor(group, colors)
+                        .color,
+                    radius: CategoryBreakdownSection._ringThickness,
+                    // Labels live in the legend, not on the arcs.
+                    showTitle: false,
+                  ),
+              ],
+            ),
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 16, color: color),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  group.label,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodyMedium,
+              Text(
+                formatRupees(breakdown.totalExpense),
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: colors.onSurface,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(width: 8),
               Text(
-                formatRupees(group.amount),
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(width: 8),
-              SizedBox(
-                width: 52,
-                child: Text(
-                  formatPercent(group.percent),
-                  textAlign: TextAlign.right,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
+                breakdown.groups.length == 1
+                    ? '1 category'
+                    : '${breakdown.groups.length} categories',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.onSurfaceVariant,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(3),
-            child: LinearProgressIndicator(
-              value: fill,
-              minHeight: 6,
-              backgroundColor: theme.colorScheme.surfaceContainerHighest,
-              valueColor: AlwaysStoppedAnimation<Color>(color),
+        ],
+      ),
+    );
+  }
+}
+
+class _Legend extends StatelessWidget {
+  const _Legend({required this.breakdown});
+
+  final CategoryBreakdown breakdown;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final group in breakdown.groups) _LegendRow(group: group),
+      ],
+    );
+  }
+}
+
+class _LegendRow extends StatelessWidget {
+  const _LegendRow({required this.group});
+
+  final CategoryGroup group;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final identity = CategoryBreakdownSection.identityFor(group, colors);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Icon(identity.icon, size: 16, color: identity.color),
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 3,
+            child: Text(
+              group.label,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colors.onSurface,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Grouped amounts contain no break opportunities, so they cannot
+          // soft-wrap. Scaling down inside this slot keeps large figures fully
+          // readable without clipping or pushing the row past its bounds.
+          Flexible(
+            flex: 2,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Text(
+                formatRupees(group.amount),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.onSurface,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Text(
+                formatPercent(group.percent),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
+              ),
             ),
           ),
         ],

@@ -30,8 +30,8 @@ class BottomNavBarWidget extends StatelessWidget {
             text: 'Transactions',
           ),
           GButton(
-            icon: Icons.analytics_outlined,
-            text: 'Analytics',
+            icon: Icons.dashboard_outlined,
+            text: 'Dashboard',
           ),
           GButton(
             icon: Icons.search,

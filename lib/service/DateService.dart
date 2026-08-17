@@ -35,6 +35,20 @@ class DateService {
     return DateTime(now.year, now.month, 1);
   }
 
+  /// Three-letter abbreviation for a 1-indexed [month], e.g. 1 -> 'Jan'.
+  static String monthAbbreviation(int month) =>
+      monthNames[month].substring(0, 3);
+
+  /// Full month name with year, e.g. 'August 2026'. Used for accessible labels
+  /// and headings where the period must be unambiguous.
+  static String monthYear(DateTime date) =>
+      '${monthNames[date.month]} ${date.year}';
+
+  /// Abbreviated month with year, e.g. 'Aug 2026'. Used where space is tight
+  /// but year context must remain visible, such as month chips.
+  static String shortMonthYear(DateTime date) =>
+      '${monthAbbreviation(date.month)} ${date.year}';
+
   static getFormattedPeriodString(DateTime date) {
     String monthName = DateService.monthNames[date.month];
     String year = date.year.toString();

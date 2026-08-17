@@ -8,81 +8,133 @@ import 'analytics/AnalyticsSection.dart';
 ///
 /// [expense] is the spend to measure, as a non-negative magnitude. It is passed
 /// in rather than read from the controller so the widget can report any month
-/// the analytics screen has selected, not just the current one.
+/// the dashboard has selected, not just the current one.
 ///
 /// The single budget applies to every month independently — there is no
 /// rollover of unused budget or overspend between months.
 class BudgetProgressWidget extends StatelessWidget {
-  final double expense;
+  const BudgetProgressWidget({super.key, required this.expense});
 
-  const BudgetProgressWidget({Key? key, required this.expense})
-      : super(key: key);
+  final double expense;
 
   @override
   Widget build(BuildContext context) {
     final configService = Get.find<ConfigService>();
-    final theme = Theme.of(context);
 
     return Obx(() {
       final budget = configService.monthlyBudget.value;
 
       if (budget == null) {
         return const AnalyticsSection(
-          title: 'Budget',
+          title: 'Monthly budget',
           child: AnalyticsEmptyHint(
-            message: 'Set a monthly budget in Preferences to track your '
-                'spending against it.',
+            message: 'No budget set. Add a monthly budget in Preferences to '
+                'track your spending against it.',
           ),
         );
       }
 
-      final progress = computeProgress(expense, budget);
-      final over = isOverBudget(expense, budget);
-
       return AnalyticsSection(
-        title: 'Budget',
-        trailing: Text(
-          formatPercent(budgetUsedPercent(expense, budget)),
-          style: theme.textTheme.labelMedium?.copyWith(
-            color: over ? Colors.red : theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
+        title: 'Monthly budget',
+        child: _BudgetBody(expense: expense, budget: budget),
+      );
+    });
+  }
+}
+
+class _BudgetBody extends StatelessWidget {
+  const _BudgetBody({required this.expense, required this.budget});
+
+  final double expense;
+  final double budget;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    final progress = computeProgress(expense, budget);
+    final over = isOverBudget(expense, budget);
+    final usedPercent = budgetUsedPercent(expense, budget);
+
+    // At exact equality the threshold is considered reached, so status styling
+    // activates, while the remaining label still reads zero rather than an
+    // overage. This preserves the existing isOverBudget contract.
+    final statusLabel = expense > budget
+        ? 'Over budget by ${formatRupees(expense - budget)}'
+        : 'Remaining ${formatRupees(budget - expense)}';
+
+    final statusColor = over ? colors.error : colors.onSurfaceVariant;
+
+    return Semantics(
+      container: true,
+      label: 'Monthly budget, ${formatRupees(expense)} spent of '
+          '${formatRupees(budget)}, ${formatPercent(usedPercent)} used, '
+          '$statusLabel',
+      child: ExcludeSemantics(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
+            // Wrap rather than Spacer: both values are unbounded text and must
+            // be allowed to fall onto separate lines at narrow widths.
+            Wrap(
+              spacing: 12,
+              runSpacing: 4,
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.end,
               children: [
-                Text(
-                  formatBudgetLabel(expense, budget),
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Spent of ${formatRupees(budget)}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      formatRupees(expense),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: colors.onSurface,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-                const Spacer(),
                 Text(
-                  formatBudgetRemainder(expense, budget),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color:
-                        over ? Colors.red : theme.colorScheme.onSurfaceVariant,
+                  statusLabel,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: statusColor,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
+                // Track fill is capped; the numeric percentage below is not.
                 value: progress,
                 minHeight: 8,
-                backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                backgroundColor: colors.surfaceContainerHighest,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  over ? Colors.red : Colors.green,
+                  over ? colors.error : colors.primary,
                 ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '${formatPercent(usedPercent)} used',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.onSurfaceVariant,
               ),
             ),
           ],
         ),
-      );
-    });
+      ),
+    );
   }
 }
 

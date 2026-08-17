@@ -4,7 +4,7 @@ import 'package:expenny/widgets/BottomNavBarWidget.dart';
 
 /// Guards the destination order and labels of the bottom navigation.
 ///
-/// Analytics is the landing destination at index 1, with Transactions
+/// Dashboard is the landing destination at index 1, with Transactions
 /// immediately to its left. `HomeScreen` keys its initial page off the same
 /// index, so a reorder here without updating that index would silently change
 /// which screen the app opens on.
@@ -25,21 +25,33 @@ void main() {
       await tester.pumpWidget(wrap(currentIndex: 1));
 
       expect(find.text('Transactions'), findsOneWidget);
-      expect(find.text('Analytics'), findsOneWidget);
+      expect(find.text('Dashboard'), findsOneWidget);
       expect(find.text('Search'), findsOneWidget);
       expect(find.text('Preferences'), findsOneWidget);
 
-      // The old mislabelled "Home" destination is gone.
+      // The old mislabelled "Home" and pre-rename "Analytics" tabs are gone.
       expect(find.text('Home'), findsNothing);
+      expect(find.text('Analytics'), findsNothing);
     });
 
-    testWidgets('places Transactions to the left of Analytics', (tester) async {
+    testWidgets('orders destinations left to right', (tester) async {
       await tester.pumpWidget(wrap(currentIndex: 1));
 
       final transactions = tester.getCenter(find.text('Transactions')).dx;
-      final analytics = tester.getCenter(find.text('Analytics')).dx;
+      final dashboard = tester.getCenter(find.text('Dashboard')).dx;
+      final search = tester.getCenter(find.text('Search')).dx;
+      final preferences = tester.getCenter(find.text('Preferences')).dx;
 
-      expect(transactions, lessThan(analytics));
+      expect(transactions, lessThan(dashboard));
+      expect(dashboard, lessThan(search));
+      expect(search, lessThan(preferences));
+    });
+
+    testWidgets('marks the supplied index as selected', (tester) async {
+      await tester.pumpWidget(wrap(currentIndex: 1));
+
+      // Dashboard sits at index 1, the app's landing destination.
+      expect(find.byIcon(Icons.dashboard_outlined), findsWidgets);
     });
 
     testWidgets('reports the tapped destination index', (tester) async {

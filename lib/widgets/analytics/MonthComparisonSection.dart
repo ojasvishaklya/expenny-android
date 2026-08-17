@@ -1,16 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:expenny/models/TransactionTag.dart';
 import 'package:expenny/models/analytics/MonthComparison.dart';
+import 'package:expenny/service/DateService.dart';
 import 'package:expenny/utils/CurrencyFormatter.dart';
 import 'package:expenny/widgets/analytics/AnalyticsSection.dart';
 
-/// How the selected month's spending compares with the month before it: the
-/// overall movement, then the categories that drove it.
+/// How the displayed month's spending compares with the month before it.
+///
+/// Every row states its direction in words, so the trend icon and status colour
+/// are reinforcement rather than the only signal.
 class MonthComparisonSection extends StatelessWidget {
+  const MonthComparisonSection({
+    super.key,
+    required this.comparison,
+    required this.displayedMonth,
+  });
+
   final MonthComparison comparison;
 
-  const MonthComparisonSection({Key? key, required this.comparison})
-      : super(key: key);
+  /// The month the comparison's current side belongs to. Its predecessor names
+  /// the heading, so the heading always matches the visible data.
+  final DateTime displayedMonth;
+
+  /// Heading naming the month being compared against.
+  static String headingFor(DateTime displayedMonth) {
+    final previous = DateTime(displayedMonth.year, displayedMonth.month - 1, 1);
+    return 'Compared with ${DateService.monthYear(previous)}';
+  }
 
   /// Sentence describing the overall change in total spending.
   static String headline(MonthComparison comparison) {
@@ -18,141 +34,270 @@ class MonthComparisonSection extends StatelessWidget {
 
     switch (comparison.direction) {
       case ChangeDirection.higher:
-        return 'You spent $amount more than last month';
+        return 'You spent $amount more overall';
       case ChangeDirection.lower:
-        return 'You spent $amount less than last month';
+        return 'You spent $amount less overall';
       case ChangeDirection.noChange:
         return 'You spent the same as last month';
       case ChangeDirection.newSpending:
-        return 'You spent $amount this month, with nothing to compare';
+        return 'Spending began this month';
       case ChangeDirection.disappeared:
-        return 'You spent nothing this month, down $amount';
+        return 'Spending stopped this month';
     }
   }
 
-  /// Short direction word used on each category row.
+  /// Short direction word shown beside each change value.
   static String directionLabel(ChangeDirection direction) {
     switch (direction) {
       case ChangeDirection.higher:
-        return 'more';
+        return 'Higher';
       case ChangeDirection.lower:
-        return 'less';
+        return 'Lower';
       case ChangeDirection.noChange:
-        return 'no change';
+        return 'No change';
       case ChangeDirection.newSpending:
-        return 'new';
+        return 'New';
       case ChangeDirection.disappeared:
-        return 'stopped';
+        return 'Stopped';
+    }
+  }
+
+  /// Sentence describing one category's movement.
+  static String categorySentence(CategoryChange change) {
+    switch (change.direction) {
+      case ChangeDirection.higher:
+        return '${change.label} spending increased';
+      case ChangeDirection.lower:
+        return '${change.label} spending decreased';
+      case ChangeDirection.noChange:
+        return '${change.label} spending was unchanged';
+      case ChangeDirection.newSpending:
+        return 'New ${change.label} spending';
+      case ChangeDirection.disappeared:
+        return '${change.label} spending stopped';
+    }
+  }
+
+  /// Whether a direction represents more spending, which reads as adverse.
+  static bool isIncrease(ChangeDirection direction) =>
+      direction == ChangeDirection.higher ||
+      direction == ChangeDirection.newSpending;
+
+  static Color _statusColor(ChangeDirection direction, ColorScheme colors) {
+    switch (direction) {
+      case ChangeDirection.higher:
+      case ChangeDirection.newSpending:
+        return colors.error;
+      case ChangeDirection.lower:
+      case ChangeDirection.disappeared:
+        return colors.tertiary;
+      case ChangeDirection.noChange:
+        return colors.onSurfaceVariant;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final heading = headingFor(displayedMonth);
 
     if (!comparison.isAvailable) {
-      return const AnalyticsSection(
-        title: 'Vs last month',
-        child: AnalyticsEmptyHint(
+      return AnalyticsSection(
+        title: heading,
+        child: const AnalyticsEmptyHint(
           message: 'No transactions last month, so there is nothing to '
               'compare against.',
         ),
       );
     }
 
-    final isUp = comparison.direction == ChangeDirection.higher ||
-        comparison.direction == ChangeDirection.newSpending;
+    final changes = comparison.categoryChanges;
 
     return AnalyticsSection(
-      title: 'Vs last month',
+      title: heading,
+      trailing: changes.isEmpty
+          ? null
+          : Text(
+              changes.length == 1
+                  ? '1 notable change'
+                  : '${changes.length} notable changes',
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              Icon(
-                isUp ? Icons.trending_up : Icons.trending_down,
-                size: 18,
-                color: isUp ? Colors.red : Colors.green,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  headline(comparison),
-                  style: theme.textTheme.bodyMedium,
-                ),
-              ),
-              if (comparison.percentChange != null) ...[
-                const SizedBox(width: 8),
-                Text(
-                  formatPercent(comparison.percentChange!.abs()),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: isUp ? Colors.red : Colors.green,
-                  ),
-                ),
-              ],
-            ],
+          _InsightRow(
+            icon: isIncrease(comparison.direction)
+                ? Icons.trending_up
+                : Icons.trending_down,
+            iconColor: _statusColor(
+              comparison.direction,
+              Theme.of(context).colorScheme,
+            ),
+            sentence: headline(comparison),
+            detail: comparison.direction == ChangeDirection.noChange
+                ? null
+                : '${formatRupees(comparison.difference)} vs last month',
+            changeValue: comparison.percentChange == null
+                ? formatRupees(comparison.difference)
+                : formatPercent(comparison.percentChange!.abs()),
+            directionText: directionLabel(comparison.direction),
+            statusColor: _statusColor(
+              comparison.direction,
+              Theme.of(context).colorScheme,
+            ),
           ),
-          if (comparison.categoryChanges.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            Text(
-              'Biggest movers',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+          for (final change in changes)
+            _InsightRow(
+              icon: TransactionTag.getTagById(change.tagId).icon,
+              iconColor: TransactionTag.getTagById(change.tagId).color,
+              sentence: categorySentence(change),
+              detail: '${formatRupees(change.difference)} vs last month',
+              changeValue: change.percentChange == null
+                  ? formatRupees(change.difference)
+                  : formatPercent(change.percentChange!.abs()),
+              directionText: directionLabel(change.direction),
+              statusColor: _statusColor(
+                change.direction,
+                Theme.of(context).colorScheme,
               ),
             ),
-            const SizedBox(height: 8),
-            ...comparison.categoryChanges.map(
-              (change) => _CategoryChangeRow(change: change),
-            ),
-          ],
         ],
       ),
     );
   }
 }
 
-class _CategoryChangeRow extends StatelessWidget {
-  final CategoryChange change;
+class _InsightRow extends StatelessWidget {
+  const _InsightRow({
+    required this.icon,
+    required this.iconColor,
+    required this.sentence,
+    required this.detail,
+    required this.changeValue,
+    required this.directionText,
+    required this.statusColor,
+  });
 
-  const _CategoryChangeRow({required this.change});
+  final IconData icon;
+  final Color iconColor;
+  final String sentence;
+  final String? detail;
+  final String changeValue;
+  final String directionText;
+  final Color statusColor;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final tag = TransactionTag.getTagById(change.tagId);
+    final colors = theme.colorScheme;
 
-    final isUp = change.direction == ChangeDirection.higher ||
-        change.direction == ChangeDirection.newSpending;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          Icon(tag.icon, size: 16, color: tag.color),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              change.label,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyMedium,
-            ),
+    final narrative = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          sentence,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: colors.onSurface,
+            fontWeight: FontWeight.w600,
           ),
-          const SizedBox(width: 8),
+        ),
+        if (detail != null) ...[
+          const SizedBox(height: 2),
           Text(
-            formatRupees(change.difference),
-            style: theme.textTheme.bodyMedium
-                ?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            MonthComparisonSection.directionLabel(change.direction),
+            detail!,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: isUp ? Colors.red : Colors.green,
+              color: colors.onSurfaceVariant,
             ),
           ),
         ],
+      ],
+    );
+
+    // Direction is always written out, so the value block can be dropped below
+    // the narrative on narrow screens without losing meaning.
+    final valueBlock = Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          changeValue,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: statusColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          directionText,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: colors.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final stack = constraints.maxWidth < 300 ||
+              MediaQuery.textScalerOf(context).scale(1) >
+                  kAnalyticsStackTextScale;
+
+          final leading = Padding(
+            padding: const EdgeInsets.only(right: 10, top: 2),
+            child: Icon(icon, size: 18, color: iconColor),
+          );
+
+          if (stack) {
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                leading,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      narrative,
+                      const SizedBox(height: 4),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              changeValue,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: statusColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              directionText,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colors.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          }
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              leading,
+              Expanded(child: narrative),
+              const SizedBox(width: 10),
+              valueBlock,
+            ],
+          );
+        },
       ),
     );
   }

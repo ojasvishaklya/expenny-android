@@ -1,6 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:expenny/widgets/BudgetProgressWidget.dart';
 
+/// Covers the pure budget helpers.
+///
+/// Widget-level coverage of [BudgetProgressWidget] is deliberately omitted:
+/// seeding a budget goes through `ConfigService.setMonthlyBudget`, which calls
+/// `WidgetService.updateBudgetWidget()` and awaits `home_widget` platform
+/// channels that never complete under `flutter_test`, hanging the run. The
+/// no-budget rendering path is still exercised through the dashboard screen
+/// tests, and the arithmetic below is what the widget displays.
 void main() {
   group('computeProgress', () {
     test('returns 0.0 when budget is 0', () {
@@ -74,6 +82,11 @@ void main() {
 
     test('is not capped when overspending', () {
       expect(budgetUsedPercent(1500, 1000), 150.0);
+    });
+
+    test('matches the percentage the dashboard renders', () {
+      // 13,040 of 20,000 is the figure shown in the budget panel.
+      expect(budgetUsedPercent(13040, 20000), closeTo(65.2, 0.001));
     });
   });
 
