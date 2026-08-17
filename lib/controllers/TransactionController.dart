@@ -4,6 +4,7 @@ import 'package:expenny/models/Transaction.dart';
 import '../models/TransactionTag.dart';
 import '../repository/TransactionRepository.dart';
 import '../service/TransactionService.dart';
+import '../service/WidgetService.dart';
 
 class TransactionController extends GetxController {
   final TransactionRepository transactionRepository;
@@ -120,5 +121,9 @@ class TransactionController extends GetxController {
   void refreshTransactionList() {
     transactionList.sort((a, b) => b.date.compareTo(a.date));
     transactionList.refresh();
+
+    // Push the fresh spend value to the home screen widget whenever the
+    // transaction list changes (add/delete/sync/load). Fire-and-forget.
+    WidgetService.updateBudgetWidget();
   }
 }

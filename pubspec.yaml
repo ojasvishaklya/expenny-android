@@ -23,6 +23,11 @@ dependencies:
   transaction_sms_parser: ^0.0.1
   another_telephony: ^0.4.1
   permission_handler: ^11.3.1
+  # NOTE: SpendWidgetProvider.kt reads this plugin's SharedPreferences file
+  # ("HomeWidgetPreferences") directly by name — an internal implementation
+  # detail, not a public API. If bumping this major version, verify that
+  # prefs file name/format hasn't changed, or the widget will silently show
+  # stale/default values.
   home_widget: ^0.7.0
 
 
