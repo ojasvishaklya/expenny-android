@@ -33,9 +33,6 @@ class DashboardLoadStatus extends StatelessWidget {
 
   final VoidCallback? onRetry;
 
-  static bool _isSameMonth(DateTime a, DateTime b) =>
-      a.year == b.year && a.month == b.month;
-
   /// The visible status sentence for the current combination of state.
   ///
   /// Kept pure and static so the wording is directly testable.
@@ -56,7 +53,7 @@ class DashboardLoadStatus extends StatelessWidget {
 
     if (isLoading) {
       if (displayed == null) return 'Loading $selected';
-      if (_isSameMonth(selectedMonth, displayedMonth!)) {
+      if (DateService.isSameMonth(selectedMonth, displayedMonth!)) {
         return 'Refreshing $displayed';
       }
       return 'Loading $selected · Showing $displayed';

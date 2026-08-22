@@ -49,6 +49,10 @@ class DateService {
   static String shortMonthYear(DateTime date) =>
       '${monthAbbreviation(date.month)} ${date.year}';
 
+  /// Whether [a] and [b] fall in the same calendar month, ignoring day.
+  static bool isSameMonth(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month;
+
   static getFormattedPeriodString(DateTime date) {
     String monthName = DateService.monthNames[date.month];
     String year = date.year.toString();

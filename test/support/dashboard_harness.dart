@@ -77,15 +77,6 @@ Future<void> setSurface(WidgetTester tester, Size size) async {
 }
 
 /// Registers a [ConfigService] so widgets that observe the configured budget
-/// can be pumped.
-///
-/// [monthlyBudget] seeds the budget; null leaves it unset.
-///
-/// GetStorage persists through path_provider, whose platform channel has no
-/// implementation under flutter_test, so the channel is mocked to a fresh temp
-/// directory. Each call uses its own container, so state cannot leak between
-/// tests. No production code is modified.
-/// Registers a [ConfigService] so widgets that observe the configured budget
 /// can be pumped. The budget is left unset.
 ///
 /// Seeding a budget is deliberately not offered: it would go through

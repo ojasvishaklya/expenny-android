@@ -47,9 +47,6 @@ class NearbyMonthSelector extends StatelessWidget {
     return a.isAfter(b);
   }
 
-  static bool _isSameMonth(DateTime a, DateTime b) =>
-      a.year == b.year && a.month == b.month;
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -74,7 +71,7 @@ class NearbyMonthSelector extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 8),
                   child: _MonthChip(
                     month: month,
-                    isSelected: _isSameMonth(month, selectedMonth),
+                    isSelected: DateService.isSameMonth(month, selectedMonth),
                     isFuture: isFutureMonth(month, currentMonth),
                     onSelected: onMonthSelected,
                   ),
