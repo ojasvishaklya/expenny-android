@@ -18,6 +18,17 @@ String formatRupees(double amount) {
   return '$sign₹${_groupInPairs(rest)},$lastThree';
 }
 
+/// Formats [value] as a percentage with a single decimal place, e.g.
+/// 42.35 -> "42.4%". Used for the savings rate, category shares, and
+/// month-over-month change on the analytics screen.
+///
+/// Non-finite values (NaN / Infinity) render as "0.0%" so a divide-by-zero
+/// upstream can never surface as "NaN%" in the UI.
+String formatPercent(double value) {
+  if (!value.isFinite) return '0.0%';
+  return '${value.toStringAsFixed(1)}%';
+}
+
 /// Groups [digits] into comma-separated pairs starting from the right,
 /// e.g. "1234" -> "12,34", "123" -> "1,23".
 String _groupInPairs(String digits) {

@@ -215,6 +215,43 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
+                                                GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _transaction.paymentMethod =
+                                  PaymentMethod.ONLINE.name;
+                            });
+                          },
+                          child: Container(
+                            width: 150,
+                            padding: EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 16),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: _transaction.paymentMethod ==
+                                        PaymentMethod.ONLINE.name
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Colors.transparent,
+                                width: 2.0,
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                  10.0), // Set the BorderRadius
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.credit_card,
+                                  color: _transaction.paymentMethod ==
+                                          PaymentMethod.ONLINE.name
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Colors.grey,
+                                ),
+                                SizedBox(width: 8.0),
+                                Text('Online'),
+                              ],
+                            ),
+                          ),
+                        ),
                         GestureDetector(
                           onTap: () {
                             setState(() {
@@ -248,43 +285,6 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                                 ),
                                 SizedBox(width: 8.0),
                                 Text('Cash'),
-                              ],
-                            ),
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _transaction.paymentMethod =
-                                  PaymentMethod.ONLINE.name;
-                            });
-                          },
-                          child: Container(
-                            width: 150,
-                            padding: EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 16),
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: _transaction.paymentMethod ==
-                                        PaymentMethod.ONLINE.name
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Colors.transparent,
-                                width: 2.0,
-                              ),
-                              borderRadius: BorderRadius.circular(
-                                  10.0), // Set the BorderRadius
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.credit_card,
-                                  color: _transaction.paymentMethod ==
-                                          PaymentMethod.ONLINE.name
-                                      ? Theme.of(context).colorScheme.primary
-                                      : Colors.grey,
-                                ),
-                                SizedBox(width: 8.0),
-                                Text('Online'),
                               ],
                             ),
                           ),

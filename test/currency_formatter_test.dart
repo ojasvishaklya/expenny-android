@@ -32,4 +32,31 @@ void main() {
       expect(formatRupees(-12345), '-₹12,345');
     });
   });
+
+  group('formatPercent', () {
+    test('formats to a single decimal place', () {
+      expect(formatPercent(0), '0.0%');
+      expect(formatPercent(42.35), '42.4%');
+      expect(formatPercent(100), '100.0%');
+    });
+
+    test('rounds to the nearest tenth', () {
+      expect(formatPercent(33.333), '33.3%');
+      expect(formatPercent(66.666), '66.7%');
+    });
+
+    test('handles negative percentages', () {
+      expect(formatPercent(-12.5), '-12.5%');
+    });
+
+    test('renders non-finite values as zero', () {
+      expect(formatPercent(double.nan), '0.0%');
+      expect(formatPercent(double.infinity), '0.0%');
+      expect(formatPercent(double.negativeInfinity), '0.0%');
+    });
+
+    test('allows values above 100 percent', () {
+      expect(formatPercent(137.42), '137.4%');
+    });
+  });
 }

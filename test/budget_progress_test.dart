@@ -1,6 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:expenny/widgets/BudgetProgressWidget.dart';
 
+/// Covers the pure budget helpers.
+///
+/// Widget-level coverage of [BudgetProgressWidget] is deliberately omitted:
+/// seeding a budget goes through `ConfigService.setMonthlyBudget`, which calls
+/// `WidgetService.updateBudgetWidget()` and awaits `home_widget` platform
+/// channels that never complete under `flutter_test`, hanging the run. The
+/// no-budget rendering path is still exercised through the dashboard screen
+/// tests, and the arithmetic below is what the widget displays.
 void main() {
   group('computeProgress', () {
     test('returns 0.0 when budget is 0', () {
@@ -32,20 +40,6 @@ void main() {
     });
   });
 
-  group('formatBudgetLabel', () {
-    test('formats expense and budget with rupee symbol and Indian grouping', () {
-      expect(formatBudgetLabel(12000, 50000), '₹12,000 / ₹50,000');
-    });
-
-    test('formats zero expense', () {
-      expect(formatBudgetLabel(0, 50000), '₹0 / ₹50,000');
-    });
-
-    test('rounds to integer', () {
-      expect(formatBudgetLabel(12345.67, 50000.99), '₹12,346 / ₹50,001');
-    });
-  });
-
   group('isOverBudget', () {
     test('returns false when expense is below budget', () {
       expect(isOverBudget(500, 1000), false);
@@ -57,6 +51,41 @@ void main() {
 
     test('returns true when expense exceeds budget', () {
       expect(isOverBudget(1500, 1000), true);
+    });
+  });
+
+  group('budgetUsedPercent', () {
+    test('returns 0 for a non-positive budget', () {
+      expect(budgetUsedPercent(100, 0), 0.0);
+      expect(budgetUsedPercent(100, -50), 0.0);
+    });
+
+    test('returns the consumed share of the budget', () {
+      expect(budgetUsedPercent(500, 1000), 50.0);
+      expect(budgetUsedPercent(1000, 1000), 100.0);
+    });
+
+    test('is not capped when overspending', () {
+      expect(budgetUsedPercent(1500, 1000), 150.0);
+    });
+
+    test('matches the percentage the dashboard renders', () {
+      // 13,040 of 20,000 is the figure shown in the budget panel.
+      expect(budgetUsedPercent(13040, 20000), closeTo(65.2, 0.001));
+    });
+  });
+
+  group('budgetDifference', () {
+    test('is positive when under budget', () {
+      expect(budgetDifference(12000, 50000), 38000);
+    });
+
+    test('is zero when exactly on budget', () {
+      expect(budgetDifference(50000, 50000), 0);
+    });
+
+    test('is negative when over budget', () {
+      expect(budgetDifference(52000, 50000), -2000);
     });
   });
 

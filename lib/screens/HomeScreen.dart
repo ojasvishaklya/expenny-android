@@ -3,7 +3,7 @@ import 'package:expenny/screens/SearchScreen.dart';
 import 'package:expenny/screens/TransactionsScreen.dart';
 import 'package:expenny/widgets/BottomNavBarWidget.dart';
 
-import 'AnalyticsScreen.dart';
+import 'DashboardScreen.dart';
 import 'PreferencesScreen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -14,12 +14,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 1;
+  /// Dashboard is the landing destination, sitting between Transactions on the
+  /// left and Search / Preferences on the right. Keep this index in step with
+  /// the order of [_screens] and the tabs in [BottomNavBarWidget].
+  static const int _dashboardIndex = 1;
+
+  int _selectedIndex = _dashboardIndex;
   PageController _pageController = PageController();
 
   final List<Widget> _screens = <Widget>[
-    AnalyticsScreen(),
     TransactionsScreen(),
+    DashboardScreen(),
     SearchScreen(),
     PreferencesScreen()
   ];
