@@ -25,8 +25,8 @@ void main() {
       expect(sortChip('Highest amount').selected, isTrue);
       expect(sortChip('Newest first').selected, isFalse);
 
-      final foodChip =
-          tester.widget<FilterChip>(find.widgetWithText(FilterChip, 'Food'));
+      final foodChip = tester
+          .widget<FilterChip>(find.widgetWithText(FilterChip, 'Food & Drink'));
       expect(foodChip.selected, isTrue);
     });
 
@@ -49,17 +49,18 @@ void main() {
       await tester.pump();
 
       // Toggle two tags on.
-      await tester.tap(find.widgetWithText(FilterChip, 'Food'));
+      await tester.tap(find.widgetWithText(FilterChip, 'Food & Drink'));
       await tester.pump();
-      await tester.tap(find.widgetWithText(FilterChip, 'Cab'));
+      await tester.tap(find.widgetWithText(FilterChip, 'Transport'));
       await tester.pump();
 
+      await tester.ensureVisible(find.widgetWithText(FilledButton, 'Apply'));
       await tester.tap(find.widgetWithText(FilledButton, 'Apply'));
       await tester.pump();
 
       expect(applied, isNotNull);
       expect(applied!.sort, TransactionSort.oldestFirst);
-      expect(applied!.tags, {tagById('food'), tagById('cab')});
+      expect(applied!.tags, {tagById('food'), tagById('transport')});
     });
 
     testWidgets('toggling a tag off removes it from the result', (tester) async {
@@ -75,8 +76,9 @@ void main() {
         ),
       ));
 
-      await tester.tap(find.widgetWithText(FilterChip, 'Food'));
+      await tester.tap(find.widgetWithText(FilterChip, 'Food & Drink'));
       await tester.pump();
+      await tester.ensureVisible(find.widgetWithText(FilledButton, 'Apply'));
       await tester.tap(find.widgetWithText(FilledButton, 'Apply'));
       await tester.pump();
 

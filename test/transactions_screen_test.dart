@@ -205,7 +205,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Toggle a tag and apply.
-      await tester.tap(find.widgetWithText(FilterChip, 'Food'));
+      await tester.tap(find.widgetWithText(FilterChip, 'Food & Drink'));
       await tester.pump();
       await tester.tap(find.widgetWithText(FilledButton, 'Apply'));
       await tester.pump();

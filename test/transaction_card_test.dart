@@ -36,8 +36,8 @@ void main() {
       await tester.pumpWidget(wrap(card(amount: -860)));
 
       expect(find.text('Lunch at Little Italy'), findsOneWidget);
-      // Meta = "<Tag name> · <paymentMethod>"; 'food' tag resolves to 'Food'.
-      expect(find.text('Food · Card/UPI'), findsOneWidget);
+      // Meta = "<Tag name> · <paymentMethod>"; 'food' resolves to 'Food & Drink'.
+      expect(find.text('Food & Drink · Card/UPI'), findsOneWidget);
       expect(find.text('-₹860'), findsOneWidget);
       expect(find.text('1:24 PM'), findsOneWidget);
     });
@@ -62,7 +62,7 @@ void main() {
     testWidgets('falls back to tag name when description is empty', (tester) async {
       await tester.pumpWidget(wrap(card(amount: -100, description: '')));
 
-      expect(find.text('Food'), findsWidgets);
+      expect(find.text('Food & Drink'), findsWidgets);
     });
   });
 }
