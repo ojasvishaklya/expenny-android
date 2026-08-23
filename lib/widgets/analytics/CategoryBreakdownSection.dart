@@ -44,8 +44,6 @@ class CategoryBreakdownSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
     if (breakdown.isEmpty) {
       return const AnalyticsSection(
         title: 'Spending by category',
@@ -60,12 +58,6 @@ class CategoryBreakdownSection extends StatelessWidget {
 
     return AnalyticsSection(
       title: 'Spending by category',
-      trailing: Text(
-        '${formatRupees(breakdown.totalExpense)} total',
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: colors.onSurfaceVariant,
-            ),
-      ),
       semanticLabel: semanticSummary(breakdown),
       child: ExcludeSemantics(
         child: LayoutBuilder(
@@ -144,17 +136,17 @@ class _Donut extends StatelessWidget {
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Centre shows the category count rather than a monetary total;
+              // the per-category amounts in the legend carry the figures.
               Text(
-                formatRupees(breakdown.totalExpense),
+                '${breakdown.groups.length}',
                 style: theme.textTheme.titleSmall?.copyWith(
                   color: colors.onSurface,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               Text(
-                breakdown.groups.length == 1
-                    ? '1 category'
-                    : '${breakdown.groups.length} categories',
+                breakdown.groups.length == 1 ? 'category' : 'categories',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: colors.onSurfaceVariant,
                 ),

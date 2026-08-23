@@ -104,12 +104,6 @@ class MonthTrendSection extends StatelessWidget {
 
     return AnalyticsSection(
       title: 'Six-month trend',
-      trailing: Text(
-        rangeLabel(series),
-        style: theme.textTheme.labelMedium?.copyWith(
-          color: colors.onSurfaceVariant,
-        ),
-      ),
       semanticLabel: semanticSummary(series),
       child: ExcludeSemantics(
         child: Column(

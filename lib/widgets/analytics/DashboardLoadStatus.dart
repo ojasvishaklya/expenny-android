@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:expenny/service/DateService.dart';
 
-/// The dashboard's single source of period attribution.
+/// The dashboard's transient load and error status line.
 ///
-/// While a new month is loading the previous month's values stay on screen, so
-/// something must state which month those values belong to. This component is
-/// that statement: it names the month being loaded and the month being shown,
-/// and it never relabels visible values as the newly selected month.
+/// It only speaks up while a month is loading or after a load has failed:
+/// during a load it names the month being fetched (or reports a same-month
+/// refresh), and on failure it reports which month could not be loaded and
+/// offers a retry. When settled it renders nothing.
 ///
 /// It uses a linear indicator rather than a blocking spinner so the dashboard
 /// stays readable and interactive during a refresh.
@@ -35,7 +35,9 @@ class DashboardLoadStatus extends StatelessWidget {
 
   /// The visible status sentence for the current combination of state.
   ///
-  /// Kept pure and static so the wording is directly testable.
+  /// Only loading and error states have wording; a settled state has none, so
+  /// this returns an empty string. Kept pure and static so the wording is
+  /// directly testable.
   static String statusLabel({
     required DateTime selectedMonth,
     required DateTime? displayedMonth,
@@ -43,30 +45,32 @@ class DashboardLoadStatus extends StatelessWidget {
     required bool hasError,
   }) {
     final selected = DateService.monthYear(selectedMonth);
-    final displayed =
-        displayedMonth == null ? null : DateService.monthYear(displayedMonth);
 
     if (hasError) {
-      if (displayed == null) return "Couldn't load $selected";
-      return "Couldn't load $selected · Showing $displayed";
+      return "Couldn't load $selected";
     }
 
     if (isLoading) {
-      if (displayed == null) return 'Loading $selected';
-      if (DateService.isSameMonth(selectedMonth, displayedMonth!)) {
-        return 'Refreshing $displayed';
+      if (displayedMonth != null &&
+          DateService.isSameMonth(selectedMonth, displayedMonth)) {
+        return 'Refreshing ${DateService.monthYear(displayedMonth)}';
       }
-      return 'Loading $selected · Showing $displayed';
+      return 'Loading $selected';
     }
 
-    if (displayed == null) return 'Loading $selected';
-    return 'Showing $displayed';
+    return '';
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final hasError = error != null;
+
+    // Nothing to announce or attribute once settled, so render no widget
+    // rather than an empty padded row.
+    if (!isLoading && !hasError) {
+      return const SizedBox.shrink();
+    }
 
     final label = statusLabel(
       selectedMonth: selectedMonth,

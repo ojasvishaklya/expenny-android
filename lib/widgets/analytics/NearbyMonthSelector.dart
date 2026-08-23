@@ -49,37 +49,24 @@ class NearbyMonthSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final months = nearbyMonths(selectedMonth);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Choose a period',
-          style: theme.textTheme.labelLarge?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 8),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              for (final month in months)
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: _MonthChip(
-                    month: month,
-                    isSelected: DateService.isSameMonth(month, selectedMonth),
-                    isFuture: isFutureMonth(month, currentMonth),
-                    onSelected: onMonthSelected,
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (final month in months)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: _MonthChip(
+                month: month,
+                isSelected: DateService.isSameMonth(month, selectedMonth),
+                isFuture: isFutureMonth(month, currentMonth),
+                onSelected: onMonthSelected,
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -101,7 +88,7 @@ class _MonthChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return ChoiceChip(
+    final chip = ChoiceChip(
       selected: isSelected,
       // A null callback both disables the chip and removes its tap action, so
       // a future month cannot be activated by touch or by assistive tech.
@@ -128,5 +115,11 @@ class _MonthChip extends StatelessWidget {
       // Guarantees a 48 logical pixel minimum touch target.
       materialTapTargetSize: MaterialTapTargetSize.padded,
     );
+
+    // Future months are dimmed to 0.4 opacity as a visual cue, layered on top
+    // of the disabled state and full-month semantics that already make them
+    // non-interactive and legible to assistive tech. Opacity is decorative
+    // only: it changes neither the chip's size/touch target nor its callback.
+    return isFuture ? Opacity(opacity: 0.4, child: chip) : chip;
   }
 }

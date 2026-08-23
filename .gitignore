@@ -18,6 +18,9 @@
 # Visual Studio Code related
 .vscode/
 
+# Kiro related
+/.kiro/
+
 # Flutter/Dart/Pub related
 **/doc/api/
 .dart_tool/
@@ -26,6 +29,9 @@
 .pub-cache/
 .pub/
 /build/
+/.flutter-plugins-dependencies
+# Local scratch diff, keep on disk but do not commit
+/feat-analytics-monthly-overview-diff.txt
 
 # Android related
 **/android/**/gradle-wrapper.jar

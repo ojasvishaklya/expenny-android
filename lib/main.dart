@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -39,8 +41,20 @@ void main() async {
   );
   Get.put(smsSyncService);
 
-  // Auto-sync on startup (silent, no permission prompt)
-  smsSyncService.syncIfPermissionGranted();
+  // Auto-sync on startup (silent, no permission prompt). Awaited so the SMS
+  // inserts and the sync-triggered reload complete before runApp(), otherwise
+  // DashboardScreen's initial DB query can race ahead and show stale data.
+  // Wrapped so permission/plugin/config/database failures never block launch.
+  try {
+    await smsSyncService.syncIfPermissionGranted();
+  } catch (error, stackTrace) {
+    developer.log(
+      'Startup SMS sync failed; continuing app launch',
+      name: 'expenny.startup',
+      error: error,
+      stackTrace: stackTrace,
+    );
+  }
 
   // Note: no explicit widget refresh here — loadCurrentMonthTransactions()
   // above already pushed one via refreshTransactionList() ->

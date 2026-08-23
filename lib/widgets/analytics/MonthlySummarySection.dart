@@ -25,15 +25,17 @@ class MonthlySummarySection extends StatelessWidget {
   /// row, so neither value is squeezed or clipped.
   static const double stackBelowWidth = 360;
 
-  /// Plain-language description of the month's net result.
+  /// Concise word describing the month's net result, carried in the summary
+  /// semantics so the net direction is always stated in text, never by colour
+  /// alone.
   static String netStateLabel(NetState state) {
     switch (state) {
       case NetState.positive:
-        return 'Saved this month';
+        return 'Positive';
       case NetState.negative:
-        return 'Overspent this month';
+        return 'Negative';
       case NetState.zero:
-        return 'Broke even this month';
+        return 'Even';
     }
   }
 
@@ -80,8 +82,10 @@ class MonthlySummarySection extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              // Only the amount is allowed to shrink, and only as far as its
-              // own slot; the page is never scaled down as a whole.
+              // The net amount shrinks to fit the available width rather than
+              // clipping. Its direction is stated in the section semantics
+              // instead of beside the figure, so it stays accessible without a
+              // visible state word.
               FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
@@ -91,13 +95,6 @@ class MonthlySummarySection extends StatelessWidget {
                     color: colors.onPrimaryContainer,
                     fontWeight: FontWeight.bold,
                   ),
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                stateLabel,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colors.onPrimaryContainer.withValues(alpha: 0.9),
                 ),
               ),
               const SizedBox(height: 18),
@@ -170,32 +167,44 @@ class _MoneyTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final onContainer = theme.colorScheme.onPrimaryContainer;
+    final colors = theme.colorScheme;
+    final onContainer = colors.onPrimaryContainer;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: onContainer.withValues(alpha: 0.8),
-          ),
-        ),
-        const SizedBox(height: 2),
-        // Grouped amounts have no break opportunities, so they are scaled down
-        // within their own slot rather than allowed to overflow the tile.
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
-          child: Text(
-            value,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: onContainer,
-              fontWeight: FontWeight.bold,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        // A translucent surface tint over the primaryContainer hero, derived
+        // from the theme rather than a fixed white, so it lifts the tile in
+        // light mode and stays legible in dark mode.
+        color: colors.surface.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(11),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: onContainer.withValues(alpha: 0.8),
             ),
           ),
-        ),
-      ],
+          const SizedBox(height: 2),
+          // Grouped amounts have no break opportunities, so they are scaled
+          // down within their own slot rather than allowed to overflow the
+          // tile.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: onContainer,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -210,7 +219,8 @@ class _SavingsRate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final onContainer = theme.colorScheme.onPrimaryContainer;
+    final colors = theme.colorScheme;
+    final onContainer = colors.onPrimaryContainer;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -240,8 +250,11 @@ class _SavingsRate extends StatelessWidget {
           child: LinearProgressIndicator(
             value: (rate / 100).clamp(0.0, 1.0),
             minHeight: 5,
-            backgroundColor: onContainer.withValues(alpha: 0.2),
-            valueColor: AlwaysStoppedAnimation<Color>(onContainer),
+            // Primary fill on a low-alpha primary track, matching the mockup
+            // while staying a semantic theme role that keeps contrast over the
+            // primaryContainer hero in both light and dark themes.
+            backgroundColor: colors.primary.withValues(alpha: 0.2),
+            valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
           ),
         ),
       ],

@@ -35,59 +35,6 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     super.initState();
   }
 
-  Future<void> _showBudgetDialog(BuildContext context) async {
-    final configService = Get.find<ConfigService>();
-    final textController = TextEditingController(
-      text: configService.monthlyBudget.value?.toStringAsFixed(0) ?? '',
-    );
-    String? errorText;
-
-    try {
-      await showDialog(
-        context: context,
-        builder: (ctx) => StatefulBuilder(
-          builder: (ctx, setDialogState) => AlertDialog(
-            title: const Text('Monthly Budget'),
-            content: TextField(
-              controller: textController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                hintText: 'Enter budget amount (leave empty to clear)',
-                prefixText: '₹ ',
-                errorText: errorText,
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () {
-                  final text = textController.text.trim();
-                  final validationError = validateBudgetInput(text);
-                  if (validationError != null) {
-                    setDialogState(() => errorText = validationError);
-                    return;
-                  }
-                  if (text.isEmpty) {
-                    configService.setMonthlyBudget(null);
-                  } else {
-                    configService.setMonthlyBudget(double.parse(text));
-                  }
-                  Navigator.pop(ctx);
-                },
-                child: const Text('Save'),
-              ),
-            ],
-          ),
-        ),
-      );
-    } finally {
-      textController.dispose();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -122,7 +69,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                   ? 'Monthly Budget: ${formatRupees(budget)}'
                   : 'Set Monthly Budget',
               icon: Icons.account_balance_wallet_outlined,
-              onTap: () => _showBudgetDialog(context),
+              onTap: () => showMonthlyBudgetDialog(context),
             );
           }),
           Spacer(),

@@ -93,11 +93,12 @@ void main() {
       ]);
       await tester.pumpAndSettle();
 
-      // Still exactly one query for all five sections.
+      // Still exactly one query for all the sections.
       expect(loader.requestCount, 1);
-      expect(find.text('Showing August 2026'), findsOneWidget);
-      expect(find.text('August 2026 net'), findsOneWidget);
-      expect(find.text('Summary'), findsOneWidget);
+      // The loaded dashboard leads with the BALANCE card carrying August's
+      // net (25500 income - 13040 expense) as a raw two-decimal value.
+      expect(find.text('B A L A N C E'), findsOneWidget);
+      expect(find.text('12460.0'), findsOneWidget);
       expect(find.text('Monthly budget'), findsOneWidget);
       expect(find.text('Spending by category'), findsOneWidget);
       expect(find.text('Six-month trend'), findsOneWidget);
@@ -138,7 +139,8 @@ void main() {
       ]);
       await tester.pumpAndSettle();
 
-      expect(find.text('Showing August 2026'), findsOneWidget);
+      // A settled reload shows no status line; the loaded card is the anchor.
+      expect(find.text('B A L A N C E'), findsOneWidget);
     });
   });
 
@@ -168,19 +170,17 @@ void main() {
         expenseTxn(13040, date: DateTime(2026, 8, 6)),
       ]);
       await tester.pumpAndSettle();
-      expect(find.text('August 2026 net'), findsOneWidget);
+      // August's net snapshot (25500 - 13040) is on the BALANCE card.
+      expect(find.text('B A L A N C E'), findsOneWidget);
+      expect(find.text('12460.0'), findsOneWidget);
 
       // Ask for July but leave it pending.
       await tester.tap(find.text('Jul 2026'));
       await tester.pump();
 
-      // The visible figures are still August's, so they must say so.
-      expect(
-        find.text('Loading July 2026 · Showing August 2026'),
-        findsOneWidget,
-      );
-      expect(find.text('August 2026 net'), findsOneWidget);
-      expect(find.text('₹12,460'), findsOneWidget);
+      // The status names the loading month while August's figures stay put.
+      expect(find.text('Loading July 2026'), findsOneWidget);
+      expect(find.text('12460.0'), findsOneWidget);
       // The dashboard stays readable rather than blocking.
       expect(find.byType(LinearProgressIndicator), findsWidgets);
       expect(find.byType(CircularProgressIndicator), findsNothing);
@@ -199,7 +199,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(loader.requestCount, 1);
-      expect(find.text('Showing August 2026'), findsOneWidget);
+      expect(find.text('B A L A N C E'), findsOneWidget);
     });
   });
 
@@ -220,30 +220,27 @@ void main() {
       await tester.pump();
       final requestB = loader.completers.last;
 
-      // B resolves first with July data.
+      // B resolves first with July data (9000 income - 4000 expense = 5000).
       requestB.complete([
         expenseTxn(4000, date: DateTime(2026, 7, 9)),
         incomeTxn(9000, date: DateTime(2026, 7, 9)),
       ]);
       await tester.pumpAndSettle();
 
-      expect(find.text('Showing July 2026'), findsOneWidget);
-      expect(find.text('July 2026 net'), findsOneWidget);
-      expect(find.text('₹5,000'), findsOneWidget);
+      expect(find.text('B A L A N C E'), findsOneWidget);
+      expect(find.text('5000.0'), findsOneWidget);
 
-      // Now the abandoned June request arrives with different figures.
+      // Now the abandoned June request arrives with different figures
+      // (777777 income - 1 expense = 777776).
       requestA.complete([
         expenseTxn(1, date: DateTime(2026, 6, 9)),
         incomeTxn(777777, date: DateTime(2026, 6, 9)),
       ]);
       await tester.pumpAndSettle();
 
-      // July must still own the screen.
-      expect(find.text('Showing July 2026'), findsOneWidget);
-      expect(find.text('July 2026 net'), findsOneWidget);
-      expect(find.text('₹5,000'), findsOneWidget);
-      expect(find.textContaining('June 2026 net'), findsNothing);
-      expect(find.text('₹7,77,776'), findsNothing);
+      // July's snapshot must still own the screen; June never replaces it.
+      expect(find.text('5000.0'), findsOneWidget);
+      expect(find.text('777776.0'), findsNothing);
     });
 
     testWidgets('a stale failure cannot show an error or clear loading',
@@ -261,15 +258,20 @@ void main() {
       await tester.pump();
       final requestB = loader.completers.last;
 
+      // July with expense only (no income): net -4000, shown as -4000.0. The
+      // net and the signed expense on the card share that value.
       requestB.complete([expenseTxn(4000, date: DateTime(2026, 7, 9))]);
       await tester.pumpAndSettle();
-      expect(find.text('Showing July 2026'), findsOneWidget);
+      expect(find.text('B A L A N C E'), findsOneWidget);
+      expect(find.text('-4000.0'), findsWidgets);
 
       // The abandoned request fails afterwards.
       requestA.completeError(Exception('stale failure'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Showing July 2026'), findsOneWidget);
+      // July's snapshot stays; no error surfaces from the stale failure.
+      expect(find.text('B A L A N C E'), findsOneWidget);
+      expect(find.text('-4000.0'), findsWidgets);
       expect(find.text('Retry'), findsNothing);
       expect(find.textContaining("Couldn't load"), findsNothing);
     });
@@ -290,13 +292,10 @@ void main() {
       loader.completers.last.completeError(Exception('offline'));
       await tester.pumpAndSettle();
 
-      // Data is retained and still attributed to August, with a way back.
-      expect(
-        find.text("Couldn't load July 2026 · Showing August 2026"),
-        findsOneWidget,
-      );
-      expect(find.text('August 2026 net'), findsOneWidget);
-      expect(find.text('₹12,460'), findsOneWidget);
+      // Data is retained and August's net stays on the card, with a way back.
+      expect(find.text("Couldn't load July 2026"), findsOneWidget);
+      expect(find.text('B A L A N C E'), findsOneWidget);
+      expect(find.text('12460.0'), findsOneWidget);
       expect(find.text('Retry'), findsOneWidget);
     });
   });
@@ -318,7 +317,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      expect(find.text('Dashboard'), findsOneWidget);
+      expect(find.text('B A L A N C E'), findsOneWidget);
     });
 
     testWidgets('renders an empty month with per-section empty states',
@@ -331,8 +330,9 @@ void main() {
       loader.completers.first.complete([]);
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('No transactions in August 2026'),
-          findsOneWidget);
+      // The BALANCE card is always mounted; the monthly summary hint is not,
+      // so only the still-mounted sections show their own empty states.
+      expect(find.text('B A L A N C E'), findsOneWidget);
       expect(find.text('No spending recorded this month.'), findsOneWidget);
       expect(
         find.textContaining('No transactions between Mar 2026 and Aug 2026'),
@@ -355,7 +355,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      expect(find.text('Dashboard'), findsOneWidget);
+      expect(find.text('B A L A N C E'), findsOneWidget);
     });
 
     testWidgets('survives long values at 320px', (tester) async {
@@ -372,7 +372,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      expect(find.text('₹9,87,65,432'), findsOneWidget);
+      // The long income (98765432) shows as a raw two-decimal value on the card.
+      expect(find.text('98765432.0'), findsOneWidget);
     });
 
     testWidgets('survives a doubled text scale at 320px', (tester) async {
@@ -403,7 +404,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      expect(find.text('Dashboard'), findsOneWidget);
+      expect(find.text('B A L A N C E'), findsOneWidget);
     });
 
     testWidgets('lays out side by side at a wider width', (tester) async {
@@ -420,7 +421,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      expect(find.text('Dashboard'), findsOneWidget);
+      expect(find.text('B A L A N C E'), findsOneWidget);
     });
   });
 }

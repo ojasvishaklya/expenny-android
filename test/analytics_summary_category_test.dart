@@ -83,7 +83,7 @@ void main() {
       expect(find.text('December 2025 net'), findsOneWidget);
     });
 
-    testWidgets('states the net outcome in words, not only colour',
+    testWidgets('states the net outcome in the summary semantics',
         (tester) async {
       await tester.pumpWidget(wrapSection(
         MonthlySummarySection(
@@ -97,7 +97,13 @@ void main() {
         ),
       ));
 
-      expect(find.text('Overspent this month'), findsOneWidget);
+      // The net direction is carried in the summary semantics as a whole word,
+      // not shown as visible text beside the figure.
+      expect(find.text('Negative'), findsNothing);
+      expect(
+        find.bySemanticsLabel(RegExp(r'\bNegative\b')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('exposes one concise summary semantic', (tester) async {
@@ -110,7 +116,7 @@ void main() {
 
       expect(
         find.bySemanticsLabel(RegExp(
-          r'August 2026 summary\. Net ₹12,460, Saved this month\. '
+          r'August 2026 summary\. Net ₹12,460, Positive\. '
           r'Income ₹25,500\. Expense ₹13,040\. Savings rate 48\.9%\.',
         )),
         findsOneWidget,
@@ -169,21 +175,23 @@ void main() {
       ));
 
       expect(tester.takeException(), isNull);
-      expect(find.text('Saved this month'), findsOneWidget);
+      // The net direction is semantic-only; a visible money value proves the
+      // hero still renders at a doubled text scale.
+      expect(find.text('₹12,460'), findsOneWidget);
     });
 
     test('net state labels cover every outcome', () {
       expect(
         MonthlySummarySection.netStateLabel(NetState.positive),
-        'Saved this month',
+        'Positive',
       );
       expect(
         MonthlySummarySection.netStateLabel(NetState.negative),
-        'Overspent this month',
+        'Negative',
       );
       expect(
         MonthlySummarySection.netStateLabel(NetState.zero),
-        'Broke even this month',
+        'Even',
       );
     });
   });
@@ -227,8 +235,11 @@ void main() {
       expect(find.text('Cab'), findsOneWidget);
       expect(find.text('₹250'), findsOneWidget);
       expect(find.text('25.0%'), findsOneWidget);
-      expect(find.text('₹1,000 total'), findsOneWidget);
-      expect(find.text('2 categories'), findsOneWidget);
+      // The section no longer shows a trailing total; the donut centre shows
+      // the category count over the plural noun instead.
+      expect(find.text('₹1,000 total'), findsNothing);
+      expect(find.text('2'), findsOneWidget);
+      expect(find.text('categories'), findsOneWidget);
     });
 
     testWidgets('preserves the order supplied by the service', (tester) async {
