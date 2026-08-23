@@ -34,12 +34,8 @@ class BottomNavBarWidget extends StatelessWidget {
             text: 'Dashboard',
           ),
           GButton(
-            icon: Icons.search,
-            text: 'Search',
-          ),
-          GButton(
             icon: Icons.settings,
-            text: 'Preferences',
+            text: 'Settings',
           ),
         ],
       ),

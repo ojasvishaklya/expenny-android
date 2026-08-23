@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:expenny/screens/SearchScreen.dart';
 import 'package:expenny/screens/TransactionsScreen.dart';
 import 'package:expenny/widgets/BottomNavBarWidget.dart';
 
@@ -15,8 +14,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   /// Dashboard is the landing destination, sitting between Transactions on the
-  /// left and Search / Preferences on the right. Keep this index in step with
-  /// the order of [_screens] and the tabs in [BottomNavBarWidget].
+  /// left and Settings on the right. Keep this index in step with the order of
+  /// [_screens] and the tabs in [BottomNavBarWidget].
   static const int _dashboardIndex = 1;
 
   int _selectedIndex = _dashboardIndex;
@@ -25,7 +24,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _screens = <Widget>[
     TransactionsScreen(),
     DashboardScreen(),
-    SearchScreen(),
     PreferencesScreen()
   ];
 

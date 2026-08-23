@@ -5,9 +5,9 @@ import 'package:expenny/widgets/BottomNavBarWidget.dart';
 /// Guards the destination order and labels of the bottom navigation.
 ///
 /// Dashboard is the landing destination at index 1, with Transactions
-/// immediately to its left. `HomeScreen` keys its initial page off the same
-/// index, so a reorder here without updating that index would silently change
-/// which screen the app opens on.
+/// immediately to its left and Settings to its right. `HomeScreen` keys its
+/// initial page off the same index, so a reorder here without updating that
+/// index would silently change which screen the app opens on.
 void main() {
   Widget wrap({required int currentIndex, void Function(int)? onIndexChanged}) {
     return MaterialApp(
@@ -21,15 +21,17 @@ void main() {
   }
 
   group('BottomNavBarWidget', () {
-    testWidgets('exposes the four destinations in order', (tester) async {
+    testWidgets('exposes the three destinations in order', (tester) async {
       await tester.pumpWidget(wrap(currentIndex: 1));
 
       expect(find.text('Transactions'), findsOneWidget);
       expect(find.text('Dashboard'), findsOneWidget);
-      expect(find.text('Search'), findsOneWidget);
-      expect(find.text('Preferences'), findsOneWidget);
+      expect(find.text('Settings'), findsOneWidget);
 
-      // The old mislabelled "Home" and pre-rename "Analytics" tabs are gone.
+      // The standalone Search destination has been folded into Transactions,
+      // and the old mislabelled tabs are gone.
+      expect(find.text('Search'), findsNothing);
+      expect(find.text('Preferences'), findsNothing);
       expect(find.text('Home'), findsNothing);
       expect(find.text('Analytics'), findsNothing);
     });
@@ -39,12 +41,10 @@ void main() {
 
       final transactions = tester.getCenter(find.text('Transactions')).dx;
       final dashboard = tester.getCenter(find.text('Dashboard')).dx;
-      final search = tester.getCenter(find.text('Search')).dx;
-      final preferences = tester.getCenter(find.text('Preferences')).dx;
+      final settings = tester.getCenter(find.text('Settings')).dx;
 
       expect(transactions, lessThan(dashboard));
-      expect(dashboard, lessThan(search));
-      expect(search, lessThan(preferences));
+      expect(dashboard, lessThan(settings));
     });
 
     testWidgets('marks the supplied index as selected', (tester) async {
@@ -71,7 +71,7 @@ void main() {
 
       await tester.tap(find.byIcon(Icons.settings).first, warnIfMissed: false);
       await tester.pumpAndSettle();
-      expect(tapped, [0, 3]);
+      expect(tapped, [0, 2]);
     });
   });
 }
