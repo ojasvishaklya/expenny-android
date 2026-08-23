@@ -20,12 +20,10 @@ class DashboardHeader extends StatelessWidget {
       child: Text(
         title,
         // Title typography is matched to the mockup locally rather than
-        // through the app-wide theme: Inter, 28px, the closest supported
-        // weight to the mockup's 680 (w700), and a tight -0.04em tracking
-        // (-1.12px at 28px). The onSurface colour and header semantics are
-        // preserved.
+        // through the app-wide theme: 28px, the closest supported weight to
+        // the mockup's 680 (w700), and a tight -0.04em tracking (-1.12px at
+        // 28px). The onSurface colour and header semantics are preserved.
         style: theme.textTheme.headlineSmall?.copyWith(
-          fontFamily: 'Inter',
           fontSize: 28,
           fontWeight: FontWeight.w700,
           letterSpacing: -1.12,
