@@ -9,12 +9,11 @@ import 'package:expenny/models/analytics/TrendSeries.dart';
 import '../controllers/TransactionController.dart';
 import '../service/AnalyticsService.dart';
 import '../widgets/BudgetProgressWidget.dart';
+import '../widgets/DisplayCard.dart';
 import '../widgets/analytics/CategoryBreakdownSection.dart';
-import '../widgets/analytics/DashboardHeader.dart';
 import '../widgets/analytics/DashboardLoadStatus.dart';
 import '../widgets/analytics/MonthComparisonSection.dart';
 import '../widgets/analytics/MonthTrendSection.dart';
-import '../widgets/analytics/MonthlySummarySection.dart';
 import '../widgets/analytics/NearbyMonthSelector.dart';
 
 /// Loads transactions for an inclusive start and exclusive end boundary.
@@ -176,51 +175,91 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _retry() => _load(_selectedMonth);
 
-  /// The status line is shown while loading, when a load failed, or whenever a
-  /// snapshot exists and must be attributed to its month.
-  bool get _showStatus => _isLoading || _loadError != null || _data != null;
+  /// The status line is shown only while loading or when a load has failed. A
+  /// settled snapshot needs no status line, so it is not mounted merely because
+  /// data is displayed.
+  bool get _showStatus => _isLoading || _loadError != null;
+
+  /// The month selector sits closer to the screen edge than the rest of the
+  /// dashboard, so it carries its own narrow inset rather than the shared
+  /// content inset.
+  static const EdgeInsets _selectorInset = EdgeInsets.symmetric(horizontal: 6);
+
+  /// Regular dashboard content shares a single, wider horizontal inset.
+  static const EdgeInsets _contentInset = EdgeInsets.symmetric(horizontal: 16);
+
+  Widget _selectorInsetOf(Widget child) =>
+      Padding(padding: _selectorInset, child: child);
+
+  Widget _contentInsetOf(Widget child) =>
+      Padding(padding: _contentInset, child: child);
 
   @override
   Widget build(BuildContext context) {
     final data = _data;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: ListView(
-        padding: const EdgeInsets.only(bottom: 32),
-        children: [
-          const DashboardHeader(),
-          const SizedBox(height: 20),
-          NearbyMonthSelector(
-            selectedMonth: _selectedMonth,
-            currentMonth: _currentMonth,
-            onMonthSelected: _selectMonth,
+    return ListView(
+      padding: const EdgeInsets.only(bottom: 32),
+      children: [
+        if (data == null) ...[
+          _selectorInsetOf(
+            NearbyMonthSelector(
+              selectedMonth: _selectedMonth,
+              currentMonth: _currentMonth,
+              onMonthSelected: _selectMonth,
+            ),
           ),
           if (_showStatus)
-            DashboardLoadStatus(
+            _contentInsetOf(
+              DashboardLoadStatus(
+                selectedMonth: _selectedMonth,
+                displayedMonth: _displayedDataMonth,
+                isLoading: _isLoading,
+                error: _loadError,
+                onRetry: _retry,
+              ),
+            ),
+          _contentInsetOf(_InitialState(isLoading: _isLoading)),
+        ] else ...[
+          _contentInsetOf(
+            DisplayCard(
+              balance: data.summary.net,
+              income: data.summary.income,
+              expense: -data.summary.expense,
+            ),
+          ),
+          _selectorInsetOf(
+            NearbyMonthSelector(
               selectedMonth: _selectedMonth,
-              displayedMonth: _displayedDataMonth,
-              isLoading: _isLoading,
-              error: _loadError,
-              onRetry: _retry,
+              currentMonth: _currentMonth,
+              onMonthSelected: _selectMonth,
             ),
-          if (data == null)
-            _InitialState(isLoading: _isLoading)
-          else ...[
-            MonthlySummarySection(
-              summary: data.summary,
-              displayedMonth: data.month,
+          ),
+          if (_showStatus)
+            _contentInsetOf(
+              DashboardLoadStatus(
+                selectedMonth: _selectedMonth,
+                displayedMonth: _displayedDataMonth,
+                isLoading: _isLoading,
+                error: _loadError,
+                onRetry: _retry,
+              ),
             ),
+          _contentInsetOf(
             BudgetProgressWidget(expense: data.summary.expense),
+          ),
+          _contentInsetOf(
             CategoryBreakdownSection(breakdown: data.breakdown),
-            MonthTrendSection(series: data.trend),
+          ),
+          _contentInsetOf(MonthTrendSection(series: data.trend)),
+          _contentInsetOf(
             MonthComparisonSection(
               comparison: data.comparison,
               displayedMonth: data.month,
             ),
-          ],
+          ),
         ],
-      ),
+      ],
     );
   }
 }

@@ -11,11 +11,12 @@ final _august2026 = DateTime(2026, 8, 1);
 
 void main() {
   group('DashboardHeader', () {
-    testWidgets('shows the exact title and subtitle', (tester) async {
+    testWidgets('shows the exact title without a subtitle', (tester) async {
       await tester.pumpWidget(wrapSection(const DashboardHeader()));
 
       expect(find.text('Dashboard'), findsOneWidget);
-      expect(find.text('Your monthly money story'), findsOneWidget);
+      // The subtitle was removed; the header is title-only now.
+      expect(find.text('Your monthly money story'), findsNothing);
     });
 
     testWidgets('exposes the title as a header', (tester) async {
@@ -91,7 +92,13 @@ void main() {
       final colors = testLightTheme().colorScheme;
 
       expect(decoration.color, colors.surface);
-      expect(decoration.border, Border.all(color: colors.outlineVariant));
+      expect(
+        decoration.border,
+        Border.all(
+          color: colors.outlineVariant,
+          width: kAnalyticsPanelBorderWidth,
+        ),
+      );
       expect(decoration.boxShadow, anyOf(isNull, isEmpty));
     });
 
@@ -189,7 +196,8 @@ void main() {
       );
 
       expect(find.byType(ChoiceChip), findsNWidgets(6));
-      expect(find.text('Choose a period'), findsOneWidget);
+      // The 'Choose a period' label was removed; the chips stand alone.
+      expect(find.text('Choose a period'), findsNothing);
       expect(find.text('Aug 2026'), findsOneWidget);
       expect(find.text('May 2026'), findsOneWidget);
     });
@@ -311,7 +319,9 @@ void main() {
       );
     });
 
-    test('names both months while a different month loads', () {
+    test('names only the loading month while a different month loads', () {
+      // The copy is intentionally minimal: it names the month being fetched
+      // and no longer attributes the still-displayed month.
       expect(
         DashboardLoadStatus.statusLabel(
           selectedMonth: DateTime(2026, 9, 1),
@@ -319,7 +329,7 @@ void main() {
           isLoading: true,
           hasError: false,
         ),
-        'Loading September 2026 · Showing August 2026',
+        'Loading September 2026',
       );
     });
 
@@ -335,7 +345,8 @@ void main() {
       );
     });
 
-    test('attributes settled data to the displayed month', () {
+    test('shows no status once settled', () {
+      // A settled snapshot needs no status line, so the label is empty.
       expect(
         DashboardLoadStatus.statusLabel(
           selectedMonth: _august2026,
@@ -343,11 +354,13 @@ void main() {
           isLoading: false,
           hasError: false,
         ),
-        'Showing August 2026',
+        '',
       );
     });
 
-    test('reports a failure and keeps prior attribution', () {
+    test('reports a failure naming only the selected month', () {
+      // Failure copy names the month that failed and carries no 'Showing'
+      // suffix, regardless of what is still displayed.
       expect(
         DashboardLoadStatus.statusLabel(
           selectedMonth: DateTime(2026, 9, 1),
@@ -355,7 +368,7 @@ void main() {
           isLoading: false,
           hasError: true,
         ),
-        "Couldn't load September 2026 · Showing August 2026",
+        "Couldn't load September 2026",
       );
       expect(
         DashboardLoadStatus.statusLabel(
@@ -380,10 +393,7 @@ void main() {
       // Linear, not a blocking centred spinner.
       expect(find.byType(LinearProgressIndicator), findsOneWidget);
       expect(find.byType(CircularProgressIndicator), findsNothing);
-      expect(
-        find.text('Loading September 2026 · Showing August 2026'),
-        findsOneWidget,
-      );
+      expect(find.text('Loading September 2026'), findsOneWidget);
     });
 
     testWidgets('offers Retry only when a load failed', (tester) async {
@@ -420,11 +430,13 @@ void main() {
     });
 
     testWidgets('announces status as a live region', (tester) async {
+      // A settled status renders no widget, so the live region is exercised
+      // while loading, when there is a status to announce.
       await tester.pumpWidget(wrapSection(
         DashboardLoadStatus(
           selectedMonth: _august2026,
           displayedMonth: _august2026,
-          isLoading: false,
+          isLoading: true,
         ),
       ));
 

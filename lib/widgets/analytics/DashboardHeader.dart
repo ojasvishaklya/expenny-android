@@ -11,34 +11,25 @@ class DashboardHeader extends StatelessWidget {
   /// Exact visible title for the dashboard.
   static const String title = 'Dashboard';
 
-  /// Supporting line describing what the screen contains.
-  static const String subtitle = 'Your monthly money story';
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Semantics(
-          header: true,
-          child: Text(
-            title,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              color: theme.colorScheme.onSurface,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+    return Semantics(
+      header: true,
+      child: Text(
+        title,
+        // Title typography is matched to the mockup locally rather than
+        // through the app-wide theme: 28px, the closest supported weight to
+        // the mockup's 680 (w700), and a tight -0.04em tracking (-1.12px at
+        // 28px). The onSurface colour and header semantics are preserved.
+        style: theme.textTheme.headlineSmall?.copyWith(
+          fontSize: 28,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -1.12,
+          color: theme.colorScheme.onSurface,
         ),
-        const SizedBox(height: 2),
-        Text(
-          subtitle,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

@@ -2,8 +2,16 @@ import 'package:flutter/material.dart';
 
 /// Shared radius and padding for dashboard panels, taken as direction from the
 /// dashboard mockup rather than as a pixel-exact reproduction.
-const double kAnalyticsPanelRadius = 16;
+///
+/// [kAnalyticsPanelRadius] is the single control for every analytics panel's
+/// corner radius: change it here and all panels round consistently through
+/// their shared `BorderRadius.circular(kAnalyticsPanelRadius)` usage.
+const double kAnalyticsPanelRadius = 8;
 const double kAnalyticsPanelPadding = 16;
+
+/// Width of the thin outline drawn around every [AnalyticsOutlinedPanel].
+/// Tune this single value to make the border hairline-thin or more prominent.
+const double kAnalyticsPanelBorderWidth = 0.5;
 
 /// Padding used when horizontal space is tight, so a panel keeps usable
 /// content width at a 320 logical pixel viewport.
@@ -25,6 +33,7 @@ class AnalyticsSection extends StatelessWidget {
     this.trailing,
     this.outlined = true,
     this.semanticLabel,
+    this.keepTrailingInline = false,
   });
 
   final String title;
@@ -32,6 +41,12 @@ class AnalyticsSection extends StatelessWidget {
   /// Optional trailing detail shown beside the heading, such as a total or a
   /// range. It stacks below the heading when space or text scale demands it.
   final Widget? trailing;
+
+  /// When true, [trailing] always stays on the heading line and never stacks
+  /// below the title at large text scales. The budget header opts in so its
+  /// fixed-width Edit action stays pinned to the far right; every other caller
+  /// keeps the default adaptive stacking behaviour.
+  final bool keepTrailingInline;
 
   final Widget child;
 
@@ -55,8 +70,9 @@ class AnalyticsSection extends StatelessWidget {
     );
 
     // A plain Row cannot hold a long heading beside a long trailing value at
-    // narrow widths or large text scales, so stack them when either is tight.
-    final shouldStack =
+    // narrow widths or large text scales, so stack them when either is tight —
+    // unless the caller opts to keep the trailing widget inline.
+    final shouldStack = !keepTrailingInline &&
         MediaQuery.textScalerOf(context).scale(1) > kAnalyticsStackTextScale;
 
     Widget headingRow;
@@ -73,11 +89,14 @@ class AnalyticsSection extends StatelessWidget {
       );
     } else {
       headingRow = Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(child: heading),
           const SizedBox(width: 8),
-          Flexible(child: trailing!),
+          Align(
+            alignment: Alignment.centerRight,
+            child: trailing!,
+          ),
         ],
       );
     }
@@ -109,10 +128,12 @@ class AnalyticsSection extends StatelessWidget {
   }
 }
 
-/// A bordered, unelevated container for dashboard section content.
+/// A thin, unelevated outlined container for dashboard section content.
 ///
-/// Sections are separated by outline and whitespace rather than shadow, so the
-/// dashboard reads as one calm surface in both light and dark themes.
+/// The panel carries no shadow; it is set apart by a hairline
+/// `colors.outlineVariant` border (see [kAnalyticsPanelBorderWidth]) and its
+/// rounded corners alone, so the dashboard stays calm and flat in both light
+/// and dark themes.
 class AnalyticsOutlinedPanel extends StatelessWidget {
   const AnalyticsOutlinedPanel({super.key, required this.child});
 
@@ -133,7 +154,10 @@ class AnalyticsOutlinedPanel extends StatelessWidget {
           decoration: BoxDecoration(
             color: colors.surface,
             borderRadius: BorderRadius.circular(kAnalyticsPanelRadius),
-            border: Border.all(color: colors.outlineVariant),
+            border: Border.all(
+              color: colors.outlineVariant,
+              width: kAnalyticsPanelBorderWidth,
+            ),
           ),
           child: child,
         );

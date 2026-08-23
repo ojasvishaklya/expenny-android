@@ -116,16 +116,6 @@ class MonthComparisonSection extends StatelessWidget {
 
     return AnalyticsSection(
       title: heading,
-      trailing: changes.isEmpty
-          ? null
-          : Text(
-              changes.length == 1
-                  ? '1 notable change'
-                  : '${changes.length} notable changes',
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: colors.onSurfaceVariant,
-              ),
-            ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

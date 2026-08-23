@@ -25,9 +25,11 @@ class BudgetProgressWidget extends StatelessWidget {
       final budget = configService.monthlyBudget.value;
 
       if (budget == null) {
-        return const AnalyticsSection(
+        return AnalyticsSection(
           title: 'Monthly budget',
-          child: AnalyticsEmptyHint(
+          trailing: const _EditBudgetButton(),
+          keepTrailingInline: true,
+          child: const AnalyticsEmptyHint(
             message: 'No budget set. Add a monthly budget in Preferences to '
                 'track your spending against it.',
           ),
@@ -36,9 +38,37 @@ class BudgetProgressWidget extends StatelessWidget {
 
       return AnalyticsSection(
         title: 'Monthly budget',
+        trailing: const _EditBudgetButton(),
+        keepTrailingInline: true,
         child: _BudgetBody(expense: expense, budget: budget),
       );
     });
+  }
+}
+
+/// Section-heading action that opens the shared monthly-budget editor. Shown in
+/// both the configured and empty states so the budget can be set, changed, or
+/// cleared without leaving the Dashboard. A plain [TextButton] so it carries
+/// standard Material button tap and accessibility semantics.
+class _EditBudgetButton extends StatelessWidget {
+  const _EditBudgetButton();
+
+  @override
+  Widget build(BuildContext context) {
+    // Drop the button's default horizontal inset and right-align its label so
+    // the visible 'Edit' text ends flush with the section's right edge, while
+    // a 48x48 minimum size keeps the Material touch target at accessibility
+    // size — the extra tap area extends left of the text, not past the edge.
+    return TextButton(
+      onPressed: () => showMonthlyBudgetDialog(context),
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        minimumSize: const Size(48, 48),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        alignment: Alignment.centerRight,
+      ),
+      child: const Text('Edit'),
+    );
   }
 }
 
@@ -173,4 +203,64 @@ String? validateBudgetInput(String input) {
   if (parsed == null || !parsed.isFinite) return 'Please enter a valid number';
   if (parsed <= 0) return 'Budget must be a positive amount';
   return null;
+}
+
+/// The single monthly-budget editor, shared so the Dashboard's Edit action and
+/// the Preferences tile open the exact same dialog, validation, and
+/// persistence path rather than each maintaining its own copy.
+///
+/// An empty field clears the budget; a valid positive amount sets it. Both
+/// route through [ConfigService.setMonthlyBudget], which persists the value and
+/// keeps the home-screen widget in sync.
+Future<void> showMonthlyBudgetDialog(BuildContext context) async {
+  final configService = Get.find<ConfigService>();
+  final textController = TextEditingController(
+    text: configService.monthlyBudget.value?.toStringAsFixed(0) ?? '',
+  );
+  String? errorText;
+
+  try {
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('Monthly Budget'),
+          content: TextField(
+            controller: textController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              hintText: 'Enter budget amount (leave empty to clear)',
+              prefixText: '₹ ',
+              errorText: errorText,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                final text = textController.text.trim();
+                final validationError = validateBudgetInput(text);
+                if (validationError != null) {
+                  setDialogState(() => errorText = validationError);
+                  return;
+                }
+                if (text.isEmpty) {
+                  configService.setMonthlyBudget(null);
+                } else {
+                  configService.setMonthlyBudget(double.parse(text));
+                }
+                Navigator.pop(ctx);
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+  } finally {
+    textController.dispose();
+  }
 }

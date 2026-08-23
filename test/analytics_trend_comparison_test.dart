@@ -60,12 +60,13 @@ void main() {
       expect(find.text('• Aug'), findsOneWidget);
     });
 
-    testWidgets('shows a range label carrying both years', (tester) async {
+    testWidgets('omits the range from the populated trend heading',
+        (tester) async {
       await tester.pumpWidget(
         wrapSection(MonthTrendSection(series: seriesEndingAt(2026, 2))),
       );
 
-      expect(find.text('Sep 2025 – Feb 2026'), findsOneWidget);
+      expect(find.text('Sep 2025 – Feb 2026'), findsNothing);
     });
 
     testWidgets('shows an income and expense legend', (tester) async {
@@ -347,7 +348,8 @@ void main() {
         ),
       ));
 
-      expect(find.text('2 notable changes'), findsOneWidget);
+      // Non-action heading trailers (e.g. the change count) were removed.
+      expect(find.text('2 notable changes'), findsNothing);
       expect(find.text('Grocery spending increased'), findsOneWidget);
       expect(find.text('New Cab spending'), findsOneWidget);
 
