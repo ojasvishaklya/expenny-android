@@ -18,13 +18,10 @@ class DisplayCard extends StatelessWidget {
   final double income;
   final double expense;
 
-  /// Available width below which the Income and Expense metrics stack instead
-  /// of sharing a row, so neither value is squeezed. Mirrors the MonthlySummary
-  /// hero's responsive threshold.
-  static const double _stackBelowWidth = 360;
-
-  /// Text scale beyond which the metrics stack, matching the analytics
-  /// sections' `kAnalyticsStackTextScale`.
+  /// Text scale beyond which the metrics stack vertically, purely as an
+  /// accessibility accommodation for enlarged text. Matches the analytics
+  /// sections' `kAnalyticsStackTextScale`. At normal text scales the metrics
+  /// always share a row, regardless of how narrow the viewport is.
   static const double _stackTextScale = 1.3;
 
   /// Mirrors the previous controller getters: round to two decimals, then use
@@ -66,14 +63,13 @@ class DisplayCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        // Measure the full DisplayCard width here, before the details padding
-        // removes 40px, so the stack decision reflects the card's own width
-        // rather than the narrower padded content box.
-        LayoutBuilder(
-          builder: (context, constraints) {
-            // Stack the metrics when the card is narrow or the text is
-            // enlarged, otherwise share the row in equal bounded slots.
-            final stack = constraints.maxWidth < _stackBelowWidth ||
+        // Income and Expense share a row at normal text scales, each in an
+        // equal bounded slot, so they stay side by side even in narrow
+        // viewports. They stack vertically only when the text scale exceeds
+        // the accessibility threshold, giving enlarged values room to breathe.
+        Builder(
+          builder: (context) {
+            final stack =
                 MediaQuery.textScalerOf(context).scale(1) > _stackTextScale;
 
             return Padding(
