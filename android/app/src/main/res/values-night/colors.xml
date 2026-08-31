@@ -1,12 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="widget_background">#000</color>
+    <!-- Softer surface than pure #000, matching the in-app dark theme. -->
+    <color name="widget_background">#1C1B1F</color>
     <color name="widget_text_primary">#E6E1E5</color>
-    <color name="widget_text_secondary">#A0A0A0</color>
-    <color name="widget_budget_positive">#66BB6A</color>
-    <color name="widget_budget_negative">#EF5350</color>
-    <color name="widget_progress_track">#2D2D3D</color>
-    <color name="widget_progress_fill">#66BB6A</color>
+    <color name="widget_text_secondary">#A8A3AD</color>
+    <!-- Brighter green/red so bars stay legible on the dark surface,
+         matching the dashboard trend chart's dark palette. -->
+    <color name="widget_budget_positive">#7FD98F</color>
+    <color name="widget_budget_negative">#FF8A80</color>
+    <color name="widget_progress_track">#33313A</color>
     <color name="widget_progress_warning">#FFB74D</color>
-    <color name="widget_progress_danger">#EF5350</color>
+    <color name="widget_progress_danger">#FF8A80</color>
+
+    <!-- Redesign additions -->
+    <color name="widget_primary">#D0BCFF</color>
+    <color name="widget_on_primary">#21005D</color>
+    <color name="widget_on_warn">#241A00</color>
+    <!-- Danger pill uses the light-red fill in dark mode, so its text is dark. -->
+    <color name="widget_on_danger">#3A0906</color>
+    <color name="widget_pill_ok_bg">#2A7FD98F</color>
+    <color name="widget_seg_idle">#40D0BCFF</color>
 </resources>
