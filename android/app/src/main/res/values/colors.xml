@@ -6,7 +6,16 @@
     <color name="widget_budget_positive">#2E7D32</color>
     <color name="widget_budget_negative">#C62828</color>
     <color name="widget_progress_track">#E8E8E8</color>
-    <color name="widget_progress_fill">#4CAF50</color>
     <color name="widget_progress_warning">#FF9800</color>
     <color name="widget_progress_danger">#D32F2F</color>
+
+    <!-- Redesign additions -->
+    <color name="widget_primary">#6750A4</color>
+    <color name="widget_on_primary">#FFFFFF</color>
+    <color name="widget_on_warn">#241A00</color>
+    <color name="widget_on_danger">#FFFFFF</color>
+    <!-- Subtle green wash behind the healthy percent pill (~13% alpha) -->
+    <color name="widget_pill_ok_bg">#222E7D32</color>
+    <!-- Brand-tinted idle segment for the no-budget state (~24% alpha) -->
+    <color name="widget_seg_idle">#3D6750A4</color>
 </resources>
