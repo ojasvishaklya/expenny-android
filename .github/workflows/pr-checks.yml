@@ -1,0 +1,52 @@
+name: PR Checks
+
+# Gates pull requests before they can be merged: static analysis, unit tests,
+# and a release build. Complements build-release.yml, which only runs on push
+# to main and uploads the APK artifact.
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+
+# Cancel superseded runs when new commits are pushed to the same PR.
+concurrency:
+  group: pr-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Java and Flutter are pinned to match the local dev toolchain (and
+      # build-release.yml) exactly, so a green local build predicts a green CI
+      # build and CI cannot silently drift onto a newer Flutter.
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: corretto
+          java-version: "21"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.44.9
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      # Matches build-release.yml: info/warning lints do not fail the build,
+      # only errors do.
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build release APK
+        run: flutter build apk --release
