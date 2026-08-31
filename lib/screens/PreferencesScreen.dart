@@ -1,3 +1,4 @@
+import 'package:expenny/constants/DesignTokens.dart';
 import 'package:expenny/models/SyncResult.dart';
 import 'package:expenny/service/ConfigService.dart';
 import 'package:expenny/service/DataService.dart';
@@ -146,7 +147,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     final colors = theme.colorScheme;
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 20),
       children: [
         Semantics(
           header: true,
@@ -157,14 +158,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
             ),
           ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          'Make Expenny yours',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: colors.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 14),
 
         // --- Appearance ------------------------------------------------------
         const _SectionLabel('Appearance'),
@@ -293,7 +287,7 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
+      padding: const EdgeInsets.fromLTRB(2, 6, 2, 4),
       child: Semantics(
         header: true,
         child: Text(
@@ -319,18 +313,17 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final background = error
-        ? colors.errorContainer.withValues(alpha: 0.35)
-        : colors.surfaceContainerHighest;
     final border =
         error ? colors.error.withValues(alpha: 0.5) : colors.outlineVariant;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: border),
+        borderRadius: BorderRadius.circular(kDesignBorderRadius),
+        border: Border.all(
+          color: border,
+          width: kDesignBorderWidth,
+        ),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(children: children),
@@ -400,19 +393,19 @@ class _PreferenceRow extends StatelessWidget {
     final content = Opacity(
       opacity: enabled ? 1.0 : 0.5,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 34,
+              height: 34,
               decoration: BoxDecoration(
                 color: iconTileColor,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(9),
               ),
-              child: Icon(icon, color: iconColor, size: 22),
+              child: Icon(icon, color: iconColor, size: 19),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -438,11 +431,11 @@ class _PreferenceRow extends StatelessWidget {
               ),
             ),
             if (trailing != null) ...[
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               // Reserve enough room for the row text on narrow screens while
               // still fitting the Switch, badge, or current value.
               ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 144),
+                constraints: const BoxConstraints(maxWidth: 128),
                 child: IconTheme.merge(
                   data: IconThemeData(color: colors.onSurfaceVariant),
                   child: trailing!,
@@ -471,7 +464,7 @@ class _PreferenceRow extends StatelessWidget {
       onTap: interactive ? onTap : null,
       child: ExcludeSemantics(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 64),
+          constraints: const BoxConstraints(minHeight: 52),
           child: interactive
               ? Material(
                   type: MaterialType.transparency,
@@ -529,7 +522,7 @@ class _StatusBadge extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: colors.secondaryContainer,
         borderRadius: BorderRadius.circular(999),

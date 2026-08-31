@@ -1,3 +1,4 @@
+import 'package:expenny/constants/DesignTokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:expenny/widgets/analytics/AnalyticsSection.dart';
@@ -96,7 +97,7 @@ void main() {
         decoration.border,
         Border.all(
           color: colors.outlineVariant,
-          width: kAnalyticsPanelBorderWidth,
+          width: kDesignBorderWidth,
         ),
       );
       expect(decoration.boxShadow, anyOf(isNull, isEmpty));

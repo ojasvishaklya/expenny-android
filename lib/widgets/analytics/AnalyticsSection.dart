@@ -1,17 +1,10 @@
+import 'package:expenny/constants/DesignTokens.dart';
 import 'package:flutter/material.dart';
 
-/// Shared radius and padding for dashboard panels, taken as direction from the
-/// dashboard mockup rather than as a pixel-exact reproduction.
-///
-/// [kAnalyticsPanelRadius] is the single control for every analytics panel's
-/// corner radius: change it here and all panels round consistently through
-/// their shared `BorderRadius.circular(kAnalyticsPanelRadius)` usage.
-const double kAnalyticsPanelRadius = 8;
+/// Shared padding for dashboard panels, taken as direction from the dashboard
+/// mockup rather than as a pixel-exact reproduction. App-wide border shape and
+/// width come from DesignTokens.dart.
 const double kAnalyticsPanelPadding = 16;
-
-/// Width of the thin outline drawn around every [AnalyticsOutlinedPanel].
-/// Tune this single value to make the border hairline-thin or more prominent.
-const double kAnalyticsPanelBorderWidth = 0.5;
 
 /// Padding used when horizontal space is tight, so a panel keeps usable
 /// content width at a 320 logical pixel viewport.
@@ -131,7 +124,7 @@ class AnalyticsSection extends StatelessWidget {
 /// A thin, unelevated outlined container for dashboard section content.
 ///
 /// The panel carries no shadow; it is set apart by a hairline
-/// `colors.outlineVariant` border (see [kAnalyticsPanelBorderWidth]) and its
+/// `colors.outlineVariant` border (see [kDesignBorderWidth]) and its
 /// rounded corners alone, so the dashboard stays calm and flat in both light
 /// and dark themes.
 class AnalyticsOutlinedPanel extends StatelessWidget {
@@ -153,10 +146,10 @@ class AnalyticsOutlinedPanel extends StatelessWidget {
           padding: EdgeInsets.all(padding),
           decoration: BoxDecoration(
             color: colors.surface,
-            borderRadius: BorderRadius.circular(kAnalyticsPanelRadius),
+            borderRadius: BorderRadius.circular(kDesignBorderRadius),
             border: Border.all(
               color: colors.outlineVariant,
-              width: kAnalyticsPanelBorderWidth,
+              width: kDesignBorderWidth,
             ),
           ),
           child: child,
