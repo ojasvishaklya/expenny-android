@@ -74,10 +74,14 @@ class TransactionController extends GetxController {
     }
 
     if (searchString != null && searchString.isNotEmpty) {
-      // Search with description matching searchString
-      sqlQuery += ' AND Description LIKE ?';
-      searchString = '%$searchString%';
-      params.add(searchString);
+      // Match either the user-facing description or the original SMS body, so
+      // details that only appear in the raw alert (merchant, reference number,
+      // etc.) are still searchable. rawSms is null for manual entries, and
+      // `NULL LIKE ?` is simply false, so those rows fall back to description.
+      sqlQuery += ' AND (Description LIKE ? OR rawSms LIKE ?)';
+      final pattern = '%$searchString%';
+      params.add(pattern);
+      params.add(pattern);
     }
 
     List<Transaction> transactions =

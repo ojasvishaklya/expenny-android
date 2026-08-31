@@ -1,3 +1,4 @@
+import 'package:expenny/constants/DesignTokens.dart';
 import 'package:flutter/material.dart';
 import 'package:expenny/service/DateService.dart';
 
@@ -106,6 +107,10 @@ class _MonthChip extends StatelessWidget {
       backgroundColor: colors.surface,
       side: BorderSide(
         color: isSelected ? colors.primary : colors.outlineVariant,
+        width: kDesignBorderWidth,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(kDesignBorderRadius),
       ),
       labelStyle: TextStyle(
         color: isSelected ? colors.onPrimary : colors.onSurfaceVariant,

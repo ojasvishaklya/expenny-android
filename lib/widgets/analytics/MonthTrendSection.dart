@@ -80,6 +80,26 @@ class MonthTrendSection extends StatelessWidget {
     return 'Six month trend. ${parts.join('. ')}.';
   }
 
+  /// Income series colour, resolved for the active [brightness].
+  ///
+  /// Light mode uses the app's canonical income green (matching the
+  /// Transactions ledger and the summary hero); dark mode lifts it to a
+  /// brighter green so the bars stay legible on the dark surface rather than
+  /// sinking into it. The two series are also distinguished by legend shape,
+  /// so the colours carry emphasis, not meaning, alone.
+  static Color incomeColorFor(Brightness brightness) =>
+      brightness == Brightness.dark
+          ? const Color(0xFF81C784) // green 300 — reads clearly on dark
+          : const Color(0xFF2E7D32); // canonical income green
+
+  /// Expense series colour, resolved for the active [brightness]. Light mode
+  /// uses the canonical expense red; dark mode uses a lighter red that keeps
+  /// contrast against the dark surface.
+  static Color expenseColorFor(Brightness brightness) =>
+      brightness == Brightness.dark
+          ? const Color(0xFFFF8A80) // light red — legible on dark
+          : const Color(0xFFBA1A1A); // canonical expense red
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -98,8 +118,8 @@ class MonthTrendSection extends StatelessWidget {
       );
     }
 
-    final incomeColor = colors.tertiary;
-    final expenseColor = colors.error;
+    final incomeColor = incomeColorFor(colors.brightness);
+    final expenseColor = expenseColorFor(colors.brightness);
     final ceiling = axisCeiling(series.maxValue);
 
     return AnalyticsSection(

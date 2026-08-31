@@ -1,4 +1,5 @@
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:expenny/models/analytics/MonthComparison.dart';
 import 'package:expenny/models/analytics/TrendSeries.dart';
@@ -181,6 +182,53 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.byType(BarChart), findsOneWidget);
+    });
+
+    test('series colours are green/red and adapt to brightness', () {
+      // Income reads green, expense reads red, in both themes.
+      expect(MonthTrendSection.incomeColorFor(Brightness.light),
+          const Color(0xFF2E7D32));
+      expect(MonthTrendSection.expenseColorFor(Brightness.light),
+          const Color(0xFFBA1A1A));
+      // Dark mode lifts both to lighter tones for contrast on the dark surface.
+      expect(MonthTrendSection.incomeColorFor(Brightness.dark),
+          const Color(0xFF81C784));
+      expect(MonthTrendSection.expenseColorFor(Brightness.dark),
+          const Color(0xFFFF8A80));
+      // The two series never collide, in either theme.
+      expect(MonthTrendSection.incomeColorFor(Brightness.light),
+          isNot(MonthTrendSection.expenseColorFor(Brightness.light)));
+      expect(MonthTrendSection.incomeColorFor(Brightness.dark),
+          isNot(MonthTrendSection.expenseColorFor(Brightness.dark)));
+    });
+
+    testWidgets('paints selected rods in the light series colours',
+        (tester) async {
+      await tester.pumpWidget(
+        wrapSection(MonthTrendSection(series: seriesEndingAt(2026, 8))),
+      );
+
+      final chart = tester.widget<BarChart>(find.byType(BarChart));
+      final selected = chart.data.barGroups.last.barRods;
+      expect(selected[0].color,
+          MonthTrendSection.incomeColorFor(Brightness.light));
+      expect(selected[1].color,
+          MonthTrendSection.expenseColorFor(Brightness.light));
+    });
+
+    testWidgets('paints selected rods in the dark series colours',
+        (tester) async {
+      await tester.pumpWidget(wrapSection(
+        MonthTrendSection(series: seriesEndingAt(2026, 8)),
+        dark: true,
+      ));
+
+      final chart = tester.widget<BarChart>(find.byType(BarChart));
+      final selected = chart.data.barGroups.last.barRods;
+      expect(selected[0].color,
+          MonthTrendSection.incomeColorFor(Brightness.dark));
+      expect(selected[1].color,
+          MonthTrendSection.expenseColorFor(Brightness.dark));
     });
 
     test('range label names both years only when the window spans two', () {

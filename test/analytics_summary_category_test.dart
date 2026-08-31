@@ -1,4 +1,3 @@
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:expenny/models/analytics/CategoryBreakdown.dart';
@@ -197,7 +196,7 @@ void main() {
   });
 
   group('CategoryBreakdownSection', () {
-    testWidgets('shows an empty hint and no chart when nothing was spent',
+    testWidgets('shows an empty hint and no rows when nothing was spent',
         (tester) async {
       await tester.pumpWidget(wrapSection(
         const CategoryBreakdownSection(
@@ -206,21 +205,8 @@ void main() {
       ));
 
       expect(find.text('No spending recorded this month.'), findsOneWidget);
-      expect(find.byType(PieChart), findsNothing);
-    });
-
-    testWidgets('renders a donut with one section per group', (tester) async {
-      await tester.pumpWidget(
-        wrapSection(const CategoryBreakdownSection(breakdown: _twoGroups)),
-      );
-
-      final chart = tester.widget<PieChart>(find.byType(PieChart));
-      expect(chart.data.sections.length, 2);
-      expect(chart.data.sections.map((s) => s.value).toList(), [750, 250]);
-      // Arc labels are suppressed; the legend carries the text.
-      expect(chart.data.sections.every((s) => s.showTitle), isFalse);
-      // A non-infinite centre space is what makes it a donut rather than a pie.
-      expect(chart.data.centerSpaceRadius, isNot(double.infinity));
+      // No category names render for an empty breakdown.
+      expect(find.text('Food'), findsNothing);
     });
 
     testWidgets('lists every group with label, amount, and percentage',
@@ -235,11 +221,6 @@ void main() {
       expect(find.text('Cab'), findsOneWidget);
       expect(find.text('₹250'), findsOneWidget);
       expect(find.text('25.0%'), findsOneWidget);
-      // The section no longer shows a trailing total; the donut centre shows
-      // the category count over the plural noun instead.
-      expect(find.text('₹1,000 total'), findsNothing);
-      expect(find.text('2'), findsOneWidget);
-      expect(find.text('categories'), findsOneWidget);
     });
 
     testWidgets('preserves the order supplied by the service', (tester) async {
@@ -268,6 +249,33 @@ void main() {
       final cab = tester.getTopLeft(find.text('Cab')).dy;
       final food = tester.getTopLeft(find.text('Food')).dy;
       expect(cab, lessThan(food));
+    });
+
+    test('scales share bars relative to the largest group', () {
+      // The leader fills the track; the rest are drawn in proportion to it.
+      expect(
+        CategoryBreakdownSection.barFraction(_twoGroups, _twoGroups.groups[0]),
+        1.0,
+      );
+      expect(
+        CategoryBreakdownSection.barFraction(_twoGroups, _twoGroups.groups[1]),
+        closeTo(0.3333, 0.001),
+      );
+    });
+
+    test('bar fraction is zero when there is nothing to scale against', () {
+      expect(
+        CategoryBreakdownSection.barFraction(
+          const CategoryBreakdown.empty(),
+          const CategoryGroup(
+            tagIds: {'food'},
+            label: 'Food',
+            amount: 0,
+            percent: 0,
+          ),
+        ),
+        0,
+      );
     });
 
     testWidgets('renders the aggregated Other group', (tester) async {
@@ -299,7 +307,7 @@ void main() {
       expect(find.byIcon(Icons.more_horiz), findsOneWidget);
     });
 
-    testWidgets('exposes a complete semantic equivalent of the chart',
+    testWidgets('exposes a complete semantic equivalent of the list',
         (tester) async {
       await tester.pumpWidget(
         wrapSection(const CategoryBreakdownSection(breakdown: _twoGroups)),
@@ -313,7 +321,7 @@ void main() {
       );
     });
 
-    testWidgets('stacks the donut above the legend at 320px', (tester) async {
+    testWidgets('renders the list at 320px without overflow', (tester) async {
       await setSurface(tester, kNarrowSurface);
 
       await tester.pumpWidget(
@@ -321,10 +329,9 @@ void main() {
       );
 
       expect(tester.takeException(), isNull);
-
-      final donut = tester.getCenter(find.byType(PieChart)).dy;
-      final firstLegendRow = tester.getCenter(find.text('Food')).dy;
-      expect(donut, lessThan(firstLegendRow));
+      final food = tester.getTopLeft(find.text('Food')).dy;
+      final cab = tester.getTopLeft(find.text('Cab')).dy;
+      expect(food, lessThan(cab));
     });
 
     testWidgets('renders in the dark theme without error', (tester) async {
@@ -334,8 +341,8 @@ void main() {
       ));
 
       expect(tester.takeException(), isNull);
-      expect(find.byType(PieChart), findsOneWidget);
       expect(find.text('Food'), findsOneWidget);
+      expect(find.text('Cab'), findsOneWidget);
     });
 
     test('semantic summary lists every group in order', () {

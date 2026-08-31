@@ -127,7 +127,7 @@ void main() {
 
       expect(breakdown.groups.length, 1);
       expect(breakdown.totalExpense, 1000);
-      expect(breakdown.groups.first.label, 'Food');
+      expect(breakdown.groups.first.label, 'Food & Drink');
     });
 
     test('orders groups by spend, highest first', () {
@@ -139,7 +139,7 @@ void main() {
 
       expect(
         breakdown.groups.map((group) => group.label).toList(),
-        ['Cab', 'Grocery', 'Food'],
+        ['Transport', 'Groceries', 'Food & Drink'],
       );
     });
 
@@ -221,7 +221,7 @@ void main() {
 
       expect(
         breakdown.groups.map((group) => group.label).toList(),
-        ['Cab', 'Grocery'],
+        ['Groceries', 'Transport'],
       );
     });
   });
@@ -399,7 +399,7 @@ void main() {
       );
 
       final change = comparison.categoryChanges.single;
-      expect(change.label, 'Food');
+      expect(change.label, 'Food & Drink');
       expect(change.percentChange, 100);
       expect(change.direction, ChangeDirection.higher);
       expect(change.difference, 1000);
@@ -430,7 +430,7 @@ void main() {
 
       expect(
         comparison.categoryChanges.map((change) => change.label).toList(),
-        ['Grocery', 'Food', 'Cab'],
+        ['Groceries', 'Food & Drink', 'Transport'],
       );
       expect(comparison.categoryChanges.last.percentChange, isNull);
       expect(

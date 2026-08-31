@@ -1,3 +1,4 @@
+import 'package:expenny/constants/DesignTokens.dart';
 import 'package:flutter/material.dart';
 import 'package:expenny/models/analytics/MonthlySummary.dart';
 import 'package:expenny/service/DateService.dart';
@@ -70,7 +71,7 @@ class MonthlySummarySection extends StatelessWidget {
           padding: const EdgeInsets.all(kAnalyticsPanelPadding),
           decoration: BoxDecoration(
             color: colors.primaryContainer,
-            borderRadius: BorderRadius.circular(kAnalyticsPanelRadius),
+            borderRadius: BorderRadius.circular(kDesignBorderRadius),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

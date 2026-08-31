@@ -1,11 +1,17 @@
 import 'package:expenny/models/Transaction.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
-import 'package:expenny/models/PaymentMethod.dart';
+
+import 'package:expenny/models/TransactionTag.dart';
 
 class TransactionRepository {
   late sqflite.Database _database;
   final String tableName = 'transactions';
+
+  /// Bumped to 2 for the tag-taxonomy refresh: [_migrateTagIds] rewrites
+  /// retired tag ids to their current equivalents so historical rows group and
+  /// display under the new categories.
+  static const int _databaseVersion = 2;
 
   Future<void> open() async {
     _database = await sqflite.openDatabase(
@@ -33,8 +39,32 @@ class TransactionRepository {
           'CREATE UNIQUE INDEX IF NOT EXISTS idx_sms_id ON $tableName(smsId)',
         );
       },
-      version: 1,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await _migrateTagIds(db);
+        }
+      },
+      version: _databaseVersion,
     );
+  }
+
+  /// Normalizes stored tag ids to the refreshed taxonomy.
+  ///
+  /// Uses the single source of truth, [TransactionTag.aliases], so this stays
+  /// in step with the display-time resolution in [TransactionTag.getTagById].
+  /// Idempotent: rows already carrying a current id match no alias key and are
+  /// left untouched, so re-running is a no-op.
+  Future<void> _migrateTagIds(sqflite.Database db) async {
+    final batch = db.batch();
+    TransactionTag.aliases.forEach((oldId, newId) {
+      batch.update(
+        tableName,
+        {'tag': newId},
+        where: 'tag = ?',
+        whereArgs: [oldId],
+      );
+    });
+    await batch.commit(noResult: true);
   }
 
   Future<int> insertTransaction(Transaction transaction) async {

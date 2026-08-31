@@ -60,4 +60,42 @@ class DateService {
         '  ' +
         year.toUpperCase().split('').join(' ');
   }
+
+  /// Formats the time-of-day of [date] as a 12-hour clock string, e.g.
+  /// `1:24 PM`. Midnight renders as `12:00 AM` and noon as `12:00 PM`.
+  /// Used for the trailing time under a transaction amount.
+  static String formatTime(DateTime date) {
+    final period = date.hour < 12 ? 'AM' : 'PM';
+    int hour12 = date.hour % 12;
+    if (hour12 == 0) hour12 = 12;
+    final minute = date.minute.toString().padLeft(2, '0');
+    return '$hour12:$minute $period';
+  }
+
+  /// The heading shown above a day's transactions in the grouped ledger.
+  ///
+  /// Returns `Today` for [now]'s calendar day, `12 August` for another day in
+  /// the same year, and `12 August 2025` for a day in a different year — the
+  /// year is only added when it would otherwise be ambiguous. [now] defaults
+  /// to the system clock but is injectable for tests.
+  static String dateGroupLabel(DateTime date, {DateTime? now}) {
+    final today = now ?? DateTime.now();
+    if (date.year == today.year &&
+        date.month == today.month &&
+        date.day == today.day) {
+      return 'Today';
+    }
+    if (date.year == today.year) {
+      return '${date.day} ${monthNames[date.month]}';
+    }
+    return '${date.day} ${monthNames[date.month]} ${date.year}';
+  }
+
+  /// A stable calendar-day key for grouping transactions, e.g. `2026-08-12`.
+  /// Independent of time-of-day so all of a day's transactions share a group.
+  static String dateGroupKey(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
+  }
 }
