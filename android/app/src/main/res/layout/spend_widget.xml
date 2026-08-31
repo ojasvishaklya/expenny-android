@@ -1,86 +1,124 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Compact budget widget (mockup "Direction B").
+
+  Four stacked rows:
+    1. Month label (left) + threshold-coloured percent pill (right).
+    2. Bold spent amount + muted "of <budget>".
+    3. A threshold-coloured segmented track (10 ImageView segments whose
+       background drawable is swapped at runtime to fill and recolour them).
+    4. A single summary line: "<remaining> remaining this month", or
+       "<over> over budget" when the budget is exceeded.
+
+  Only RemoteViews-supported view types are used (LinearLayout, TextView,
+  ImageView) so this renders on all supported API levels.
+-->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:gravity="center_vertical"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="14dp"
+    android:paddingBottom="14dp"
     android:background="@drawable/widget_background">
 
-    <!-- Header: Month + Budget label -->
-    <TextView
-        android:id="@+id/widget_month"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:textColor="@color/widget_text_secondary"
-        android:text="JUNE BUDGET"
-        android:letterSpacing="0.05" />
-
-    <!-- Main amount: spent / total -->
+    <!-- Row 1: month label + percent pill -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
         android:orientation="horizontal"
         android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/widget_month"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.08"
+            android:textAllCaps="true"
+            android:textColor="@color/widget_text_secondary"
+            android:text="August" />
+
+        <TextView
+            android:id="@+id/widget_percentage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="@color/widget_budget_positive"
+            android:background="@drawable/widget_pill_ok"
+            android:text="31%" />
+    </LinearLayout>
+
+    <!-- Row 2: spent amount + "of <budget>" -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal"
+        android:baselineAligned="true"
+        android:gravity="bottom">
 
         <TextView
             android:id="@+id/widget_spent_amount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="24sp"
+            android:singleLine="true"
+            android:textSize="25sp"
             android:textStyle="bold"
             android:textColor="@color/widget_text_primary"
             android:text="₹12,500" />
 
         <TextView
             android:id="@+id/widget_budget_total"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:textSize="13sp"
-            android:textColor="@color/widget_text_secondary"
-            android:text="/ ₹40,000" />
-    </LinearLayout>
-
-    <!-- Progress bar -->
-    <ProgressBar
-        android:id="@+id/widget_progress"
-        style="@android:style/Widget.ProgressBar.Horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="8dp"
-        android:layout_marginTop="10dp"
-        android:max="100"
-        android:progress="31"
-        android:progressDrawable="@drawable/widget_progress_drawable" />
-
-    <!-- Footer: remaining + percentage -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/widget_remaining"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="12sp"
-            android:textColor="@color/widget_budget_positive"
-            android:text="₹27,500 remaining" />
-
-        <TextView
-            android:id="@+id/widget_percentage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="12sp"
-            android:textStyle="bold"
+            android:layout_marginStart="6dp"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:textSize="13sp"
             android:textColor="@color/widget_text_secondary"
-            android:text="31%" />
+            android:text="of ₹40,000" />
     </LinearLayout>
+
+    <!-- Row 3: segmented track -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="13dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView android:id="@+id/widget_seg_0" android:layout_width="0dp" android:layout_height="6dp" android:layout_weight="1" android:layout_marginEnd="3dp" android:background="@drawable/widget_seg_track" android:contentDescription="@null" />
+        <ImageView android:id="@+id/widget_seg_1" android:layout_width="0dp" android:layout_height="6dp" android:layout_weight="1" android:layout_marginEnd="3dp" android:background="@drawable/widget_seg_track" android:contentDescription="@null" />
+        <ImageView android:id="@+id/widget_seg_2" android:layout_width="0dp" android:layout_height="6dp" android:layout_weight="1" android:layout_marginEnd="3dp" android:background="@drawable/widget_seg_track" android:contentDescription="@null" />
+        <ImageView android:id="@+id/widget_seg_3" android:layout_width="0dp" android:layout_height="6dp" android:layout_weight="1" android:layout_marginEnd="3dp" android:background="@drawable/widget_seg_track" android:contentDescription="@null" />
+        <ImageView android:id="@+id/widget_seg_4" android:layout_width="0dp" android:layout_height="6dp" android:layout_weight="1" android:layout_marginEnd="3dp" android:background="@drawable/widget_seg_track" android:contentDescription="@null" />
+        <ImageView android:id="@+id/widget_seg_5" android:layout_width="0dp" android:layout_height="6dp" android:layout_weight="1" android:layout_marginEnd="3dp" android:background="@drawable/widget_seg_track" android:contentDescription="@null" />
+        <ImageView android:id="@+id/widget_seg_6" android:layout_width="0dp" android:layout_height="6dp" android:layout_weight="1" android:layout_marginEnd="3dp" android:background="@drawable/widget_seg_track" android:contentDescription="@null" />
+        <ImageView android:id="@+id/widget_seg_7" android:layout_width="0dp" android:layout_height="6dp" android:layout_weight="1" android:layout_marginEnd="3dp" android:background="@drawable/widget_seg_track" android:contentDescription="@null" />
+        <ImageView android:id="@+id/widget_seg_8" android:layout_width="0dp" android:layout_height="6dp" android:layout_weight="1" android:layout_marginEnd="3dp" android:background="@drawable/widget_seg_track" android:contentDescription="@null" />
+        <ImageView android:id="@+id/widget_seg_9" android:layout_width="0dp" android:layout_height="6dp" android:layout_weight="1" android:background="@drawable/widget_seg_track" android:contentDescription="@null" />
+    </LinearLayout>
+
+    <!-- Row 4: summary line -->
+    <TextView
+        android:id="@+id/widget_summary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="11dp"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:textSize="12sp"
+        android:textColor="@color/widget_text_secondary"
+        android:text="₹27,500 remaining this month" />
 </LinearLayout>
