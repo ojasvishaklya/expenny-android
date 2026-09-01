@@ -9,8 +9,8 @@ This tracker records implementation, validation, and commit evidence for the con
 | 3. DisplayCard net hero | Done | Month-attributed net hero, income/expense tiles, savings rate, header/subtitle and month-first layout; duplicate summary widget removed | `flutter test test/display_card_test.dart test/analytics_dashboard_components_test.dart test/analytics_summary_category_test.dart test/analytics_screen_test.dart` → All tests passed (74/74); `flutter test` → All tests passed (255/255, no regressions); `flutter analyze` on changed files → 0 errors/warnings (only pre-existing file_names + one pre-existing test private-type info lint); `flutter build apk --release` → Built app-release.apk (54.7MB) | `7faaaf4` |
 | 4. Segmented budget | Done (widget tests deferred) | Category segments, idle remainder, exact/over/no-budget states, shared category identity and semantics | `flutter test test/budget_progress_test.dart` → All active tests passed (36/36); rendered/platform-backed widget scenarios remain documented as TODOs; `flutter analyze` → 0 errors/warnings (4 filename-style info lints); `flutter build apk --release` → Built app-release.apk (54.7MB) | `a58e7b7`, `682a903` |
 | 5. Dashboard composition | Done | Header → month selector → hero → segmented budget → ranked categories → six-month trend → retained MonthComparison; one bounded load and request-ordering behavior preserved | `flutter test test/analytics_screen_test.dart` → All tests passed (17/17); focused Dashboard regressions → All tests passed (91/91); `flutter analyze test/analytics_screen_test.dart` → No issues found; `flutter build apk --release` → Built app-release.apk (54.7MB) | `4a5bfc9` |
-| 6. Transactions validation | Done | Selected-month search/sort/filter and stale-request behavior preserved; signed rows use `ColorScheme.tertiary/error`; header, controls, date groups, FAB, narrow width and large text validated | `flutter test test/transaction_card_test.dart test/transactions_screen_test.dart` → All tests passed (12/12); `flutter analyze` → 0 errors/warnings (one filename-style info); `flutter build apk --release` → Built app-release.apk (54.7MB) | See Task 6 note |
-| 7. Whole-app integration | Not started | Shell smoke coverage, accessibility/responsive audit, analyzer/tests/release build all green | Pending | Pending |
+| 6. Transactions validation | Done | Selected-month search/sort/filter and stale-request behavior preserved; signed rows use `ColorScheme.tertiary/error`; header, controls, date groups, FAB, narrow width and large text validated | `flutter test test/transaction_card_test.dart test/transactions_screen_test.dart` → All tests passed (12/12); `flutter analyze` → 0 errors/warnings (one filename-style info); `flutter build apk --release` → Built app-release.apk (54.7MB) | `404e3c2` |
+| 7. Whole-app integration | Done | Shell tap/swipe synchronization, default Transactions tab, no legacy destinations, focused/full behavior, responsive/theme coverage, and release build validated | `flutter pub get` succeeded; redesign regressions passed (174/174); full active suite passed (268/268); changed shell test analyzes cleanly; full analyzer has 0 errors/warnings and 70 pre-existing info findings (`--no-fatal-infos` exits 0); release APK built (54.7MB) | See Task 7 note |
 
 ## Task notes
 
@@ -294,9 +294,50 @@ This tracker records implementation, validation, and commit evidence for the con
     `TransactionCard.dart`.
   - `flutter build apk --release` →
     `✓ Built build/app/outputs/flutter-apk/app-release.apk (54.7MB)`.
-- Commit: recorded on commit (see git log for this Task 6 commit).
+- Commit: `404e3c2` — `fix(transactions): Use semantic amount colors`.
 
 ### Task 7 — Whole-app integration
-- Status: Not started
-- Validation evidence: Pending
-- Commit: Pending
+- Status: Done
+- Approach: Added a lightweight whole-shell smoke test through the existing
+  `HomeScreen.screens` seam. It proves Transactions is the default, nav taps
+  select Dashboard and Preferences, PageView swipes update the selected bottom
+  navigation index, and legacy Search/Settings destinations are absent. This
+  validates shell wiring without starting real database-backed child screens.
+- Changed files:
+  - `test/home_screen_test.dart` — added tap/swipe synchronization and
+    three-destination smoke coverage.
+  - `.kiro/specs/app-redesign/whole-app-redesign-todo.md` — recorded Task 6
+    commit and all final validation evidence.
+- Whole-app audit:
+  - Navigation is Dashboard → Transactions → Preferences with Transactions
+    selected at startup and `Icons.tune` for Preferences.
+  - Dashboard header/month attribution, semantic summaries, responsive hero,
+    ranked categories, trend, retained MonthComparison, and request ordering
+    are covered by focused tests.
+  - Budget allocation/helper behavior is active and green; 12 rendered,
+    platform-backed widget scenarios remain explicitly documented as TODOs due
+    the earlier timeout issue.
+  - Transactions selected-month search/sort/filter/request behavior and
+    320dp/2.0x rendering are covered.
+  - Preferences grouped scrolling, disabled semantics, honest last-sync copy,
+    theme switch, shared budget dialog, and destructive confirmation are
+    covered.
+  - No Search destination, preview status/device chrome, second theme toggle,
+    import-count persistence, legacy fetch-more path, or new route was added.
+- Validation evidence:
+  - `flutter pub get` → dependencies resolved successfully.
+  - `flutter test test/home_screen_test.dart test/bottom_nav_bar_test.dart` →
+    `All tests passed!` (7/7) after one focused swipe-distance correction.
+  - Focused redesign command covering 11 suites → `All tests passed!`
+    (174/174).
+  - `flutter test` → `All tests passed!` (268/268 active tests).
+  - `flutter analyze test/home_screen_test.dart` → `No issues found!`.
+  - Full `flutter analyze` reports 0 errors/warnings and 70 repository-wide
+    info-level style findings (predominantly existing PascalCase filenames);
+    `flutter analyze --no-fatal-infos` exits 0. Renaming the entire package was
+    intentionally kept outside this redesign.
+  - `flutter build apk --release` →
+    `✓ Built build/app/outputs/flutter-apk/app-release.apk (54.7MB)`.
+- Manual-device note: no emulator/device visual session was available; light,
+  dark, narrow-width, and enlarged-text behavior is exercised by widget tests.
+- Commit: recorded on commit (see git log for this Task 7 commit).

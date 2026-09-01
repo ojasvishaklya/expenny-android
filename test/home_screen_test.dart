@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:expenny/screens/HomeScreen.dart';
+import 'package:expenny/widgets/BottomNavBarWidget.dart';
 
 /// Proves the app shell opens on Transactions (index 1) rather than the
 /// leftmost destination.
@@ -44,5 +45,56 @@ void main() {
     if (preferences.evaluate().isNotEmpty) {
       expect(tester.getSize(preferences).width, equals(0.0));
     }
+  });
+
+  testWidgets('shell navigation stays synchronized across taps and swipes',
+      (tester) async {
+    const dashboardKey = Key('smoke-dashboard');
+    const transactionsKey = Key('smoke-transactions');
+    const preferencesKey = Key('smoke-preferences');
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: HomeScreen(
+          screens: <Widget>[
+            Center(key: dashboardKey, child: Text('Dashboard content')),
+            Center(key: transactionsKey, child: Text('Transactions content')),
+            Center(key: preferencesKey, child: Text('Preferences content')),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    BottomNavBarWidget nav() =>
+        tester.widget<BottomNavBarWidget>(find.byType(BottomNavBarWidget));
+
+    expect(nav().currentIndex, 1);
+    expect(tester.getSize(find.byKey(transactionsKey)).width, greaterThan(0));
+    expect(find.text('Search'), findsNothing);
+    expect(find.text('Settings'), findsNothing);
+
+    await tester.tap(
+      find.byIcon(Icons.dashboard_outlined).first,
+      warnIfMissed: false,
+    );
+    await tester.pumpAndSettle();
+    expect(nav().currentIndex, 0);
+    expect(tester.getSize(find.byKey(dashboardKey)).width, greaterThan(0));
+
+    await tester.tap(find.byIcon(Icons.tune).first, warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(nav().currentIndex, 2);
+    expect(tester.getSize(find.byKey(preferencesKey)).width, greaterThan(0));
+
+    await tester.drag(find.byType(PageView), const Offset(700, 0));
+    await tester.pumpAndSettle();
+    expect(nav().currentIndex, 1);
+    expect(tester.getSize(find.byKey(transactionsKey)).width, greaterThan(0));
+
+    await tester.drag(find.byType(PageView), const Offset(700, 0));
+    await tester.pumpAndSettle();
+    expect(nav().currentIndex, 0);
+    expect(tester.getSize(find.byKey(dashboardKey)).width, greaterThan(0));
   });
 }
