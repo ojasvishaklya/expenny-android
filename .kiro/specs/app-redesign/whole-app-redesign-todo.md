@@ -363,4 +363,36 @@ This tracker records implementation, validation, and commit evidence for the con
   - `flutter analyze` on changed files → 0 errors/warnings; two existing
     filename-style info findings.
   - `flutter build apk --release` → built app-release.apk (56.2MB).
+- Commit: `078cd42` — `fix(transactions): Restore empty-state loader`.
+
+## Post-plan follow-up — Immediate transaction mutation refresh
+
+- Status: Done
+- Bug: Deleting a transaction removed it from the database but left the
+  Transactions screen's private monthly snapshot visible until the page was
+  reconstructed. Updates had the same stale-snapshot risk.
+- Root cause: `TransactionCard` owned edit navigation and ignored route
+  completion, while `CreateTransactionScreen` popped before its `void async`
+  controller persistence methods could be awaited.
+- Changes:
+  - `TransactionsScreen` now owns card and FAB editor navigation, awaits a
+    boolean mutation result, and reloads the currently selected bounded month
+    when the result is `true`.
+  - `CreateTransactionScreen` awaits create/update/delete persistence and pops
+    with `true` only after the operation completes.
+  - `TransactionController.addTransaction` and `deleteTransaction` return
+    `Future<void>` so callers can prevent reload races.
+  - `TransactionCard` accepts an optional parent tap callback while retaining
+    its standalone fallback navigation.
+- Validation:
+  - Failing-first regression confirmed the missing editor result seam.
+  - Delete refresh test verifies a successful editor result triggers a second
+    query for the same month and removes the deleted row immediately.
+  - Update editor test verifies changed fields persist and return `true`.
+  - Update refresh test verifies the second database response replaces stale
+    row content without leaving/re-entering the page.
+  - Related transaction/editor suites → passed (28/28).
+  - `flutter analyze` on changed files → 0 errors/warnings; four existing
+    filename-style info findings.
+  - `flutter build apk --release` → built app-release.apk (56.2MB).
 - Commit: recorded after commit in Git history.

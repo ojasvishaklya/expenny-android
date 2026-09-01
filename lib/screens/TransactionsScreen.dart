@@ -23,6 +23,11 @@ typedef TransactionsLoader = Future<List<Transaction>> Function({
   required Set<TransactionTag>? tagSet,
 });
 
+/// Opens the create/edit transaction flow and reports whether persistence
+/// changed. Injectable so widget tests can drive route completion without a
+/// real navigator or database-backed editor.
+typedef TransactionEditor = Future<bool?> Function(Transaction transaction);
+
 /// The Transactions ledger: a compact, date-grouped activity list for one
 /// selected month, with in-page search, a new sort capability, and a filter &
 /// sort bottom sheet.
@@ -36,11 +41,15 @@ class TransactionsScreen extends StatefulWidget {
   const TransactionsScreen({
     super.key,
     this.transactionLoader,
+    this.transactionEditor,
     this.now,
   });
 
   /// Overrides the production controller-backed loader in tests.
   final TransactionsLoader? transactionLoader;
+
+  /// Overrides create/edit route navigation in tests.
+  final TransactionEditor? transactionEditor;
 
   /// Overrides the system clock in tests.
   final DateTime Function()? now;
@@ -135,8 +144,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       if (!mounted || token != _requestId) return;
 
       final inMonth = loaded
-          .where((t) =>
-              t.date.year == month.year && t.date.month == month.month)
+          .where(
+              (t) => t.date.year == month.year && t.date.month == month.month)
           .toList();
 
       setState(() {
@@ -176,6 +185,21 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           ? TransactionSort.oldestFirst
           : TransactionSort.newestFirst;
     });
+  }
+
+  Future<bool?> _openEditor(Transaction transaction) async {
+    final editor = widget.transactionEditor;
+    if (editor != null) return editor(transaction);
+    return await Get.toNamed<bool>(
+      RouteClass.createTransaction,
+      arguments: transaction,
+    );
+  }
+
+  Future<void> _editTransaction(Transaction transaction) async {
+    final changed = await _openEditor(transaction);
+    if (!mounted || changed != true) return;
+    await _load();
   }
 
   /// The amount chip cycles Highest ⇄ Lowest, jumping to Highest from a date
@@ -250,10 +274,10 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           bottom: 10,
           left: 0,
           right: 0,
-          child: buildFloatingActionButton(() {
-            Get.toNamed(RouteClass.createTransaction,
-                arguments: Transaction.defaults());
-          }, 'Add Transaction'),
+          child: buildFloatingActionButton(
+            () => _editTransaction(Transaction.defaults()),
+            'Add Transaction',
+          ),
         ),
       ],
     );
@@ -381,7 +405,10 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           ),
         ));
       }
-      children.add(TransactionCard(transaction: transaction));
+      children.add(TransactionCard(
+        transaction: transaction,
+        onTap: () => _editTransaction(transaction),
+      ));
     }
 
     return ListView(
@@ -431,12 +458,14 @@ class _SortChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final foreground = active ? colors.onSecondaryContainer : colors.onSurfaceVariant;
+    final foreground =
+        active ? colors.onSecondaryContainer : colors.onSurfaceVariant;
 
     return Material(
       color: active ? colors.secondaryContainer : Colors.transparent,
       shape: StadiumBorder(
-        side: BorderSide(color: active ? colors.primary : colors.outlineVariant),
+        side:
+            BorderSide(color: active ? colors.primary : colors.outlineVariant),
       ),
       child: InkWell(
         customBorder: const StadiumBorder(),
@@ -480,12 +509,14 @@ class _FilterChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final active = hasActiveTags;
-    final foreground = active ? colors.onSecondaryContainer : colors.onSurfaceVariant;
+    final foreground =
+        active ? colors.onSecondaryContainer : colors.onSurfaceVariant;
 
     return Material(
       color: active ? colors.secondaryContainer : Colors.transparent,
       shape: StadiumBorder(
-        side: BorderSide(color: active ? colors.primary : colors.outlineVariant),
+        side:
+            BorderSide(color: active ? colors.primary : colors.outlineVariant),
       ),
       child: InkWell(
         customBorder: const StadiumBorder(),

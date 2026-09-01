@@ -15,8 +15,13 @@ import '../constants/routes.dart';
 /// Tapping the row opens the transaction for editing, unchanged from before.
 class TransactionCard extends StatelessWidget {
   final Transaction transaction;
+  final VoidCallback? onTap;
 
-  const TransactionCard({super.key, required this.transaction});
+  const TransactionCard({
+    super.key,
+    required this.transaction,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +37,13 @@ class TransactionCard extends StatelessWidget {
         '${isIncome ? '+' : ''}${formatRupees(transaction.amount)}';
 
     return InkWell(
-      onTap: () {
-        Get.toNamed(RouteClass.createTransaction, arguments: transaction);
-      },
+      onTap: onTap ??
+          () {
+            Get.toNamed(
+              RouteClass.createTransaction,
+              arguments: transaction,
+            );
+          },
       child: Container(
         constraints: const BoxConstraints(minHeight: 50),
         decoration: BoxDecoration(

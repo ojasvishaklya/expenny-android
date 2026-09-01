@@ -19,7 +19,7 @@ import '../widgets/TagPicker.dart';
 /// SMS-imported transaction — shows the original message. Both share the same
 /// building-block widgets and the same save/validation logic.
 class CreateTransactionScreen extends StatefulWidget {
-  const CreateTransactionScreen({Key? key}) : super(key: key);
+  const CreateTransactionScreen({super.key});
 
   @override
   State<CreateTransactionScreen> createState() =>
@@ -47,7 +47,7 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
   bool get _hasSms =>
       _transaction.rawSms != null && _transaction.rawSms!.isNotEmpty;
 
-  void _submit() {
+  Future<void> _submit() async {
     final descriptionValid = _formKey.currentState?.validate() ?? false;
     final amountValid = _amount != null && _amount! > 0;
     if (!amountValid) {
@@ -57,7 +57,8 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
 
     // setAmount signs the magnitude by the current isExpense flag.
     _transaction.setAmount(_amount!);
-    _controller.addTransaction(_transaction);
+    await _controller.addTransaction(_transaction);
+    if (!mounted) return;
 
     showSnackBar(
       context: context,
@@ -65,7 +66,7 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
           _isNewTransaction ? 'Transaction created' : 'Transaction updated',
       color: _isNewTransaction ? Colors.green : Colors.orange,
     );
-    Navigator.of(context).pop();
+    Navigator.of(context).pop(true);
   }
 
   void _confirmDelete() {
@@ -89,15 +90,18 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
                   ),
                   const SizedBox(width: 16.0),
                   TextButton(
-                    onPressed: () {
-                      _controller.deleteTransaction(_transaction);
-                      Navigator.of(context).pop(); // close dialog
-                      Navigator.of(context).pop(); // close screen
+                    onPressed: () async {
+                      await _controller.deleteTransaction(_transaction);
+                      if (!mounted) return;
+
                       showSnackBar(
                         context: context,
                         textContent: '${_transaction.tag} transaction deleted',
                         color: Colors.redAccent,
                       );
+                      final navigator = Navigator.of(context);
+                      navigator.pop(); // close dialog
+                      navigator.pop(true); // close screen and report mutation
                     },
                     child: const Text('Delete'),
                   ),
@@ -269,23 +273,26 @@ class _CreateTransactionScreenState extends State<CreateTransactionScreen> {
 
   List<Widget> _cardBody() {
     return [
-      _card('Details', Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _descriptionField(),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 7,
-            runSpacing: 7,
-            children: [_dateChip(), _paymentChips()],
-          ),
-        ],
-      )),
+      _card(
+          'Details',
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _descriptionField(),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 7,
+                runSpacing: 7,
+                children: [_dateChip(), _paymentChips()],
+              ),
+            ],
+          )),
       _card('Category', _tagPicker()),
       if (_hasSms)
         _card(
           'Original message',
-          OriginalSmsCard(rawSms: _transaction.rawSms!, bank: _transaction.bank),
+          OriginalSmsCard(
+              rawSms: _transaction.rawSms!, bank: _transaction.bank),
         ),
     ];
   }
