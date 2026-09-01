@@ -235,7 +235,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
           _contentInsetOf(
-            BudgetProgressWidget(expense: data.summary.expense),
+            BudgetProgressWidget(
+              expense: data.summary.expense,
+              breakdown: data.breakdown,
+            ),
           ),
           _contentInsetOf(
             CategoryBreakdownSection(breakdown: data.breakdown),
