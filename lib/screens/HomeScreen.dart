@@ -6,26 +6,32 @@ import 'DashboardScreen.dart';
 import 'PreferencesScreen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({Key? key, this.screens}) : super(key: key);
+
+  /// Optional override for the paged destinations, used by widget tests to
+  /// inject lightweight stand-ins for the real screens. When null, the app's
+  /// production screens are used in their canonical order.
+  final List<Widget>? screens;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  /// Dashboard is the landing destination, sitting between Transactions on the
-  /// left and Settings on the right. Keep this index in step with the order of
-  /// [_screens] and the tabs in [BottomNavBarWidget].
-  static const int _dashboardIndex = 1;
+  /// Transactions is the landing destination, sitting between Dashboard on the
+  /// left and Preferences on the right. Keep this index in step with the order
+  /// of [_screens] and the tabs in [BottomNavBarWidget].
+  static const int _transactionsIndex = 1;
 
-  int _selectedIndex = _dashboardIndex;
+  int _selectedIndex = _transactionsIndex;
   PageController _pageController = PageController();
 
-  final List<Widget> _screens = <Widget>[
-    TransactionsScreen(),
-    DashboardScreen(),
-    PreferencesScreen()
-  ];
+  late final List<Widget> _screens = widget.screens ??
+      <Widget>[
+        DashboardScreen(),
+        TransactionsScreen(),
+        PreferencesScreen(),
+      ];
 
   void _updateSelectedIndex(int index) {
     setState(() {
