@@ -8,8 +8,8 @@ This tracker records implementation, validation, and commit evidence for the con
 | 2. Grouped Preferences | Done | Five scrollable groups (Appearance, Planning, Automation, Data, Danger zone); dark-mode drives `ConfigService.toggleDarkMode`; budget row opens shared `showMonthlyBudgetDialog`; honest SMS status (`Last synced …` / `Not synced yet`); Import data disabled with `Coming soon` + disabled semantics + no snackbar; destructive delete confirmation; layout scrolls without overflow at 320dp/short viewport/2.0x text; SmsSync/export/delete/ConfigService persistence preserved | `flutter test test/preferences_screen_test.dart` → All tests passed (17/17); `flutter test` on relevant existing suites (preferences + budget_progress + date_service + bottom_nav_bar + home_screen) → All tests passed (58/58); `flutter analyze test/preferences_screen_test.dart` → No issues found; `flutter build apk --release` → Built app-release.apk (54.7MB) | See Task 2 note |
 | 3. DisplayCard net hero | Done | Month-attributed net hero, income/expense tiles, savings rate, header/subtitle and month-first layout; duplicate summary widget removed | `flutter test test/display_card_test.dart test/analytics_dashboard_components_test.dart test/analytics_summary_category_test.dart test/analytics_screen_test.dart` → All tests passed (74/74); `flutter test` → All tests passed (255/255, no regressions); `flutter analyze` on changed files → 0 errors/warnings (only pre-existing file_names + one pre-existing test private-type info lint); `flutter build apk --release` → Built app-release.apk (54.7MB) | `7faaaf4` |
 | 4. Segmented budget | Done (widget tests deferred) | Category segments, idle remainder, exact/over/no-budget states, shared category identity and semantics | `flutter test test/budget_progress_test.dart` → All active tests passed (36/36); rendered/platform-backed widget scenarios remain documented as TODOs; `flutter analyze` → 0 errors/warnings (4 filename-style info lints); `flutter build apk --release` → Built app-release.apk (54.7MB) | `a58e7b7`, `682a903` |
-| 5. Dashboard composition | Done | Header → month selector → hero → segmented budget → ranked categories → six-month trend → retained MonthComparison; one bounded load and request-ordering behavior preserved | `flutter test test/analytics_screen_test.dart` → All tests passed (17/17); focused Dashboard regressions → All tests passed (91/91); `flutter analyze test/analytics_screen_test.dart` → No issues found; `flutter build apk --release` → Built app-release.apk (54.7MB) | See Task 5 note |
-| 6. Transactions validation | Not started | Selected-month search/sort/filter behavior preserved; signed rows use theme roles; FAB and request guard remain | Pending | Pending |
+| 5. Dashboard composition | Done | Header → month selector → hero → segmented budget → ranked categories → six-month trend → retained MonthComparison; one bounded load and request-ordering behavior preserved | `flutter test test/analytics_screen_test.dart` → All tests passed (17/17); focused Dashboard regressions → All tests passed (91/91); `flutter analyze test/analytics_screen_test.dart` → No issues found; `flutter build apk --release` → Built app-release.apk (54.7MB) | `4a5bfc9` |
+| 6. Transactions validation | Done | Selected-month search/sort/filter and stale-request behavior preserved; signed rows use `ColorScheme.tertiary/error`; header, controls, date groups, FAB, narrow width and large text validated | `flutter test test/transaction_card_test.dart test/transactions_screen_test.dart` → All tests passed (12/12); `flutter analyze` → 0 errors/warnings (one filename-style info); `flutter build apk --release` → Built app-release.apk (54.7MB) | See Task 6 note |
 | 7. Whole-app integration | Not started | Shell smoke coverage, accessibility/responsive audit, analyzer/tests/release build all green | Pending | Pending |
 
 ## Task notes
@@ -253,12 +253,48 @@ This tracker records implementation, validation, and commit evidence for the con
   - `flutter analyze test/analytics_screen_test.dart` → `No issues found!`.
   - `flutter build apk --release` →
     `✓ Built build/app/outputs/flutter-apk/app-release.apk (54.7MB)`.
-- Commit: recorded on commit (see git log for this Task 5 commit).
+- Commit: `4a5bfc9` — `test(dashboard): Lock section composition`.
 
 ### Task 6 — Transactions validation
-- Status: Not started
-- Validation evidence: Pending
-- Commit: Pending
+- Status: Done
+- Approach: The selected-month Transactions architecture remains unchanged.
+  Tests were strengthened around the complete redesigned surface, then used to
+  drive the only production fixes: replace hardcoded amount colors with active
+  Material theme roles and constrain/scale the trailing amount column so long
+  signed values survive 320dp widths and 2.0x text.
+- Changed files:
+  - `lib/widgets/TransactionCard.dart` — expense amounts now use
+    `colorScheme.error`, income uses `colorScheme.tertiary`, signed formatting
+    and tap-to-edit remain unchanged, and the trailing amount/time column is
+    bounded with a scale-down `FittedBox`; constructor uses a super parameter.
+  - `test/transaction_card_test.dart` — asserts signed amounts and active
+    `ColorScheme` roles rather than fixed hex values.
+  - `test/transactions_screen_test.dart` — asserts header/subtitle, integrated
+    search and sort/filter controls, date labels, signed income/expense rows,
+    Add Transaction affordance, selected-month query ranges, search/filter
+    arguments, in-memory sorting, stale-response protection, and 320dp/2.0x
+    text rendering. The test builder is private to avoid a private-type lint.
+  - `.kiro/specs/app-redesign/whole-app-redesign-todo.md` — recorded Task 5
+    commit and Task 6 evidence.
+- Preserved behavior:
+  - Current bounded selected-month loader and `NearbyMonthSelector`.
+  - Integrated search, in-memory sort behavior, tag-filter reloads, and
+    `_requestId` stale-response protection.
+  - Date grouping, category identity, tap-to-edit, payment/time metadata, and
+    Add Transaction navigation callback.
+  - No Search destination, totals block, legacy fetch-more pagination, or
+    alternate loading path was added.
+- Validation evidence:
+  - Test-first run failed exactly on hardcoded amount colors and a 135px
+    narrow/large-text overflow, proving both production fixes were required.
+  - `flutter test test/transaction_card_test.dart test/transactions_screen_test.dart`
+    → `All tests passed!` (12/12) after the fixes.
+  - `flutter analyze lib/widgets/TransactionCard.dart test/transaction_card_test.dart test/transactions_screen_test.dart`
+    → 0 errors/warnings; one existing `file_names` info for
+    `TransactionCard.dart`.
+  - `flutter build apk --release` →
+    `✓ Built build/app/outputs/flutter-apk/app-release.apk (54.7MB)`.
+- Commit: recorded on commit (see git log for this Task 6 commit).
 
 ### Task 7 — Whole-app integration
 - Status: Not started

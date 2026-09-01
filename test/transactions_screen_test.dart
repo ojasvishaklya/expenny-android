@@ -61,12 +61,23 @@ Transaction txn({
   );
 }
 
-Widget screen(_RecordingLoader loader, {required DateTime now}) {
+Widget _screen(
+  _RecordingLoader loader, {
+  required DateTime now,
+  double textScale = 1.0,
+}) {
   return MaterialApp(
-    home: Scaffold(
-      body: TransactionsScreen(
-        transactionLoader: loader.call,
-        now: () => now,
+    home: Builder(
+      builder: (context) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(
+          textScaler: TextScaler.linear(textScale),
+        ),
+        child: Scaffold(
+          body: TransactionsScreen(
+            transactionLoader: loader.call,
+            now: () => now,
+          ),
+        ),
       ),
     ),
   );
@@ -78,7 +89,7 @@ void main() {
   group('TransactionsScreen', () {
     testWidgets('initial load requests the selected month range', (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(screen(loader, now: now));
+      await tester.pumpWidget(_screen(loader, now: now));
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       expect(loader.requestCount, 1);
@@ -95,7 +106,7 @@ void main() {
     testWidgets('renders date-grouped transactions', (tester) async {
       await setSurface(tester, _kSurface);
       final loader = _RecordingLoader();
-      await tester.pumpWidget(screen(loader, now: now));
+      await tester.pumpWidget(_screen(loader, now: now));
 
       loader.completers.first.complete([
         txn(id: 1, amount: -860, description: 'Lunch', date: DateTime(2026, 8, 23, 13, 24)),
@@ -107,12 +118,22 @@ void main() {
       expect(find.text('12 AUGUST'), findsOneWidget);
       expect(find.text('Lunch'), findsOneWidget);
       expect(find.text('Salary'), findsOneWidget);
+      expect(find.text('Transactions'), findsOneWidget);
+      expect(find.text('Your complete activity'), findsOneWidget);
+      expect(find.byType(TextField), findsOneWidget);
+      expect(find.text('Newest'), findsOneWidget);
+      expect(find.text('Amount'), findsOneWidget);
+      expect(find.text('Filter'), findsOneWidget);
+      expect(find.text('-₹860'), findsOneWidget);
+      expect(find.text('+₹25,500'), findsOneWidget);
+      expect(find.widgetWithText(ElevatedButton, 'Add Transaction'),
+          findsOneWidget);
     });
 
     testWidgets('changing month reloads with the new range', (tester) async {
       await setSurface(tester, _kSurface);
       final loader = _RecordingLoader();
-      await tester.pumpWidget(screen(loader, now: now));
+      await tester.pumpWidget(_screen(loader, now: now));
       loader.completers.first.complete([]);
       await tester.pumpAndSettle();
 
@@ -131,7 +152,7 @@ void main() {
     testWidgets('typing a search term reloads with the search string', (tester) async {
       await setSurface(tester, _kSurface);
       final loader = _RecordingLoader();
-      await tester.pumpWidget(screen(loader, now: now));
+      await tester.pumpWidget(_screen(loader, now: now));
       loader.completers.first.complete([]);
       await tester.pumpAndSettle();
 
@@ -148,7 +169,7 @@ void main() {
     testWidgets('toggling a sort chip re-sorts in memory without reloading', (tester) async {
       await setSurface(tester, _kSurface);
       final loader = _RecordingLoader();
-      await tester.pumpWidget(screen(loader, now: now));
+      await tester.pumpWidget(_screen(loader, now: now));
       loader.completers.first.complete([
         txn(id: 1, amount: -100, description: 'A', date: DateTime(2026, 8, 20)),
         txn(id: 2, amount: -900, description: 'B', date: DateTime(2026, 8, 21)),
@@ -169,7 +190,7 @@ void main() {
     testWidgets('a stale response cannot overwrite the current month', (tester) async {
       await setSurface(tester, _kSurface);
       final loader = _RecordingLoader();
-      await tester.pumpWidget(screen(loader, now: now)); // token 1 (August)
+      await tester.pumpWidget(_screen(loader, now: now)); // token 1 (August)
 
       // Select July before August resolves → token 2.
       await tester.tap(find.text('Jul 2026'));
@@ -196,7 +217,7 @@ void main() {
     testWidgets('applying a tag filter reloads with the tag set', (tester) async {
       await setSurface(tester, _kSurface);
       final loader = _RecordingLoader();
-      await tester.pumpWidget(screen(loader, now: now));
+      await tester.pumpWidget(_screen(loader, now: now));
       loader.completers.first.complete([]);
       await tester.pumpAndSettle();
 
@@ -217,6 +238,27 @@ void main() {
 
       loader.completers[1].complete([]);
       await tester.pumpAndSettle();
+    });
+
+    testWidgets('renders at 320dp and doubled text without overflow',
+        (tester) async {
+      await setSurface(tester, const Size(320, 900));
+      final loader = _RecordingLoader();
+      await tester.pumpWidget(_screen(loader, now: now, textScale: 2.0));
+
+      loader.completers.first.complete([
+        txn(
+          id: 1,
+          amount: -98765432,
+          description: 'A deliberately long transaction description',
+          date: DateTime(2026, 8, 23, 13, 24),
+        ),
+      ]);
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('-₹9,87,65,432'), findsOneWidget);
+      expect(find.text('Add Transaction'), findsOneWidget);
     });
   });
 }

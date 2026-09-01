@@ -16,20 +16,15 @@ import '../constants/routes.dart';
 class TransactionCard extends StatelessWidget {
   final Transaction transaction;
 
-  const TransactionCard({Key? key, required this.transaction})
-      : super(key: key);
-
-  /// Income green, expense red — driven by the signed amount so it always
-  /// agrees with the leading `+`/`−` on the figure.
-  static const Color _incomeColor = Color(0xFF2E7D32);
-  static const Color _expenseColor = Color(0xFFBA1A1A);
+  const TransactionCard({super.key, required this.transaction});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final tag = TransactionTag.getTagById(transaction.tag);
     final isIncome = transaction.amount >= 0;
-    final amountColor = isIncome ? _incomeColor : _expenseColor;
+    final amountColor =
+        isIncome ? theme.colorScheme.tertiary : theme.colorScheme.error;
 
     // formatRupees already prefixes '−' for negatives; add an explicit '+' for
     // income so the sign is unambiguous, matching the mockup's "+₹25,500".
@@ -82,27 +77,37 @@ class TransactionCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  amountText,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: amountColor,
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 140),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      amountText,
+                      maxLines: 1,
+                      softWrap: false,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: amountColor,
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  DateService.formatTime(transaction.date),
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: theme.colorScheme.onSurfaceVariant,
+                  const SizedBox(height: 2),
+                  Text(
+                    DateService.formatTime(transaction.date),
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
