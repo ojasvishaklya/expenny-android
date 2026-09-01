@@ -6,7 +6,7 @@ This tracker records implementation, validation, and commit evidence for the con
 |---|---|---|---|---|
 | 1. App-shell navigation contract | Done | Dashboard → Transactions → Preferences; Transactions opens by default; Preferences uses `Icons.tune`; no Settings/Search destination | `flutter test test/bottom_nav_bar_test.dart test/home_screen_test.dart` → All tests passed (6/6); `flutter analyze` on changed files → 0 errors/warnings (4 pre-existing info lints only); `flutter build apk --release` → Built app-release.apk | `d6550b0` |
 | 2. Grouped Preferences | Done | Five scrollable groups (Appearance, Planning, Automation, Data, Danger zone); dark-mode drives `ConfigService.toggleDarkMode`; budget row opens shared `showMonthlyBudgetDialog`; honest SMS status (`Last synced …` / `Not synced yet`); Import data disabled with `Coming soon` + disabled semantics + no snackbar; destructive delete confirmation; layout scrolls without overflow at 320dp/short viewport/2.0x text; SmsSync/export/delete/ConfigService persistence preserved | `flutter test test/preferences_screen_test.dart` → All tests passed (17/17); `flutter test` on relevant existing suites (preferences + budget_progress + date_service + bottom_nav_bar + home_screen) → All tests passed (58/58); `flutter analyze test/preferences_screen_test.dart` → No issues found; `flutter build apk --release` → Built app-release.apk (54.7MB) | See Task 2 note |
-| 3. DisplayCard net hero | Not started | Month-attributed net hero, income/expense tiles, savings rate, header/subtitle and month-first layout; duplicate summary widget removed | Pending | Pending |
+| 3. DisplayCard net hero | Done | Month-attributed net hero, income/expense tiles, savings rate, header/subtitle and month-first layout; duplicate summary widget removed | `flutter test test/display_card_test.dart test/analytics_dashboard_components_test.dart test/analytics_summary_category_test.dart test/analytics_screen_test.dart` → All tests passed (74/74); `flutter test` → All tests passed (255/255, no regressions); `flutter analyze` on changed files → 0 errors/warnings (only pre-existing file_names + one pre-existing test private-type info lint); `flutter build apk --release` → Built app-release.apk (54.7MB) | See Task 3 note |
 | 4. Segmented budget | Not started | Category segments, idle remainder, exact/over/no-budget states, shared category identity and semantics | Pending | Pending |
 | 5. Dashboard composition | Not started | Final ordered composition with request guards preserved and MonthComparison retained after trend | Pending | Pending |
 | 6. Transactions validation | Not started | Selected-month search/sort/filter behavior preserved; signed rows use theme roles; FAB and request guard remain | Pending | Pending |
@@ -74,12 +74,70 @@ This tracker records implementation, validation, and commit evidence for the con
   - `flutter test test/preferences_screen_test.dart test/budget_progress_test.dart test/date_service_test.dart test/bottom_nav_bar_test.dart test/home_screen_test.dart` → `All tests passed!` (58 tests, no regressions).
   - `flutter analyze test/preferences_screen_test.dart` → `No issues found!`.
   - `flutter build apk --release` → `✓ Built build/app/outputs/flutter-apk/app-release.apk (54.7MB)`.
-- Commit: recorded on commit (see git log for this Task 2 commit).
+- Commit: `81c35f7` — `test(preferences): Lock down grouped Preferences`.
 
 ### Task 3 — DisplayCard net hero
-- Status: Not started
-- Validation evidence: Pending
-- Commit: Pending
+- Status: Done
+- Approach: The legacy `DisplayCard` (raw `B A L A N C E`/income/expense
+  values) is replaced by the integrated, month-attributed net hero. The hero
+  implementation previously lived in the duplicate, unmounted
+  `MonthlySummarySection`; its behaviour and full test contract were migrated
+  onto `DisplayCard`, income/expense tiles gained direction icons with
+  `tertiary`/`error` semantics, and the orphaned widget was deleted.
+- Changed files:
+  - `lib/widgets/DisplayCard.dart` — rewritten to consume
+    `MonthlySummary summary` + `DateTime displayedMonth`. Renders `{Month} net`
+    label, signed rupee net via `formatRupees`, `primaryContainer` hero
+    styling, Income/Expense tiles with `Icons.arrow_upward`/`arrow_downward` in
+    `colorScheme.tertiary`/`error`, savings-rate text + clamped
+    `LinearProgressIndicator`, an honest empty-month hint, a concise container
+    semantic label stating net direction as a word, responsive stacking
+    (`stackBelowWidth` / `kAnalyticsStackTextScale`) and `FittedBox` protection
+    on every amount. Exposes `netStateLabel` and `stackBelowWidth`.
+  - `lib/widgets/analytics/DashboardHeader.dart` — added optional `subtitle`;
+    title stays the sole header, subtitle is plain supporting text.
+  - `lib/screens/DashboardScreen.dart` — imports `DashboardHeader`; build order
+    for this increment is header (subtitle `Where your money went`) → month
+    selector → conditional load status → then, for settled data, the hero
+    (`summary: data.summary`, `displayedMonth: data.month`) followed by
+    budget/category/trend/MonthComparison. Initial state shows header +
+    selector + status with no monetary values. Hero uses `data.month`, so old
+    visible values stay honestly attributed while another selected month is
+    loading or fails. `_selectedMonth`, the single bounded `_load`,
+    `_requestId` ordering, status/retry, trend/category/budget, and
+    MonthComparison computation/rendering are all preserved.
+  - `lib/widgets/analytics/MonthlySummarySection.dart` — deleted (duplicate
+    orphan; no remaining imports or references).
+  - `test/display_card_test.dart` — new suite migrating the
+    `MonthlySummarySection` contract onto `DisplayCard` (empty month; net/
+    income/expense/savings; month attribution; positive/negative/zero net;
+    direction icons; tertiary/error icon roles; semantic net direction; concise
+    summary semantic; `primaryContainer` role; savings-bar boundary clamping;
+    320dp stacking; doubled text scale; dark theme; `netStateLabel`).
+  - `test/analytics_dashboard_components_test.dart` — added subtitle coverage
+    (renders optional subtitle; subtitle is not a second header).
+  - `test/analytics_summary_category_test.dart` — removed the migrated
+    `MonthlySummarySection` group, its import, and now-unused fixtures; the
+    `CategoryBreakdownSection` contract is untouched.
+  - `test/analytics_screen_test.dart` — updated Dashboard assertions to the new
+    hero contract (`{Month} net` + grouped rupee values, header + subtitle,
+    header-first order, empty-month hero hint) while keeping every request-
+    ordering, retry, attribution, responsive, and dark-theme scenario.
+  - `.kiro/specs/app-redesign/whole-app-redesign-todo.md` — tracker update
+    (this file); recorded Task 2 commit `81c35f7`.
+- Out of scope (not implemented): Task 4 segmented budget. `BudgetProgressWidget`
+  is mounted unchanged.
+- Validation evidence:
+  - `flutter test test/display_card_test.dart test/analytics_dashboard_components_test.dart test/analytics_summary_category_test.dart test/analytics_screen_test.dart`
+    → `All tests passed!` (74 tests).
+  - `flutter test` → `All tests passed!` (255 tests, no regressions).
+  - `flutter analyze lib/widgets/DisplayCard.dart lib/widgets/analytics/DashboardHeader.dart lib/screens/DashboardScreen.dart test/display_card_test.dart test/analytics_dashboard_components_test.dart test/analytics_summary_category_test.dart test/analytics_screen_test.dart`
+    → `4 issues found`, all pre-existing info lints (3 × `file_names`, 1 ×
+    `library_private_types_in_public_api` in the existing test harness); 0
+    errors/warnings.
+  - `flutter build apk --release` →
+    `✓ Built build/app/outputs/flutter-apk/app-release.apk (54.7MB)`.
+- Commit: see git log for this Task 3 commit.
 
 ### Task 4 — Segmented budget
 - Status: Not started
