@@ -7,7 +7,7 @@ This tracker records implementation, validation, and commit evidence for the con
 | 1. App-shell navigation contract | Done | Dashboard → Transactions → Preferences; Transactions opens by default; Preferences uses `Icons.tune`; no Settings/Search destination | `flutter test test/bottom_nav_bar_test.dart test/home_screen_test.dart` → All tests passed (6/6); `flutter analyze` on changed files → 0 errors/warnings (4 pre-existing info lints only); `flutter build apk --release` → Built app-release.apk | `d6550b0` |
 | 2. Grouped Preferences | Done | Five scrollable groups (Appearance, Planning, Automation, Data, Danger zone); dark-mode drives `ConfigService.toggleDarkMode`; budget row opens shared `showMonthlyBudgetDialog`; honest SMS status (`Last synced …` / `Not synced yet`); Import data disabled with `Coming soon` + disabled semantics + no snackbar; destructive delete confirmation; layout scrolls without overflow at 320dp/short viewport/2.0x text; SmsSync/export/delete/ConfigService persistence preserved | `flutter test test/preferences_screen_test.dart` → All tests passed (17/17); `flutter test` on relevant existing suites (preferences + budget_progress + date_service + bottom_nav_bar + home_screen) → All tests passed (58/58); `flutter analyze test/preferences_screen_test.dart` → No issues found; `flutter build apk --release` → Built app-release.apk (54.7MB) | See Task 2 note |
 | 3. DisplayCard net hero | Done | Month-attributed net hero, income/expense tiles, savings rate, header/subtitle and month-first layout; duplicate summary widget removed | `flutter test test/display_card_test.dart test/analytics_dashboard_components_test.dart test/analytics_summary_category_test.dart test/analytics_screen_test.dart` → All tests passed (74/74); `flutter test` → All tests passed (255/255, no regressions); `flutter analyze` on changed files → 0 errors/warnings (only pre-existing file_names + one pre-existing test private-type info lint); `flutter build apk --release` → Built app-release.apk (54.7MB) | `7faaaf4` |
-| 4. Segmented budget | Done (UTs deferred) | Category segments, idle remainder, exact/over/no-budget states, shared category identity and semantics | `flutter analyze` on changed files → 0 errors/warnings (pre-existing info lints only); `flutter build apk --release` → Built app-release.apk; unit/widget test **execution deferred by user** (test timeout handling unreliable) | See Task 4 note |
+| 4. Segmented budget | Done (widget tests deferred) | Category segments, idle remainder, exact/over/no-budget states, shared category identity and semantics | `flutter test test/budget_progress_test.dart` → All active tests passed (36/36); rendered/platform-backed widget scenarios remain documented as TODOs; `flutter analyze` → 0 errors/warnings (4 filename-style info lints); `flutter build apk --release` → Built app-release.apk (54.7MB) | See Task 4 note |
 | 5. Dashboard composition | Not started | Final ordered composition with request guards preserved and MonthComparison retained after trend | Pending | Pending |
 | 6. Transactions validation | Not started | Selected-month search/sort/filter behavior preserved; signed rows use theme roles; FAB and request guard remain | Pending | Pending |
 | 7. Whole-app integration | Not started | Shell smoke coverage, accessibility/responsive audit, analyzer/tests/release build all green | Pending | Pending |
@@ -140,7 +140,7 @@ This tracker records implementation, validation, and commit evidence for the con
 - Commit: `7faaaf4` — Task 3 DisplayCard net hero.
 
 ### Task 4 — Segmented budget
-- Status: Done (unit/widget test execution deferred by user)
+- Status: Done (platform-backed widget tests deferred by user)
 - Approach: The budget bar becomes category-aware. `BudgetProgressWidget` now
   consumes the same `CategoryBreakdown` the ledger and "spending by category"
   list use, and fills a single rounded rail with an ordered run of tag-tinted
@@ -160,8 +160,10 @@ This tracker records implementation, validation, and commit evidence for the con
     required `breakdown`; new pure `budgetSegments(breakdown, budget)` allocator
     and `BudgetSegment` (category/idle, `fraction`, integer `flex`); new
     `_SegmentedBudgetBar` renders the ordered tinted segments + idle remainder
-    inside one `ClipRRect` rail (rail colour shows through only when under
-    budget). Caption: `{spent} of {budget} · {remaining} left` under/at budget,
+    inside one `ClipRRect` rail, with fixed 2px inter-segment gaps that are
+    deducted by Flex layout rather than added beyond the track. Positive
+    fractions receive a minimum flex of 1 so tiny segments cannot trigger a
+    zero-flex assertion. Caption: `{spent} of {budget} · {remaining} left` under/at budget,
     `Over budget by {amount}` with `colorScheme.error` when genuinely over.
     Exact equality (`expense == budget`) shows `100.0% used` and `₹0 left`
     with no false overage (`isOverBudget` contract preserved). Semantics state
@@ -188,10 +190,12 @@ This tracker records implementation, validation, and commit evidence for the con
     Edit case drives `showMonthlyBudgetDialog` with `pumpAndSettle`) — exactly
     the problematic widget/platform setup the user deferred.
 - Out of scope (not implemented): Task 5 dashboard composition.
-- Test-execution deferral: Per explicit user instruction, NO unit or widget
-  tests were run for Task 4 (`flutter test` was not invoked) because the
-  test-run timeout handling is currently unreliable. No test is claimed to have
-  passed. Deferred / unverified scenarios (from the commented widget group):
+- Test status: The active deterministic helper/allocation suite was run and
+  passed: `flutter test test/budget_progress_test.dart` → `All tests passed!`
+  (36/36, including the tiny-positive-segment flex regression). Per user
+  direction, the platform-backed `BudgetProgressWidget rendering` group remains
+  commented out because its timeout handling was unreliable. Deferred /
+  unverified rendered scenarios (from the preserved TODO group):
   1. no-budget hint + Edit action when unset (no " left" copy);
   2. all-idle bar + `₹0 of ₹1,000 · ₹1,000 left` + `0.0% used` when nothing spent;
   3. one category segment + idle remainder (`₹250 of ₹1,000 · ₹750 left`, `25.0% used`);
@@ -204,17 +208,22 @@ This tracker records implementation, validation, and commit evidence for the con
   10. renders at 2.0x text scale without overflow;
   11. renders in dark theme without error;
   12. Edit action opens the shared `showMonthlyBudgetDialog`.
-  The underlying allocation and helper math for these are already described by
-  the retained pure tests; only the rendered/semantic surface and dialog wiring
-  remain unverified until the widget group is re-enabled and run.
-- Non-test validation evidence:
+  The active pure tests verify allocation, capping, remainder, equality,
+  overspend math, validation, and nonzero flex behavior; only the rendered /
+  semantic surface and dialog wiring remain unverified until the widget group
+  is re-enabled.
+- Validation evidence:
+  - `flutter test test/budget_progress_test.dart` → `All tests passed!`
+    (36 active deterministic tests).
   - `flutter analyze lib/widgets/analytics/CategoryVisualIdentity.dart lib/widgets/BudgetProgressWidget.dart lib/widgets/analytics/CategoryBreakdownSection.dart lib/screens/DashboardScreen.dart test/budget_progress_test.dart`
     → `4 issues found`, all pre-existing `file_names` info lints (project-wide
     PascalCase filenames); 0 errors/warnings, and no new lints from the new file
     or the commented-out test block.
   - `flutter build apk --release` →
     `✓ Built build/app/outputs/flutter-apk/app-release.apk (54.7MB)`.
-- Commit: PENDING_COMMIT
+- Commit: `a58e7b7` — `feat(dashboard): Add segmented category budget bar`.
+  A focused follow-up hardens segment gaps/minimum flex and corrects validation
+  evidence; its hash is recorded with the next task update to avoid amending.
 
 ### Task 5 — Dashboard composition
 - Status: Not started

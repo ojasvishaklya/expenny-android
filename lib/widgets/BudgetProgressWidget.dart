@@ -208,15 +208,20 @@ class _SegmentedBudgetBar extends StatelessWidget {
           color: colors.surfaceContainerHighest,
           child: Row(
             children: [
-              for (final segment in segments)
+              for (var index = 0; index < segments.length; index++) ...[
+                if (index > 0) const SizedBox(width: 2),
                 Expanded(
-                  flex: segment.flex,
+                  flex: segments[index].flex,
                   child: ColoredBox(
-                    color: segment.isIdle
+                    color: segments[index].isIdle
                         ? colors.surfaceContainerHighest
-                        : categoryIdentityFor(segment.group!, colors).color,
+                        : categoryIdentityFor(
+                            segments[index].group!,
+                            colors,
+                          ).color,
                   ),
                 ),
+              ],
             ],
           ),
         ),
@@ -246,7 +251,10 @@ class BudgetSegment {
   /// Integer flex weight for laying the segment out in a [Row]. Scaled up from
   /// [fraction] so rounding does not collapse thin-but-present segments to
   /// nothing.
-  int get flex => (fraction * 10000).round();
+  int get flex {
+    final scaled = (fraction * 10000).round();
+    return scaled < 1 ? 1 : scaled;
+  }
 }
 
 /// Pure computation: the ordered category fills plus, when under budget, a

@@ -5,26 +5,19 @@ import 'package:expenny/widgets/BudgetProgressWidget.dart';
 /// Covers the pure budget helpers and the pure segment-allocation contract for
 /// the segmented budget bar (Task 4).
 ///
-/// NOTE (Task 4 test deferral): The `BudgetProgressWidget rendering` group of
-/// `testWidgets` cases is intentionally commented out below and deferred, and
-/// NO tests in this file have been executed as part of Task 4. The user
-/// explicitly deferred all unit/widget test execution for Task 4 because the
-/// test-run timeout handling is currently unreliable; running the widget cases
-/// risks a non-terminating run.
+/// NOTE (Task 4 test deferral): The deterministic pure tests in this file are
+/// active and cover the helper and segment-allocation contracts. The
+/// `BudgetProgressWidget rendering` group of `testWidgets` cases is
+/// intentionally commented out below and deferred because its platform-backed
+/// harness previously made timeout handling unreliable.
 ///
-/// The widget cases additionally depend on platform-channel setup
+/// The deferred widget cases depend on platform-channel setup
 /// (`registerConfigService` mocks `path_provider` and initialises
 /// `GetStorage`, and the Edit-action case drives `showMonthlyBudgetDialog` with
 /// `pumpAndSettle`). Even though the harness seeds `monthlyBudget.value`
-/// directly to avoid `setMonthlyBudget` → `home_widget`, that setup is exactly
-/// the "problematic widget/platform setup" the deferral instruction calls out.
-/// They are preserved as commented specifications with per-scenario TODOs so
-/// the contract they describe is not lost, and must be re-enabled and run once
-/// timeout handling is fixed.
-///
-/// The pure `test(...)` groups below require no binding, platform channel, or
-/// pump, so they remain as the deterministic description of the contract. They
-/// were NOT run here either (execution deferred), but carry no run-hang risk.
+/// directly to avoid `setMonthlyBudget` → `home_widget`, those rendered and
+/// semantic scenarios remain preserved as commented specifications with
+/// precise TODOs. Re-enable them once the timeout issue is resolved.
 
 /// A three-category breakdown that under-fills a 1000 budget (spent 600).
 const _threeUnder = CategoryBreakdown(
@@ -286,6 +279,20 @@ void main() {
       expect(total, closeTo(1.0, 1e-9));
       expect(segments.last.isIdle, true);
       expect(segments.last.fraction, closeTo(0.1, 1e-9));
+    });
+
+    test('gives a tiny positive segment a valid flex weight', () {
+      final segment = BudgetSegment.category(
+        const CategoryGroup(
+          tagIds: {'food'},
+          label: 'Food',
+          amount: 0.001,
+          percent: 100,
+        ),
+        0.000001,
+      );
+
+      expect(segment.flex, 1);
     });
   });
 
