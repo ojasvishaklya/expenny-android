@@ -7,8 +7,8 @@ This tracker records implementation, validation, and commit evidence for the con
 | 1. App-shell navigation contract | Done | Dashboard → Transactions → Preferences; Transactions opens by default; Preferences uses `Icons.tune`; no Settings/Search destination | `flutter test test/bottom_nav_bar_test.dart test/home_screen_test.dart` → All tests passed (6/6); `flutter analyze` on changed files → 0 errors/warnings (4 pre-existing info lints only); `flutter build apk --release` → Built app-release.apk | `d6550b0` |
 | 2. Grouped Preferences | Done | Five scrollable groups (Appearance, Planning, Automation, Data, Danger zone); dark-mode drives `ConfigService.toggleDarkMode`; budget row opens shared `showMonthlyBudgetDialog`; honest SMS status (`Last synced …` / `Not synced yet`); Import data disabled with `Coming soon` + disabled semantics + no snackbar; destructive delete confirmation; layout scrolls without overflow at 320dp/short viewport/2.0x text; SmsSync/export/delete/ConfigService persistence preserved | `flutter test test/preferences_screen_test.dart` → All tests passed (17/17); `flutter test` on relevant existing suites (preferences + budget_progress + date_service + bottom_nav_bar + home_screen) → All tests passed (58/58); `flutter analyze test/preferences_screen_test.dart` → No issues found; `flutter build apk --release` → Built app-release.apk (54.7MB) | See Task 2 note |
 | 3. DisplayCard net hero | Done | Month-attributed net hero, income/expense tiles, savings rate, header/subtitle and month-first layout; duplicate summary widget removed | `flutter test test/display_card_test.dart test/analytics_dashboard_components_test.dart test/analytics_summary_category_test.dart test/analytics_screen_test.dart` → All tests passed (74/74); `flutter test` → All tests passed (255/255, no regressions); `flutter analyze` on changed files → 0 errors/warnings (only pre-existing file_names + one pre-existing test private-type info lint); `flutter build apk --release` → Built app-release.apk (54.7MB) | `7faaaf4` |
-| 4. Segmented budget | Done (widget tests deferred) | Category segments, idle remainder, exact/over/no-budget states, shared category identity and semantics | `flutter test test/budget_progress_test.dart` → All active tests passed (36/36); rendered/platform-backed widget scenarios remain documented as TODOs; `flutter analyze` → 0 errors/warnings (4 filename-style info lints); `flutter build apk --release` → Built app-release.apk (54.7MB) | See Task 4 note |
-| 5. Dashboard composition | Not started | Final ordered composition with request guards preserved and MonthComparison retained after trend | Pending | Pending |
+| 4. Segmented budget | Done (widget tests deferred) | Category segments, idle remainder, exact/over/no-budget states, shared category identity and semantics | `flutter test test/budget_progress_test.dart` → All active tests passed (36/36); rendered/platform-backed widget scenarios remain documented as TODOs; `flutter analyze` → 0 errors/warnings (4 filename-style info lints); `flutter build apk --release` → Built app-release.apk (54.7MB) | `a58e7b7`, `682a903` |
+| 5. Dashboard composition | Done | Header → month selector → hero → segmented budget → ranked categories → six-month trend → retained MonthComparison; one bounded load and request-ordering behavior preserved | `flutter test test/analytics_screen_test.dart` → All tests passed (17/17); focused Dashboard regressions → All tests passed (91/91); `flutter analyze test/analytics_screen_test.dart` → No issues found; `flutter build apk --release` → Built app-release.apk (54.7MB) | See Task 5 note |
 | 6. Transactions validation | Not started | Selected-month search/sort/filter behavior preserved; signed rows use theme roles; FAB and request guard remain | Pending | Pending |
 | 7. Whole-app integration | Not started | Shell smoke coverage, accessibility/responsive audit, analyzer/tests/release build all green | Pending | Pending |
 
@@ -221,14 +221,39 @@ This tracker records implementation, validation, and commit evidence for the con
     or the commented-out test block.
   - `flutter build apk --release` →
     `✓ Built build/app/outputs/flutter-apk/app-release.apk (54.7MB)`.
-- Commit: `a58e7b7` — `feat(dashboard): Add segmented category budget bar`.
-  A focused follow-up hardens segment gaps/minimum flex and corrects validation
-  evidence; its hash is recorded with the next task update to avoid amending.
+- Commit: `a58e7b7` — `feat(dashboard): Add segmented category budget bar`;
+  `682a903` — `fix(dashboard): Harden budget segments`.
 
 ### Task 5 — Dashboard composition
-- Status: Not started
-- Validation evidence: Pending
-- Commit: Pending
+- Status: Done
+- Approach: The production Dashboard composition established in Tasks 3 and 4
+  already matched the agreed order, so this task locks that integration down
+  rather than adding duplicate layout code. The composition test now asserts
+  the vertical order Dashboard header → month selector → month-attributed hero
+  → monthly budget → ranked category rows → six-month trend → retained
+  MonthComparison.
+- Changed files:
+  - `test/analytics_screen_test.dart` — added explicit vertical-order
+    assertions to the one-response integration test and made the test-only
+    Dashboard builder private, clearing the prior private-type analyzer info.
+  - `.kiro/specs/app-redesign/whole-app-redesign-todo.md` — recorded Task 4's
+    primary and hardening commits and this Task 5 evidence.
+- Preserved behavior:
+  - One bounded six-month transaction request still feeds every section.
+  - `_requestId` still prevents stale success/failure replacement.
+  - Initial loads expose no monetary values; retry and retained-snapshot
+    attribution remain covered.
+  - Future month chips remain disabled.
+  - `MonthComparisonSection` remains visible after `MonthTrendSection`.
+- Validation evidence:
+  - `flutter test test/analytics_screen_test.dart` → `All tests passed!`
+    (17/17).
+  - `flutter test test/analytics_screen_test.dart test/analytics_trend_comparison_test.dart test/analytics_summary_category_test.dart test/budget_progress_test.dart`
+    → `All tests passed!` (91/91).
+  - `flutter analyze test/analytics_screen_test.dart` → `No issues found!`.
+  - `flutter build apk --release` →
+    `✓ Built build/app/outputs/flutter-apk/app-release.apk (54.7MB)`.
+- Commit: recorded on commit (see git log for this Task 5 commit).
 
 ### Task 6 — Transactions validation
 - Status: Not started

@@ -26,7 +26,7 @@ class _RecordingLoader {
   int get requestCount => requests.length;
 }
 
-Widget dashboard(
+Widget _dashboard(
   _RecordingLoader loader, {
   required DateTime now,
   bool dark = false,
@@ -55,7 +55,7 @@ void main() {
     testWidgets('shows a blocking progress state with no monetary values',
         (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       expect(find.text('Loading August 2026'), findsOneWidget);
@@ -69,7 +69,7 @@ void main() {
     testWidgets('requests five months back through the exclusive next month',
         (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       expect(loader.requestCount, 1);
       expect(loader.requests.first.start, DateTime(2026, 3, 1));
@@ -84,7 +84,7 @@ void main() {
       await setSurface(tester, kTallSurface);
 
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       loader.completers.first.complete([
         incomeTxn(25500, date: DateTime(2026, 8, 5)),
@@ -105,12 +105,29 @@ void main() {
       expect(find.text('Spending by category'), findsOneWidget);
       expect(find.text('Six-month trend'), findsOneWidget);
       expect(find.text('Compared with July 2026'), findsOneWidget);
+
+      final dashboardTop = tester.getTopLeft(find.text('Dashboard')).dy;
+      final selectorTop = tester.getTopLeft(find.text('Aug 2026')).dy;
+      final heroTop = tester.getTopLeft(find.text('August 2026 net')).dy;
+      final budgetTop = tester.getTopLeft(find.text('Monthly budget')).dy;
+      final categoriesTop =
+          tester.getTopLeft(find.text('Spending by category')).dy;
+      final trendTop = tester.getTopLeft(find.text('Six-month trend')).dy;
+      final comparisonTop =
+          tester.getTopLeft(find.text('Compared with July 2026')).dy;
+
+      expect(dashboardTop, lessThan(selectorTop));
+      expect(selectorTop, lessThan(heroTop));
+      expect(heroTop, lessThan(budgetTop));
+      expect(budgetTop, lessThan(categoriesTop));
+      expect(categoriesTop, lessThan(trendTop));
+      expect(trendTop, lessThan(comparisonTop));
     });
 
     testWidgets('shows an error with Retry and no values when the load fails',
         (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       loader.completers.first.completeError(Exception('db down'));
       await tester.pumpAndSettle();
@@ -124,7 +141,7 @@ void main() {
 
     testWidgets('Retry re-requests the same month', (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       loader.completers.first.completeError(Exception('nope'));
       await tester.pumpAndSettle();
@@ -152,7 +169,7 @@ void main() {
     testWidgets('one chip activation starts exactly one request',
         (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
       loader.completers.first.complete([]);
       await tester.pumpAndSettle();
 
@@ -167,7 +184,7 @@ void main() {
     testWidgets('keeps values attributed to the displayed month while loading',
         (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       loader.completers.first.complete([
         incomeTxn(25500, date: DateTime(2026, 8, 5)),
@@ -197,7 +214,7 @@ void main() {
 
     testWidgets('a future month cannot be selected', (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
       loader.completers.first.complete([]);
       await tester.pumpAndSettle();
 
@@ -213,7 +230,7 @@ void main() {
   group('DashboardScreen request ordering', () {
     testWidgets('a stale success cannot replace newer data', (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
       loader.completers.first.complete([]);
       await tester.pumpAndSettle();
 
@@ -253,7 +270,7 @@ void main() {
     testWidgets('a stale failure cannot show an error or clear loading',
         (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
       loader.completers.first.complete([]);
       await tester.pumpAndSettle();
 
@@ -286,7 +303,7 @@ void main() {
     testWidgets('a refresh failure keeps the previous month visible',
         (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       loader.completers.first.complete([
         incomeTxn(25500, date: DateTime(2026, 8, 5)),
@@ -312,7 +329,7 @@ void main() {
       await setSurface(tester, kNarrowSurface);
 
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       loader.completers.first.complete([
         incomeTxn(25500, date: DateTime(2026, 8, 5)),
@@ -332,7 +349,7 @@ void main() {
       await setSurface(tester, kTallSurface);
 
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       loader.completers.first.complete([]);
       await tester.pumpAndSettle();
@@ -357,7 +374,7 @@ void main() {
 
     testWidgets('renders in the dark theme without error', (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now, dark: true));
+      await tester.pumpWidget(_dashboard(loader, now: now, dark: true));
 
       loader.completers.first.complete([
         incomeTxn(1000, date: DateTime(2026, 8, 5)),
@@ -373,7 +390,7 @@ void main() {
       await setSurface(tester, kNarrowSurface);
 
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       loader.completers.first.complete([
         incomeTxn(98765432, date: DateTime(2026, 8, 5)),
@@ -422,7 +439,7 @@ void main() {
       await setSurface(tester, kWideSurface);
 
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       loader.completers.first.complete([
         incomeTxn(25500, date: DateTime(2026, 8, 5)),
