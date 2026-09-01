@@ -10,7 +10,7 @@ This tracker records implementation, validation, and commit evidence for the con
 | 4. Segmented budget | Done (widget tests deferred) | Category segments, idle remainder, exact/over/no-budget states, shared category identity and semantics | `flutter test test/budget_progress_test.dart` → All active tests passed (36/36); rendered/platform-backed widget scenarios remain documented as TODOs; `flutter analyze` → 0 errors/warnings (4 filename-style info lints); `flutter build apk --release` → Built app-release.apk (54.7MB) | `a58e7b7`, `682a903` |
 | 5. Dashboard composition | Done | Header → month selector → hero → segmented budget → ranked categories → six-month trend → retained MonthComparison; one bounded load and request-ordering behavior preserved | `flutter test test/analytics_screen_test.dart` → All tests passed (17/17); focused Dashboard regressions → All tests passed (91/91); `flutter analyze test/analytics_screen_test.dart` → No issues found; `flutter build apk --release` → Built app-release.apk (54.7MB) | `4a5bfc9` |
 | 6. Transactions validation | Done | Selected-month search/sort/filter and stale-request behavior preserved; signed rows use `ColorScheme.tertiary/error`; header, controls, date groups, FAB, narrow width and large text validated | `flutter test test/transaction_card_test.dart test/transactions_screen_test.dart` → All tests passed (12/12); `flutter analyze` → 0 errors/warnings (one filename-style info); `flutter build apk --release` → Built app-release.apk (54.7MB) | `404e3c2` |
-| 7. Whole-app integration | Done | Shell tap/swipe synchronization, default Transactions tab, no legacy destinations, focused/full behavior, responsive/theme coverage, and release build validated | `flutter pub get` succeeded; redesign regressions passed (174/174); full active suite passed (268/268); changed shell test analyzes cleanly; full analyzer has 0 errors/warnings and 70 pre-existing info findings (`--no-fatal-infos` exits 0); release APK built (54.7MB) | See Task 7 note |
+| 7. Whole-app integration | Done | Shell tap/swipe synchronization, default Transactions tab, no legacy destinations, focused/full behavior, responsive/theme coverage, and release build validated | `flutter pub get` succeeded; redesign regressions passed (174/174); full active suite passed (268/268); changed shell test analyzes cleanly; full analyzer has 0 errors/warnings and 70 pre-existing info findings (`--no-fatal-infos` exits 0); release APK built (54.7MB) | `aab1cad` |
 
 ## Task notes
 
@@ -340,4 +340,4 @@ This tracker records implementation, validation, and commit evidence for the con
     `✓ Built build/app/outputs/flutter-apk/app-release.apk (54.7MB)`.
 - Manual-device note: no emulator/device visual session was available; light,
   dark, narrow-width, and enlarged-text behavior is exercised by widget tests.
-- Commit: recorded on commit (see git log for this Task 7 commit).
+- Commit: `aab1cad` — `test(app): Add whole-shell smoke coverage`.
