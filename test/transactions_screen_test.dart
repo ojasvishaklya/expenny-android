@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:expenny/models/Transaction.dart';
 import 'package:expenny/models/TransactionTag.dart';
+import 'package:expenny/widgets/LoadingWidget.dart';
 import 'package:expenny/screens/TransactionsScreen.dart';
 
 import 'support/dashboard_harness.dart';
@@ -71,6 +72,7 @@ Widget _screen(
       builder: (context) => MediaQuery(
         data: MediaQuery.of(context).copyWith(
           textScaler: TextScaler.linear(textScale),
+          disableAnimations: true,
         ),
         child: Scaffold(
           body: TransactionsScreen(
@@ -100,7 +102,18 @@ void main() {
 
       loader.completers.first.complete([]);
       await tester.pumpAndSettle();
-      expect(find.text('No transactions for this month.'), findsOneWidget);
+
+      expect(find.byType(LoadingWidget), findsOneWidget);
+      final loaderWidget = tester.widget<LoadingWidget>(
+        find.byType(LoadingWidget),
+      );
+      expect(loaderWidget.animationName, 'home_screen_loader');
+      expect(loaderWidget.size, 200);
+      expect(
+        find.bySemanticsLabel('No transactions for this month.'),
+        findsOneWidget,
+      );
+      expect(find.text('No transactions for this month.'), findsNothing);
     });
 
     testWidgets('renders date-grouped transactions', (tester) async {

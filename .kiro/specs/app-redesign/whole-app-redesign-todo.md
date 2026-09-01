@@ -341,3 +341,26 @@ This tracker records implementation, validation, and commit evidence for the con
 - Manual-device note: no emulator/device visual session was available; light,
   dark, narrow-width, and enlarged-text behavior is exercised by widget tests.
 - Commit: `aab1cad` — `test(app): Add whole-shell smoke coverage`.
+
+## Post-plan follow-up — Transactions empty-state loader
+
+- Status: Done
+- Requirement: When the selected Transactions month has no transactions, show
+  the existing floating `home_screen_loader` image instead of visible empty
+  placeholder text.
+- Changes:
+  - `TransactionsScreen` renders `LoadingWidget(animationName:
+    'home_screen_loader', size: 200)` for an empty result while retaining the
+    semantic label `No transactions for this month.`.
+  - `LoadingWidget` respects `MediaQuery.disableAnimations` through
+    `TickerMode`, keeping the image visible while honoring reduced motion.
+  - `transactions_screen_test.dart` asserts the animation name, size,
+    accessible label, and absence of the old visible placeholder.
+- Validation:
+  - Failing-first focused test confirmed the loader was initially absent.
+  - `flutter test test/transactions_screen_test.dart --plain-name "initial load requests the selected month range"` → passed (1/1).
+  - `flutter test test/transactions_screen_test.dart test/transaction_card_test.dart` → passed (12/12).
+  - `flutter analyze` on changed files → 0 errors/warnings; two existing
+    filename-style info findings.
+  - `flutter build apk --release` → built app-release.apk (56.2MB).
+- Commit: recorded after commit in Git history.

@@ -5,6 +5,7 @@ import 'package:expenny/service/DateService.dart';
 import 'package:expenny/service/TransactionSortService.dart';
 import 'package:expenny/widgets/FabWidget.dart';
 import 'package:expenny/widgets/TransactionCard.dart';
+import 'package:expenny/widgets/LoadingWidget.dart';
 import 'package:expenny/widgets/TransactionFilterSheet.dart';
 import 'package:expenny/widgets/analytics/NearbyMonthSelector.dart';
 import 'package:flutter/material.dart';
@@ -336,8 +337,15 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       );
     }
     if (_transactions.isEmpty) {
-      return const _EmptyOrError(
-        message: 'No transactions for this month.',
+      return Semantics(
+        container: true,
+        label: 'No transactions for this month.',
+        child: const ExcludeSemantics(
+          child: LoadingWidget(
+            animationName: 'home_screen_loader',
+            size: 200,
+          ),
+        ),
       );
     }
 
