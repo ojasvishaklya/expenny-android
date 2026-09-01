@@ -26,16 +26,16 @@ class BottomNavBarWidget extends StatelessWidget {
         padding: EdgeInsets.all(12),
         tabs: const [
           GButton(
-            icon: Icons.receipt_long,
-            text: 'Transactions',
-          ),
-          GButton(
             icon: Icons.dashboard_outlined,
             text: 'Dashboard',
           ),
           GButton(
-            icon: Icons.settings,
-            text: 'Settings',
+            icon: Icons.receipt_long,
+            text: 'Transactions',
+          ),
+          GButton(
+            icon: Icons.tune,
+            text: 'Preferences',
           ),
         ],
       ),

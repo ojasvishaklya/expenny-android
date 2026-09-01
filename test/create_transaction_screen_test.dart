@@ -14,10 +14,14 @@ class _FakeController extends TransactionController {
   final deleted = <Transaction>[];
 
   @override
-  void addTransaction(Transaction transaction) => added.add(transaction);
+  Future<void> addTransaction(Transaction transaction) async {
+    added.add(transaction);
+  }
 
   @override
-  void deleteTransaction(Transaction transaction) => deleted.add(transaction);
+  Future<void> deleteTransaction(Transaction transaction) async {
+    deleted.add(transaction);
+  }
 }
 
 class _FakeRepo extends TransactionRepository {}
@@ -32,16 +36,24 @@ class _Launcher extends StatefulWidget {
 }
 
 class _LauncherState extends State<_Launcher> {
+  bool? _result;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Get.to(() => const CreateTransactionScreen(), arguments: widget.txn);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final result = await Get.to<bool>(
+        () => const CreateTransactionScreen(),
+        arguments: widget.txn,
+      );
+      if (mounted) setState(() => _result = result);
     });
   }
 
   @override
-  Widget build(BuildContext context) => const Scaffold();
+  Widget build(BuildContext context) => Scaffold(
+        body: Text('Editor result: $_result'),
+      );
 }
 
 Transaction newTxn() => Transaction.defaults();
@@ -61,7 +73,8 @@ Transaction editTxn() => Transaction(
       rawSms: 'Spent Rs.860.00 At LITTLE ITALY',
     );
 
-Future<_FakeController> pumpScreen(WidgetTester tester, Transaction txn) async {
+Future<_FakeController> _pumpScreen(
+    WidgetTester tester, Transaction txn) async {
   Get.testMode = true;
   // Tall surface so the lazily-built ListView renders every section (the SMS
   // card sits below the fold at the default height).
@@ -79,7 +92,7 @@ Future<_FakeController> pumpScreen(WidgetTester tester, Transaction txn) async {
   return controller;
 }
 
-Finder amountField() => find.descendant(
+Finder _amountField() => find.descendant(
       of: find.byType(AmountHeroField),
       matching: find.byType(TextField),
     );
@@ -87,7 +100,7 @@ Finder amountField() => find.descendant(
 void main() {
   group('CreateTransactionScreen — new', () {
     testWidgets('shows the new-transaction chrome', (tester) async {
-      await pumpScreen(tester, newTxn());
+      await _pumpScreen(tester, newTxn());
       expect(find.text('New transaction'), findsOneWidget);
       expect(find.text('Save transaction'), findsOneWidget);
       // No delete action for a new transaction.
@@ -96,9 +109,9 @@ void main() {
 
     testWidgets('creating fills a signed expense and calls addTransaction',
         (tester) async {
-      final controller = await pumpScreen(tester, newTxn());
+      final controller = await _pumpScreen(tester, newTxn());
 
-      await tester.enterText(amountField(), '860');
+      await tester.enterText(_amountField(), '860');
       await tester.enterText(find.byType(TextFormField), 'Lunch');
       await tester.pump();
 
@@ -117,7 +130,7 @@ void main() {
     });
 
     testWidgets('a missing amount blocks save', (tester) async {
-      final controller = await pumpScreen(tester, newTxn());
+      final controller = await _pumpScreen(tester, newTxn());
 
       await tester.enterText(find.byType(TextFormField), 'Lunch');
       await tester.pump();
@@ -129,9 +142,9 @@ void main() {
     });
 
     testWidgets('a missing description blocks save', (tester) async {
-      final controller = await pumpScreen(tester, newTxn());
+      final controller = await _pumpScreen(tester, newTxn());
 
-      await tester.enterText(amountField(), '500');
+      await tester.enterText(_amountField(), '500');
       await tester.pump();
       await tester.tap(find.text('Save transaction'));
       await tester.pump();
@@ -141,9 +154,9 @@ void main() {
     });
 
     testWidgets('income sign is applied on save', (tester) async {
-      final controller = await pumpScreen(tester, newTxn());
+      final controller = await _pumpScreen(tester, newTxn());
 
-      await tester.enterText(amountField(), '25500');
+      await tester.enterText(_amountField(), '25500');
       await tester.enterText(find.byType(TextFormField), 'Salary');
       await tester.tap(find.text('Income'));
       await tester.pump();
@@ -156,8 +169,9 @@ void main() {
   });
 
   group('CreateTransactionScreen — edit', () {
-    testWidgets('shows edit chrome, the original SMS, and delete', (tester) async {
-      await pumpScreen(tester, editTxn());
+    testWidgets('shows edit chrome, the original SMS, and delete',
+        (tester) async {
+      await _pumpScreen(tester, editTxn());
 
       expect(find.text('Edit transaction'), findsOneWidget);
       expect(find.text('Update'), findsOneWidget);
@@ -166,8 +180,22 @@ void main() {
       expect(find.text('Spent Rs.860.00 At LITTLE ITALY'), findsOneWidget);
     });
 
+    testWidgets('updating persists changes and reports a mutation',
+        (tester) async {
+      final controller = await _pumpScreen(tester, editTxn());
+
+      await tester.enterText(find.byType(TextFormField), 'Dinner');
+      await tester.tap(find.text('Update'));
+      await tester.pumpAndSettle();
+
+      expect(controller.added, hasLength(1));
+      expect(controller.added.single.id, 5);
+      expect(controller.added.single.description, 'Dinner');
+      expect(find.text('Editor result: true'), findsOneWidget);
+    });
+
     testWidgets('confirming delete calls deleteTransaction', (tester) async {
-      final controller = await pumpScreen(tester, editTxn());
+      final controller = await _pumpScreen(tester, editTxn());
 
       await tester.tap(find.byIcon(Icons.delete_outline));
       await tester.pumpAndSettle();
@@ -176,6 +204,7 @@ void main() {
 
       expect(controller.deleted.length, 1);
       expect(controller.deleted.first.id, 5);
+      expect(find.text('Editor result: true'), findsOneWidget);
     });
   });
 }

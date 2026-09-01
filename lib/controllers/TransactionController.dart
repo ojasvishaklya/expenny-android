@@ -95,7 +95,7 @@ class TransactionController extends GetxController {
         .toList();
   }
 
-  void deleteTransaction(Transaction transaction) async {
+  Future<void> deleteTransaction(Transaction transaction) async {
     await transactionRepository.deleteTransaction(transaction.id!);
     transactionList.removeWhere((item) => item.id == transaction.id);
     refreshTransactionList();
@@ -107,7 +107,7 @@ class TransactionController extends GetxController {
     refreshTransactionList();
   }
 
-  void addTransaction(Transaction transaction) async {
+  Future<void> addTransaction(Transaction transaction) async {
     transaction.setAmount(transaction.amount);
     transaction.id = await transactionRepository.insertTransaction(transaction);
 

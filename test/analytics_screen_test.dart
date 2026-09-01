@@ -26,7 +26,7 @@ class _RecordingLoader {
   int get requestCount => requests.length;
 }
 
-Widget dashboard(
+Widget _dashboard(
   _RecordingLoader loader, {
   required DateTime now,
   bool dark = false,
@@ -55,7 +55,7 @@ void main() {
     testWidgets('shows a blocking progress state with no monetary values',
         (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       expect(find.text('Loading August 2026'), findsOneWidget);
@@ -69,7 +69,7 @@ void main() {
     testWidgets('requests five months back through the exclusive next month',
         (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       expect(loader.requestCount, 1);
       expect(loader.requests.first.start, DateTime(2026, 3, 1));
@@ -84,7 +84,7 @@ void main() {
       await setSurface(tester, kTallSurface);
 
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       loader.completers.first.complete([
         incomeTxn(25500, date: DateTime(2026, 8, 5)),
@@ -95,20 +95,39 @@ void main() {
 
       // Still exactly one query for all the sections.
       expect(loader.requestCount, 1);
-      // The loaded dashboard leads with the BALANCE card carrying August's
-      // net (25500 income - 13040 expense) as a raw two-decimal value.
-      expect(find.text('B A L A N C E'), findsOneWidget);
-      expect(find.text('12460.0'), findsOneWidget);
+      // The dashboard leads with the header, then the month-attributed net
+      // hero carrying August's net (25500 income - 13040 expense).
+      expect(find.text('Dashboard'), findsOneWidget);
+      expect(find.text('Where your money went'), findsOneWidget);
+      expect(find.text('August 2026 net'), findsOneWidget);
+      expect(find.text('₹12,460'), findsOneWidget);
       expect(find.text('Monthly budget'), findsOneWidget);
       expect(find.text('Spending by category'), findsOneWidget);
       expect(find.text('Six-month trend'), findsOneWidget);
       expect(find.text('Compared with July 2026'), findsOneWidget);
+
+      final dashboardTop = tester.getTopLeft(find.text('Dashboard')).dy;
+      final selectorTop = tester.getTopLeft(find.text('Aug 2026')).dy;
+      final heroTop = tester.getTopLeft(find.text('August 2026 net')).dy;
+      final budgetTop = tester.getTopLeft(find.text('Monthly budget')).dy;
+      final categoriesTop =
+          tester.getTopLeft(find.text('Spending by category')).dy;
+      final trendTop = tester.getTopLeft(find.text('Six-month trend')).dy;
+      final comparisonTop =
+          tester.getTopLeft(find.text('Compared with July 2026')).dy;
+
+      expect(dashboardTop, lessThan(selectorTop));
+      expect(selectorTop, lessThan(heroTop));
+      expect(heroTop, lessThan(budgetTop));
+      expect(budgetTop, lessThan(categoriesTop));
+      expect(categoriesTop, lessThan(trendTop));
+      expect(trendTop, lessThan(comparisonTop));
     });
 
     testWidgets('shows an error with Retry and no values when the load fails',
         (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       loader.completers.first.completeError(Exception('db down'));
       await tester.pumpAndSettle();
@@ -122,7 +141,7 @@ void main() {
 
     testWidgets('Retry re-requests the same month', (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       loader.completers.first.completeError(Exception('nope'));
       await tester.pumpAndSettle();
@@ -139,8 +158,10 @@ void main() {
       ]);
       await tester.pumpAndSettle();
 
-      // A settled reload shows no status line; the loaded card is the anchor.
-      expect(find.text('B A L A N C E'), findsOneWidget);
+      // A settled reload shows no status line; the loaded hero is the anchor.
+      expect(find.text('August 2026 net'), findsOneWidget);
+      // Net (100) and the income tile (100) both render this value.
+      expect(find.text('₹100'), findsNWidgets(2));
     });
   });
 
@@ -148,7 +169,7 @@ void main() {
     testWidgets('one chip activation starts exactly one request',
         (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
       loader.completers.first.complete([]);
       await tester.pumpAndSettle();
 
@@ -163,24 +184,26 @@ void main() {
     testWidgets('keeps values attributed to the displayed month while loading',
         (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       loader.completers.first.complete([
         incomeTxn(25500, date: DateTime(2026, 8, 5)),
         expenseTxn(13040, date: DateTime(2026, 8, 6)),
       ]);
       await tester.pumpAndSettle();
-      // August's net snapshot (25500 - 13040) is on the BALANCE card.
-      expect(find.text('B A L A N C E'), findsOneWidget);
-      expect(find.text('12460.0'), findsOneWidget);
+      // August's net snapshot (25500 - 13040) is on the hero.
+      expect(find.text('August 2026 net'), findsOneWidget);
+      expect(find.text('₹12,460'), findsOneWidget);
 
       // Ask for July but leave it pending.
       await tester.tap(find.text('Jul 2026'));
       await tester.pump();
 
-      // The status names the loading month while August's figures stay put.
+      // The status names the loading month while August's figures stay put,
+      // still attributed to August.
       expect(find.text('Loading July 2026'), findsOneWidget);
-      expect(find.text('12460.0'), findsOneWidget);
+      expect(find.text('August 2026 net'), findsOneWidget);
+      expect(find.text('₹12,460'), findsOneWidget);
       // The dashboard stays readable rather than blocking.
       expect(find.byType(LinearProgressIndicator), findsWidgets);
       expect(find.byType(CircularProgressIndicator), findsNothing);
@@ -191,7 +214,7 @@ void main() {
 
     testWidgets('a future month cannot be selected', (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
       loader.completers.first.complete([]);
       await tester.pumpAndSettle();
 
@@ -199,14 +222,15 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(loader.requestCount, 1);
-      expect(find.text('B A L A N C E'), findsOneWidget);
+      // August's empty snapshot keeps the header mounted.
+      expect(find.text('Dashboard'), findsOneWidget);
     });
   });
 
   group('DashboardScreen request ordering', () {
     testWidgets('a stale success cannot replace newer data', (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
       loader.completers.first.complete([]);
       await tester.pumpAndSettle();
 
@@ -227,8 +251,8 @@ void main() {
       ]);
       await tester.pumpAndSettle();
 
-      expect(find.text('B A L A N C E'), findsOneWidget);
-      expect(find.text('5000.0'), findsOneWidget);
+      expect(find.text('July 2026 net'), findsOneWidget);
+      expect(find.text('₹5,000'), findsOneWidget);
 
       // Now the abandoned June request arrives with different figures
       // (777777 income - 1 expense = 777776).
@@ -239,14 +263,14 @@ void main() {
       await tester.pumpAndSettle();
 
       // July's snapshot must still own the screen; June never replaces it.
-      expect(find.text('5000.0'), findsOneWidget);
-      expect(find.text('777776.0'), findsNothing);
+      expect(find.text('₹5,000'), findsOneWidget);
+      expect(find.text('₹7,77,776'), findsNothing);
     });
 
     testWidgets('a stale failure cannot show an error or clear loading',
         (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
       loader.completers.first.complete([]);
       await tester.pumpAndSettle();
 
@@ -258,20 +282,20 @@ void main() {
       await tester.pump();
       final requestB = loader.completers.last;
 
-      // July with expense only (no income): net -4000, shown as -4000.0. The
-      // net and the signed expense on the card share that value.
+      // July with expense only (no income): net -4000, shown as a signed
+      // rupee value on the hero, attributed to July.
       requestB.complete([expenseTxn(4000, date: DateTime(2026, 7, 9))]);
       await tester.pumpAndSettle();
-      expect(find.text('B A L A N C E'), findsOneWidget);
-      expect(find.text('-4000.0'), findsWidgets);
+      expect(find.text('July 2026 net'), findsOneWidget);
+      expect(find.text('-₹4,000'), findsOneWidget);
 
       // The abandoned request fails afterwards.
       requestA.completeError(Exception('stale failure'));
       await tester.pumpAndSettle();
 
       // July's snapshot stays; no error surfaces from the stale failure.
-      expect(find.text('B A L A N C E'), findsOneWidget);
-      expect(find.text('-4000.0'), findsWidgets);
+      expect(find.text('July 2026 net'), findsOneWidget);
+      expect(find.text('-₹4,000'), findsOneWidget);
       expect(find.text('Retry'), findsNothing);
       expect(find.textContaining("Couldn't load"), findsNothing);
     });
@@ -279,7 +303,7 @@ void main() {
     testWidgets('a refresh failure keeps the previous month visible',
         (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       loader.completers.first.complete([
         incomeTxn(25500, date: DateTime(2026, 8, 5)),
@@ -292,10 +316,10 @@ void main() {
       loader.completers.last.completeError(Exception('offline'));
       await tester.pumpAndSettle();
 
-      // Data is retained and August's net stays on the card, with a way back.
+      // Data is retained and August's net stays on the hero, with a way back.
       expect(find.text("Couldn't load July 2026"), findsOneWidget);
-      expect(find.text('B A L A N C E'), findsOneWidget);
-      expect(find.text('12460.0'), findsOneWidget);
+      expect(find.text('August 2026 net'), findsOneWidget);
+      expect(find.text('₹12,460'), findsOneWidget);
       expect(find.text('Retry'), findsOneWidget);
     });
   });
@@ -305,7 +329,7 @@ void main() {
       await setSurface(tester, kNarrowSurface);
 
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       loader.completers.first.complete([
         incomeTxn(25500, date: DateTime(2026, 8, 5)),
@@ -317,7 +341,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      expect(find.text('B A L A N C E'), findsOneWidget);
+      expect(find.text('August 2026 net'), findsOneWidget);
     });
 
     testWidgets('renders an empty month with per-section empty states',
@@ -325,14 +349,18 @@ void main() {
       await setSurface(tester, kTallSurface);
 
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       loader.completers.first.complete([]);
       await tester.pumpAndSettle();
 
-      // The BALANCE card is always mounted; the monthly summary hint is not,
-      // so only the still-mounted sections show their own empty states.
-      expect(find.text('B A L A N C E'), findsOneWidget);
+      // The header is always mounted; the hero shows its own empty hint for a
+      // month with no activity, and the other sections show theirs.
+      expect(find.text('Dashboard'), findsOneWidget);
+      expect(
+        find.textContaining('No transactions in August 2026'),
+        findsOneWidget,
+      );
       expect(find.text('No spending recorded this month.'), findsOneWidget);
       expect(
         find.textContaining('No transactions between Mar 2026 and Aug 2026'),
@@ -346,7 +374,7 @@ void main() {
 
     testWidgets('renders in the dark theme without error', (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now, dark: true));
+      await tester.pumpWidget(_dashboard(loader, now: now, dark: true));
 
       loader.completers.first.complete([
         incomeTxn(1000, date: DateTime(2026, 8, 5)),
@@ -355,14 +383,14 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      expect(find.text('B A L A N C E'), findsOneWidget);
+      expect(find.text('August 2026 net'), findsOneWidget);
     });
 
     testWidgets('survives long values at 320px', (tester) async {
       await setSurface(tester, kNarrowSurface);
 
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       loader.completers.first.complete([
         incomeTxn(98765432, date: DateTime(2026, 8, 5)),
@@ -372,8 +400,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      // The long income (98765432) shows as a raw two-decimal value on the card.
-      expect(find.text('98765432.0'), findsOneWidget);
+      // The long income (98765432) shows as a grouped rupee value in its tile.
+      expect(find.text('₹9,87,65,432'), findsOneWidget);
     });
 
     testWidgets('survives a doubled text scale at 320px', (tester) async {
@@ -404,14 +432,14 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      expect(find.text('B A L A N C E'), findsOneWidget);
+      expect(find.text('August 2026 net'), findsOneWidget);
     });
 
     testWidgets('lays out side by side at a wider width', (tester) async {
       await setSurface(tester, kWideSurface);
 
       final loader = _RecordingLoader();
-      await tester.pumpWidget(dashboard(loader, now: now));
+      await tester.pumpWidget(_dashboard(loader, now: now));
 
       loader.completers.first.complete([
         incomeTxn(25500, date: DateTime(2026, 8, 5)),
@@ -421,7 +449,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      expect(find.text('B A L A N C E'), findsOneWidget);
+      expect(find.text('August 2026 net'), findsOneWidget);
     });
   });
 }
