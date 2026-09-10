@@ -42,21 +42,25 @@ void main() {
       expect(find.text('1:24 PM'), findsOneWidget);
     });
 
-    testWidgets('expense amount is red', (tester) async {
+    testWidgets('expense amount uses the error role', (tester) async {
       await tester.pumpWidget(wrap(card(amount: -860)));
 
       final text = tester.widget<Text>(find.text('-₹860'));
-      expect(text.style?.color, const Color(0xFFBA1A1A));
+      final colors =
+          Theme.of(tester.element(find.byType(TransactionCard))).colorScheme;
+      expect(text.style?.color, colors.error);
     });
 
-    testWidgets('income amount is green and prefixed with +', (tester) async {
+    testWidgets('income uses tertiary and is prefixed with +', (tester) async {
       await tester.pumpWidget(wrap(
         card(amount: 25500, description: 'Monthly salary', tag: 'salary'),
       ));
 
       expect(find.text('+₹25,500'), findsOneWidget);
       final text = tester.widget<Text>(find.text('+₹25,500'));
-      expect(text.style?.color, const Color(0xFF2E7D32));
+      final colors =
+          Theme.of(tester.element(find.byType(TransactionCard))).colorScheme;
+      expect(text.style?.color, colors.tertiary);
     });
 
     testWidgets('falls back to tag name when description is empty', (tester) async {

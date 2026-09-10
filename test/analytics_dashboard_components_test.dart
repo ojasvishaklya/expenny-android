@@ -40,6 +40,36 @@ void main() {
       expect(find.byType(TextButton), findsNothing);
       expect(find.byIcon(Icons.add), findsNothing);
     });
+
+    testWidgets('renders an optional subtitle beneath the title',
+        (tester) async {
+      await tester.pumpWidget(wrapSection(
+        const DashboardHeader(subtitle: 'Where your money went'),
+      ));
+
+      expect(find.text('Dashboard'), findsOneWidget);
+      expect(find.text('Where your money went'), findsOneWidget);
+    });
+
+    testWidgets('keeps the title as the only header even with a subtitle',
+        (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(wrapSection(
+        const DashboardHeader(subtitle: 'Where your money went'),
+      ));
+
+      // The subtitle is supporting text, not a second heading.
+      expect(
+        tester.getSemantics(find.text('Dashboard')),
+        matchesSemantics(label: 'Dashboard', isHeader: true),
+      );
+      expect(
+        tester.getSemantics(find.text('Where your money went')),
+        isNot(matchesSemantics(isHeader: true)),
+      );
+
+      handle.dispose();
+    });
   });
 
   group('AnalyticsSection', () {

@@ -1,151 +1,290 @@
+import 'package:expenny/constants/DesignTokens.dart';
 import 'package:flutter/material.dart';
+import 'package:expenny/models/analytics/MonthlySummary.dart';
+import 'package:expenny/service/DateService.dart';
+import 'package:expenny/utils/CurrencyFormatter.dart';
+import 'package:expenny/widgets/analytics/AnalyticsSection.dart';
 
-/// Presentational BALANCE / Income / Expense summary.
+/// The month's headline figures, grouped into a single prominent hero.
 ///
-/// Pure and stateless: it renders exactly the values it is given and owns no
-/// controller or subscription. Callers pass already-computed figures, and the
-/// expense is passed as a signed value (negative for money out) so it reads the
-/// same way the transaction totals do.
+/// Pure and stateless: it renders exactly the [MonthlySummary] it is given and
+/// owns no controller or subscription. The net outcome is always stated in
+/// words as well as colour, and the whole hero is labelled with the month it
+/// describes ([displayedMonth]) so values can never be read as belonging to a
+/// month that is still loading.
 class DisplayCard extends StatelessWidget {
   const DisplayCard({
-    Key? key,
-    required this.balance,
-    required this.income,
-    required this.expense,
-  }) : super(key: key);
+    super.key,
+    required this.summary,
+    required this.displayedMonth,
+  });
 
-  final double balance;
-  final double income;
-  final double expense;
+  final MonthlySummary summary;
 
-  /// Text scale beyond which the metrics stack vertically, purely as an
-  /// accessibility accommodation for enlarged text. Matches the analytics
-  /// sections' `kAnalyticsStackTextScale`. At normal text scales the metrics
-  /// always share a row, regardless of how narrow the viewport is.
-  static const double _stackTextScale = 1.3;
+  /// The month these values belong to — not necessarily the selected month.
+  final DateTime displayedMonth;
 
-  /// Mirrors the previous controller getters: round to two decimals, then use
-  /// the default numeric string form. Rounding first keeps snapshot
-  /// floating-point values from surfacing artifacts like `12.340000000001`
-  /// while preserving the old trailing-`.0` presentation.
-  static String _format(double value) =>
-      double.parse(value.toStringAsFixed(2)).toString();
+  /// Width below which the income and expense tiles stack instead of sharing a
+  /// row, so neither value is squeezed or clipped.
+  static const double stackBelowWidth = 360;
+
+  /// Concise word describing the month's net result, carried in the summary
+  /// semantics so the net direction is always stated in text, never by colour
+  /// alone.
+  static String netStateLabel(NetState state) {
+    switch (state) {
+      case NetState.positive:
+        return 'Positive';
+      case NetState.negative:
+        return 'Negative';
+      case NetState.zero:
+        return 'Even';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final incomeMetric = _Metric(
-      icon: Icons.arrow_upward,
-      color: Colors.green,
-      label: 'Income',
-      value: _format(income),
-    );
-    final expenseMetric = _Metric(
-      icon: Icons.arrow_downward,
-      color: Colors.red,
-      label: 'Expense',
-      value: _format(expense),
-    );
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final monthLabel = DateService.monthYear(displayedMonth);
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        const SizedBox(height: 20),
-        const Text('B A L A N C E', style: TextStyle(fontSize: 14)),
-        // The net amount shrinks to fit rather than clipping, so long signed
-        // values stay whole and centred under the label.
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            _format(balance),
-            style: const TextStyle(fontSize: 32),
+    if (summary.isEmpty) {
+      return AnalyticsSection(
+        title: 'Summary',
+        child: AnalyticsEmptyHint(
+          message: 'No transactions in $monthLabel. Add one to see your '
+              'summary for this month.',
+        ),
+      );
+    }
+
+    final stateLabel = netStateLabel(summary.netState);
+
+    return AnalyticsSection(
+      title: 'Summary',
+      outlined: false,
+      semanticLabel: '$monthLabel summary. '
+          'Net ${formatRupees(summary.net)}, $stateLabel. '
+          'Income ${formatRupees(summary.income)}. '
+          'Expense ${formatRupees(summary.expense)}. '
+          'Savings rate ${formatPercent(summary.savingsRate)}.',
+      child: ExcludeSemantics(
+        child: Container(
+          padding: const EdgeInsets.all(kAnalyticsPanelPadding),
+          decoration: BoxDecoration(
+            color: colors.primaryContainer,
+            borderRadius: BorderRadius.circular(kDesignBorderRadius),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$monthLabel net',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: colors.onPrimaryContainer.withValues(alpha: 0.8),
+                ),
+              ),
+              const SizedBox(height: 4),
+              // The net amount shrinks to fit the available width rather than
+              // clipping. Its direction is stated in the section semantics
+              // instead of beside the figure, so it stays accessible without a
+              // visible state word.
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  formatRupees(summary.net),
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    color: colors.onPrimaryContainer,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              _MoneyTiles(summary: summary),
+              const SizedBox(height: 18),
+              _SavingsRate(rate: summary.savingsRate),
+            ],
           ),
         ),
-        const SizedBox(height: 12),
-        // Income and Expense share a row at normal text scales, each in an
-        // equal bounded slot, so they stay side by side even in narrow
-        // viewports. They stack vertically only when the text scale exceeds
-        // the accessibility threshold, giving enlarged values room to breathe.
-        Builder(
-          builder: (context) {
-            final stack =
-                MediaQuery.textScalerOf(context).scale(1) > _stackTextScale;
-
-            return Padding(
-              padding: const EdgeInsets.all(20),
-              child: stack
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        incomeMetric,
-                        const SizedBox(height: 12),
-                        expenseMetric,
-                      ],
-                    )
-                  : Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(child: incomeMetric),
-                        const SizedBox(width: 12),
-                        Expanded(child: expenseMetric),
-                      ],
-                    ),
-            );
-          },
-        ),
-      ],
+      ),
     );
   }
 }
 
-/// One labelled figure: a circular direction icon beside a label and its bold
-/// value. The value scales down within its own bounded slot so long signed
-/// amounts can never overflow the row or drop digits.
-class _Metric extends StatelessWidget {
-  const _Metric({
+/// Income and expense figures, side by side when there is room and stacked when
+/// there is not.
+class _MoneyTiles extends StatelessWidget {
+  const _MoneyTiles({required this.summary});
+
+  final MonthlySummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    final income = _MoneyTile(
+      icon: Icons.arrow_upward,
+      // Money in reads as a positive, tertiary accent that stays distinct from
+      // the primaryContainer hero in both themes.
+      iconColor: colors.tertiary,
+      label: 'Income',
+      value: formatRupees(summary.income),
+    );
+    final expense = _MoneyTile(
+      icon: Icons.arrow_downward,
+      // Money out reads as the error role, the same direction cue used for
+      // signed expenses elsewhere in the app.
+      iconColor: colors.error,
+      label: 'Expense',
+      value: formatRupees(summary.expense),
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final stack = constraints.maxWidth < DisplayCard.stackBelowWidth ||
+            MediaQuery.textScalerOf(context).scale(1) >
+                kAnalyticsStackTextScale;
+
+        if (stack) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              income,
+              const SizedBox(height: 12),
+              expense,
+            ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: income),
+            const SizedBox(width: 12),
+            Expanded(child: expense),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _MoneyTile extends StatelessWidget {
+  const _MoneyTile({
     required this.icon,
-    required this.color,
+    required this.iconColor,
     required this.label,
     required this.value,
   });
 
   final IconData icon;
-  final Color color;
+  final Color iconColor;
   final String label;
   final String value;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final onContainer = colors.onPrimaryContainer;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        // A translucent surface tint over the primaryContainer hero, derived
+        // from the theme rather than a fixed white, so it lifts the tile in
+        // light mode and stays legible in dark mode.
+        color: colors.surface.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(11),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Icon(icon, color: iconColor, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: onContainer.withValues(alpha: 0.8),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                // Grouped amounts have no break opportunities, so they are
+                // scaled down within their own slot rather than allowed to
+                // overflow the tile.
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    value,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: onContainer,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The retained share of income, with a decorative track visualising the
+/// already-clamped 0–100 value.
+class _SavingsRate extends StatelessWidget {
+  const _SavingsRate({required this.rate});
+
+  final double rate;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final onContainer = colors.onPrimaryContainer;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Icon(icon, color: color),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label),
-              const SizedBox(height: 5),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  value,
-                  maxLines: 1,
-                  softWrap: false,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Savings rate',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: onContainer.withValues(alpha: 0.8),
                 ),
               ),
-            ],
+            ),
+            Text(
+              formatPercent(rate),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: onContainer,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(3),
+          child: LinearProgressIndicator(
+            value: (rate / 100).clamp(0.0, 1.0),
+            minHeight: 5,
+            // Primary fill on a low-alpha primary track, matching the mockup
+            // while staying a semantic theme role that keeps contrast over the
+            // primaryContainer hero in both light and dark themes.
+            backgroundColor: colors.primary.withValues(alpha: 0.2),
+            valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
           ),
         ),
       ],

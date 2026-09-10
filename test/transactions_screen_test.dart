@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:expenny/models/Transaction.dart';
 import 'package:expenny/models/TransactionTag.dart';
+import 'package:expenny/widgets/LoadingWidget.dart';
 import 'package:expenny/screens/TransactionsScreen.dart';
 
 import 'support/dashboard_harness.dart';
@@ -11,7 +12,6 @@ import 'support/dashboard_harness.dart';
 /// A tall, comfortably wide surface so the ledger list renders and the month /
 /// control chips are fully visible and hittable.
 const Size _kSurface = Size(500, 2200);
-
 
 class _Request {
   _Request(this.startDate, this.endDate, this.searchString, this.tagSet);
@@ -61,12 +61,26 @@ Transaction txn({
   );
 }
 
-Widget screen(_RecordingLoader loader, {required DateTime now}) {
+Widget _screen(
+  _RecordingLoader loader, {
+  required DateTime now,
+  double textScale = 1.0,
+  Future<bool?> Function(Transaction transaction)? transactionEditor,
+}) {
   return MaterialApp(
-    home: Scaffold(
-      body: TransactionsScreen(
-        transactionLoader: loader.call,
-        now: () => now,
+    home: Builder(
+      builder: (context) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(
+          textScaler: TextScaler.linear(textScale),
+          disableAnimations: true,
+        ),
+        child: Scaffold(
+          body: TransactionsScreen(
+            transactionLoader: loader.call,
+            transactionEditor: transactionEditor,
+            now: () => now,
+          ),
+        ),
       ),
     ),
   );
@@ -76,9 +90,10 @@ void main() {
   final now = DateTime(2026, 8, 23, 17, 0);
 
   group('TransactionsScreen', () {
-    testWidgets('initial load requests the selected month range', (tester) async {
+    testWidgets('initial load requests the selected month range',
+        (tester) async {
       final loader = _RecordingLoader();
-      await tester.pumpWidget(screen(loader, now: now));
+      await tester.pumpWidget(_screen(loader, now: now));
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       expect(loader.requestCount, 1);
@@ -89,17 +104,37 @@ void main() {
 
       loader.completers.first.complete([]);
       await tester.pumpAndSettle();
-      expect(find.text('No transactions for this month.'), findsOneWidget);
+
+      expect(find.byType(LoadingWidget), findsOneWidget);
+      final loaderWidget = tester.widget<LoadingWidget>(
+        find.byType(LoadingWidget),
+      );
+      expect(loaderWidget.animationName, 'home_screen_loader');
+      expect(loaderWidget.size, 200);
+      expect(
+        find.bySemanticsLabel('No transactions for this month.'),
+        findsOneWidget,
+      );
+      expect(find.text('No transactions for this month.'), findsNothing);
     });
 
     testWidgets('renders date-grouped transactions', (tester) async {
       await setSurface(tester, _kSurface);
       final loader = _RecordingLoader();
-      await tester.pumpWidget(screen(loader, now: now));
+      await tester.pumpWidget(_screen(loader, now: now));
 
       loader.completers.first.complete([
-        txn(id: 1, amount: -860, description: 'Lunch', date: DateTime(2026, 8, 23, 13, 24)),
-        txn(id: 2, amount: 25500, description: 'Salary', date: DateTime(2026, 8, 12, 10, 2), tag: 'salary'),
+        txn(
+            id: 1,
+            amount: -860,
+            description: 'Lunch',
+            date: DateTime(2026, 8, 23, 13, 24)),
+        txn(
+            id: 2,
+            amount: 25500,
+            description: 'Salary',
+            date: DateTime(2026, 8, 12, 10, 2),
+            tag: 'salary'),
       ]);
       await tester.pumpAndSettle();
 
@@ -107,12 +142,22 @@ void main() {
       expect(find.text('12 AUGUST'), findsOneWidget);
       expect(find.text('Lunch'), findsOneWidget);
       expect(find.text('Salary'), findsOneWidget);
+      expect(find.text('Transactions'), findsOneWidget);
+      expect(find.text('Your complete activity'), findsOneWidget);
+      expect(find.byType(TextField), findsOneWidget);
+      expect(find.text('Newest'), findsOneWidget);
+      expect(find.text('Amount'), findsOneWidget);
+      expect(find.text('Filter'), findsOneWidget);
+      expect(find.text('-₹860'), findsOneWidget);
+      expect(find.text('+₹25,500'), findsOneWidget);
+      expect(find.widgetWithText(ElevatedButton, 'Add Transaction'),
+          findsOneWidget);
     });
 
     testWidgets('changing month reloads with the new range', (tester) async {
       await setSurface(tester, _kSurface);
       final loader = _RecordingLoader();
-      await tester.pumpWidget(screen(loader, now: now));
+      await tester.pumpWidget(_screen(loader, now: now));
       loader.completers.first.complete([]);
       await tester.pumpAndSettle();
 
@@ -128,10 +173,11 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('typing a search term reloads with the search string', (tester) async {
+    testWidgets('typing a search term reloads with the search string',
+        (tester) async {
       await setSurface(tester, _kSurface);
       final loader = _RecordingLoader();
-      await tester.pumpWidget(screen(loader, now: now));
+      await tester.pumpWidget(_screen(loader, now: now));
       loader.completers.first.complete([]);
       await tester.pumpAndSettle();
 
@@ -145,10 +191,11 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('toggling a sort chip re-sorts in memory without reloading', (tester) async {
+    testWidgets('toggling a sort chip re-sorts in memory without reloading',
+        (tester) async {
       await setSurface(tester, _kSurface);
       final loader = _RecordingLoader();
-      await tester.pumpWidget(screen(loader, now: now));
+      await tester.pumpWidget(_screen(loader, now: now));
       loader.completers.first.complete([
         txn(id: 1, amount: -100, description: 'A', date: DateTime(2026, 8, 20)),
         txn(id: 2, amount: -900, description: 'B', date: DateTime(2026, 8, 21)),
@@ -166,10 +213,11 @@ void main() {
       expect(find.text('Highest'), findsOneWidget);
     });
 
-    testWidgets('a stale response cannot overwrite the current month', (tester) async {
+    testWidgets('a stale response cannot overwrite the current month',
+        (tester) async {
       await setSurface(tester, _kSurface);
       final loader = _RecordingLoader();
-      await tester.pumpWidget(screen(loader, now: now)); // token 1 (August)
+      await tester.pumpWidget(_screen(loader, now: now)); // token 1 (August)
 
       // Select July before August resolves → token 2.
       await tester.tap(find.text('Jul 2026'));
@@ -178,14 +226,22 @@ void main() {
 
       // July (latest) resolves first with its data.
       loader.completers[1].complete([
-        txn(id: 10, amount: -50, description: 'July item', date: DateTime(2026, 7, 5)),
+        txn(
+            id: 10,
+            amount: -50,
+            description: 'July item',
+            date: DateTime(2026, 7, 5)),
       ]);
       await tester.pumpAndSettle();
       expect(find.text('July item'), findsOneWidget);
 
       // The stale August response resolves last and must be ignored.
       loader.completers[0].complete([
-        txn(id: 20, amount: -50, description: 'August item', date: DateTime(2026, 8, 5)),
+        txn(
+            id: 20,
+            amount: -50,
+            description: 'August item',
+            date: DateTime(2026, 8, 5)),
       ]);
       await tester.pumpAndSettle();
 
@@ -193,10 +249,98 @@ void main() {
       expect(find.text('August item'), findsNothing);
     });
 
-    testWidgets('applying a tag filter reloads with the tag set', (tester) async {
+    testWidgets('reloads immediately after the editor reports a mutation',
+        (tester) async {
       await setSurface(tester, _kSurface);
       final loader = _RecordingLoader();
-      await tester.pumpWidget(screen(loader, now: now));
+      final editorResult = Completer<bool?>();
+      Transaction? openedTransaction;
+
+      await tester.pumpWidget(_screen(
+        loader,
+        now: now,
+        transactionEditor: (transaction) {
+          openedTransaction = transaction;
+          return editorResult.future;
+        },
+      ));
+      loader.completers.first.complete([
+        txn(
+          id: 42,
+          amount: -860,
+          description: 'Delete me',
+          date: DateTime(2026, 8, 23, 13, 24),
+        ),
+      ]);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Delete me'));
+      await tester.pump();
+      expect(openedTransaction?.id, 42);
+      expect(loader.requestCount, 1);
+
+      editorResult.complete(true);
+      await tester.pump();
+
+      // A successful delete/edit result reloads the same bounded month rather
+      // than waiting for the Transactions page to be reconstructed.
+      expect(loader.requestCount, 2);
+      expect(loader.requests.last.startDate, DateTime(2026, 8, 1));
+      expect(loader.requests.last.endDate, DateTime(2026, 9, 1));
+
+      loader.completers.last.complete([]);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Delete me'), findsNothing);
+      expect(find.byType(LoadingWidget), findsOneWidget);
+    });
+
+    testWidgets('replaces stale row content after a successful update',
+        (tester) async {
+      await setSurface(tester, _kSurface);
+      final loader = _RecordingLoader();
+      final editorResult = Completer<bool?>();
+
+      await tester.pumpWidget(_screen(
+        loader,
+        now: now,
+        transactionEditor: (_) => editorResult.future,
+      ));
+      loader.completers.first.complete([
+        txn(
+          id: 42,
+          amount: -860,
+          description: 'Old description',
+          date: DateTime(2026, 8, 23, 13, 24),
+        ),
+      ]);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Old description'));
+      await tester.pump();
+      editorResult.complete(true);
+      await tester.pump();
+
+      expect(loader.requestCount, 2);
+      loader.completers.last.complete([
+        txn(
+          id: 42,
+          amount: -860,
+          description: 'Updated description',
+          date: DateTime(2026, 8, 23, 13, 24),
+        ),
+      ]);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Old description'), findsNothing);
+      expect(find.text('Updated description'), findsOneWidget);
+    });
+
+    testWidgets('applying a tag filter reloads with the tag set',
+        (tester) async {
+      await setSurface(tester, _kSurface);
+      final loader = _RecordingLoader();
+      await tester.pumpWidget(_screen(loader, now: now));
       loader.completers.first.complete([]);
       await tester.pumpAndSettle();
 
@@ -213,10 +357,32 @@ void main() {
 
       expect(loader.requestCount, 2);
       expect(loader.requests[1].tagSet, isNotNull);
-      expect(loader.requests[1].tagSet, contains(TransactionTag.getTagById('food')));
+      expect(loader.requests[1].tagSet,
+          contains(TransactionTag.getTagById('food')));
 
       loader.completers[1].complete([]);
       await tester.pumpAndSettle();
+    });
+
+    testWidgets('renders at 320dp and doubled text without overflow',
+        (tester) async {
+      await setSurface(tester, const Size(320, 900));
+      final loader = _RecordingLoader();
+      await tester.pumpWidget(_screen(loader, now: now, textScale: 2.0));
+
+      loader.completers.first.complete([
+        txn(
+          id: 1,
+          amount: -98765432,
+          description: 'A deliberately long transaction description',
+          date: DateTime(2026, 8, 23, 13, 24),
+        ),
+      ]);
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('-₹9,87,65,432'), findsOneWidget);
+      expect(find.text('Add Transaction'), findsOneWidget);
     });
   });
 }

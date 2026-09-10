@@ -4,20 +4,27 @@ import 'package:lottie/lottie.dart';
 class LoadingWidget extends StatelessWidget {
   final String animationName;
   final double size;
-  const LoadingWidget(
-      {Key? key, required this.animationName, required this.size})
-      : super(key: key);
+  const LoadingWidget({
+    super.key,
+    required this.animationName,
+    required this.size,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Lottie.asset(
-          ''
+    final animationsDisabled = MediaQuery.disableAnimationsOf(context);
+
+    return TickerMode(
+      enabled: !animationsDisabled,
+      child: Center(
+        child: Lottie.asset(
           'animations/$animationName.json',
           height: size,
           repeat: true,
           reverse: false,
-          fit: BoxFit.contain),
+          fit: BoxFit.contain,
+        ),
+      ),
     );
   }
 }

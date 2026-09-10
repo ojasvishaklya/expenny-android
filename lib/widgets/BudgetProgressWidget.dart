@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../models/analytics/CategoryBreakdown.dart';
 import '../service/ConfigService.dart';
 import '../utils/CurrencyFormatter.dart';
 import 'analytics/AnalyticsSection.dart';
+import 'analytics/CategoryVisualIdentity.dart';
 
 /// Progress of a period's spending against the configured monthly budget.
 ///
@@ -10,12 +12,22 @@ import 'analytics/AnalyticsSection.dart';
 /// in rather than read from the controller so the widget can report any month
 /// the dashboard has selected, not just the current one.
 ///
+/// [breakdown] is the same category grouping the ledger and the "spending by
+/// category" list use. The budget track is filled by these categories in order,
+/// each tinted with its shared [CategoryVisualIdentity], so a glance shows not
+/// only how much of the budget is gone but which categories consumed it.
+///
 /// The single budget applies to every month independently — there is no
 /// rollover of unused budget or overspend between months.
 class BudgetProgressWidget extends StatelessWidget {
-  const BudgetProgressWidget({super.key, required this.expense});
+  const BudgetProgressWidget({
+    super.key,
+    required this.expense,
+    required this.breakdown,
+  });
 
   final double expense;
+  final CategoryBreakdown breakdown;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +52,11 @@ class BudgetProgressWidget extends StatelessWidget {
         title: 'Monthly budget',
         trailing: const _EditBudgetButton(),
         keepTrailingInline: true,
-        child: _BudgetBody(expense: expense, budget: budget),
+        child: _BudgetBody(
+          expense: expense,
+          budget: budget,
+          breakdown: breakdown,
+        ),
       );
     });
   }
@@ -73,88 +89,71 @@ class _EditBudgetButton extends StatelessWidget {
 }
 
 class _BudgetBody extends StatelessWidget {
-  const _BudgetBody({required this.expense, required this.budget});
+  const _BudgetBody({
+    required this.expense,
+    required this.budget,
+    required this.breakdown,
+  });
 
   final double expense;
   final double budget;
+  final CategoryBreakdown breakdown;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
-    final progress = computeProgress(expense, budget);
     final over = isOverBudget(expense, budget);
     final usedPercent = budgetUsedPercent(expense, budget);
     final difference = budgetDifference(expense, budget);
+    final segments = budgetSegments(breakdown, budget);
 
     // At exact equality the threshold is considered reached, so status styling
     // activates, while the remaining label still reads zero rather than an
-    // overage. This preserves the existing isOverBudget contract.
-    final statusLabel = difference < 0
+    // overage. This preserves the existing isOverBudget contract without
+    // surfacing a false-positive overage at expense == budget.
+    final over0 = difference < 0;
+    final statusLabel = over0
         ? 'Over budget by ${formatRupees(difference.abs())}'
-        : 'Remaining ${formatRupees(difference)}';
+        : '${formatRupees(remainingBudget(expense, budget))} left';
+
+    // Under (and exactly at) budget the caption spells out the full intent:
+    // {spent} of {budget} · {remaining} left. Genuine overspend swaps in the
+    // error copy.
+    final caption = over0
+        ? statusLabel
+        : '${formatRupees(expense)} of ${formatRupees(budget)} · $statusLabel';
 
     final statusColor = over ? colors.error : colors.onSurfaceVariant;
 
+    // The spoken equivalent states the raw figures, the utilisation, and the
+    // category splits, so the bar's colour and segmentation carry no
+    // information that assistive tech cannot reach.
+    final semanticLabel = _semanticLabel(
+      expense: expense,
+      budget: budget,
+      usedPercent: usedPercent,
+      statusLabel: statusLabel,
+      segments: segments,
+    );
+
     return Semantics(
       container: true,
-      label: 'Monthly budget, ${formatRupees(expense)} spent of '
-          '${formatRupees(budget)}, ${formatPercent(usedPercent)} used, '
-          '$statusLabel',
+      label: semanticLabel,
       child: ExcludeSemantics(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Wrap rather than Spacer: both values are unbounded text and must
-            // be allowed to fall onto separate lines at narrow widths.
-            Wrap(
-              spacing: 12,
-              runSpacing: 4,
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.end,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Spent of ${formatRupees(budget)}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      formatRupees(expense),
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: colors.onSurface,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                Text(
-                  statusLabel,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: statusColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                // Track fill is capped; the numeric percentage below is not.
-                value: progress,
-                minHeight: 8,
-                backgroundColor: colors.surfaceContainerHighest,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  over ? colors.error : colors.primary,
-                ),
+            Text(
+              caption,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: statusColor,
+                fontWeight: FontWeight.w600,
               ),
             ),
+            const SizedBox(height: 10),
+            _SegmentedBudgetBar(segments: segments),
             const SizedBox(height: 6),
             Text(
               '${formatPercent(usedPercent)} used',
@@ -167,6 +166,135 @@ class _BudgetBody extends StatelessWidget {
       ),
     );
   }
+
+  static String _semanticLabel({
+    required double expense,
+    required double budget,
+    required double usedPercent,
+    required String statusLabel,
+    required List<BudgetSegment> segments,
+  }) {
+    final categorySplits = segments
+        .where((s) => !s.isIdle)
+        .map((s) => '${s.group!.label}, ${formatRupees(s.group!.amount)}');
+    final splitClause =
+        categorySplits.isEmpty ? '' : ' By category: ${categorySplits.join('. ')}.';
+    return 'Monthly budget, ${formatRupees(expense)} spent of '
+        '${formatRupees(budget)}, ${formatPercent(usedPercent)} used, '
+        '$statusLabel.$splitClause';
+  }
+}
+
+/// The category-segmented budget track: an ordered run of tag-tinted segments
+/// followed, when under budget, by a neutral idle remainder — all inside one
+/// rounded rail so the segments read as a single bar.
+class _SegmentedBudgetBar extends StatelessWidget {
+  const _SegmentedBudgetBar({required this.segments});
+
+  final List<BudgetSegment> segments;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: SizedBox(
+        height: 8,
+        // The rail colour shows through wherever no segment is drawn; for a
+        // fully-consumed track no idle segment exists and nothing shows
+        // through.
+        child: ColoredBox(
+          color: colors.surfaceContainerHighest,
+          child: Row(
+            children: [
+              for (var index = 0; index < segments.length; index++) ...[
+                if (index > 0) const SizedBox(width: 2),
+                Expanded(
+                  flex: segments[index].flex,
+                  child: ColoredBox(
+                    color: segments[index].isIdle
+                        ? colors.surfaceContainerHighest
+                        : categoryIdentityFor(
+                            segments[index].group!,
+                            colors,
+                          ).color,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// One drawn portion of the budget track: either a category fill or the neutral
+/// idle remainder. [fraction] is the share of the whole budget this portion
+/// occupies, in [0, 1].
+class BudgetSegment {
+  const BudgetSegment.category(this.group, this.fraction) : isIdle = false;
+
+  const BudgetSegment.idle(this.fraction)
+      : group = null,
+        isIdle = true;
+
+  /// The category this fill represents, or null for the idle remainder.
+  final CategoryGroup? group;
+
+  /// Share of the whole budget this segment occupies, in [0, 1].
+  final double fraction;
+
+  final bool isIdle;
+
+  /// Integer flex weight for laying the segment out in a [Row]. Scaled up from
+  /// [fraction] so rounding does not collapse thin-but-present segments to
+  /// nothing.
+  int get flex {
+    final scaled = (fraction * 10000).round();
+    return scaled < 1 ? 1 : scaled;
+  }
+}
+
+/// Pure computation: the ordered category fills plus, when under budget, a
+/// neutral idle remainder, expressed as fractions of the whole [budget].
+///
+/// Categories are laid down in [breakdown] order. Each contributes
+/// `group.amount / budget`, but the cumulative category fill is capped at 1.0
+/// so a category that would spill past the end of the track is clipped to
+/// exactly the remaining room and later categories contribute nothing — the
+/// track never renders overflow. Any budget left unspent becomes a single
+/// trailing idle segment; at or over budget there is no idle remainder.
+///
+/// Returns an empty list for a non-positive budget (the widget does not build a
+/// bar in that case).
+List<BudgetSegment> budgetSegments(CategoryBreakdown breakdown, double budget) {
+  if (budget <= 0) return const [];
+
+  final segments = <BudgetSegment>[];
+  var cumulative = 0.0;
+  for (final group in breakdown.groups) {
+    if (cumulative >= 1.0) break;
+    final raw = group.amount / budget;
+    // Clip this segment to whatever room is left so the cumulative fill never
+    // exceeds the track.
+    final room = 1.0 - cumulative;
+    final fraction = raw < room ? raw : room;
+    if (fraction <= 0) continue;
+    segments.add(BudgetSegment.category(group, fraction));
+    cumulative += fraction;
+  }
+
+  // Append the neutral remainder only when the categories left the track
+  // partly empty. A tiny epsilon absorbs floating-point dust so an exactly
+  // full track shows no sliver of idle.
+  final idle = 1.0 - cumulative;
+  if (idle > 1e-9) {
+    segments.add(BudgetSegment.idle(idle));
+  }
+
+  return segments;
 }
 
 /// Pure computation: returns clamped ratio [0.0, 1.0].
@@ -191,9 +319,19 @@ double budgetUsedPercent(double expense, double budget) {
 
 /// Pure computation: how much budget is left, or how far past it the spend is.
 ///
-/// The dashboard states this as `Remaining {amount}` or `Over budget by
-/// {amount}`; this returns the signed difference those labels are built from.
+/// The dashboard states this as `{amount} left` or `Over budget by {amount}`;
+/// this returns the signed difference those labels are built from.
 double budgetDifference(double expense, double budget) => budget - expense;
+
+/// Pure computation: budget left to spend, floored at zero.
+///
+/// At or over budget this is zero rather than a negative value, so the
+/// under-budget caption never shows a negative "left" figure. The signed
+/// [budgetDifference] still drives the overspend copy.
+double remainingBudget(double expense, double budget) {
+  final diff = budget - expense;
+  return diff > 0 ? diff : 0.0;
+}
 
 /// Returns null if valid, error message string if invalid.
 String? validateBudgetInput(String input) {

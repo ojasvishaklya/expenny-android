@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:expenny/models/TransactionTag.dart';
 import 'package:expenny/models/analytics/CategoryBreakdown.dart';
 import 'package:expenny/utils/CurrencyFormatter.dart';
 import 'package:expenny/widgets/analytics/AnalyticsSection.dart';
+import 'package:expenny/widgets/analytics/CategoryVisualIdentity.dart';
 
 /// Where the month's money went, as a compact ranked list.
 ///
@@ -19,19 +19,6 @@ class CategoryBreakdownSection extends StatelessWidget {
   const CategoryBreakdownSection({super.key, required this.breakdown});
 
   final CategoryBreakdown breakdown;
-
-  /// Icon and colour identity for a group. `Other` has no single tag, so it
-  /// takes a neutral theme colour rather than a category identity.
-  static _GroupIdentity identityFor(CategoryGroup group, ColorScheme colors) {
-    if (group.isOther) {
-      return _GroupIdentity(Icons.more_horiz, colors.onSurfaceVariant);
-    }
-    // A named group holds exactly one tag; fall back defensively rather than
-    // throwing if that ever stops holding.
-    final tag =
-        TransactionTag.getTagById(group.singleTagId ?? group.tagIds.first);
-    return _GroupIdentity(tag.icon, tag.color);
-  }
 
   /// Share-bar fill fraction for [group], relative to the largest group.
   ///
@@ -87,13 +74,6 @@ class CategoryBreakdownSection extends StatelessWidget {
   }
 }
 
-class _GroupIdentity {
-  const _GroupIdentity(this.icon, this.color);
-
-  final IconData icon;
-  final Color color;
-}
-
 /// One ranked row: tag-tinted icon tile, name over a share bar, amount over
 /// percentage. Mirrors the Transactions ledger row treatment.
 class _CategoryRow extends StatelessWidget {
@@ -111,7 +91,7 @@ class _CategoryRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final identity = CategoryBreakdownSection.identityFor(group, colors);
+    final identity = categoryIdentityFor(group, colors);
 
     return Container(
       constraints: const BoxConstraints(minHeight: 50),

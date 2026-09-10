@@ -11,6 +11,7 @@ import '../service/AnalyticsService.dart';
 import '../widgets/BudgetProgressWidget.dart';
 import '../widgets/DisplayCard.dart';
 import '../widgets/analytics/CategoryBreakdownSection.dart';
+import '../widgets/analytics/DashboardHeader.dart';
 import '../widgets/analytics/DashboardLoadStatus.dart';
 import '../widgets/analytics/MonthComparisonSection.dart';
 import '../widgets/analytics/MonthTrendSection.dart';
@@ -201,52 +202,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return ListView(
       padding: const EdgeInsets.only(bottom: 32),
       children: [
-        if (data == null) ...[
-          _selectorInsetOf(
-            NearbyMonthSelector(
+        _contentInsetOf(
+          const DashboardHeader(subtitle: 'Where your money went'),
+        ),
+        _selectorInsetOf(
+          NearbyMonthSelector(
+            selectedMonth: _selectedMonth,
+            currentMonth: _currentMonth,
+            onMonthSelected: _selectMonth,
+          ),
+        ),
+        if (_showStatus)
+          _contentInsetOf(
+            DashboardLoadStatus(
               selectedMonth: _selectedMonth,
-              currentMonth: _currentMonth,
-              onMonthSelected: _selectMonth,
+              displayedMonth: _displayedDataMonth,
+              isLoading: _isLoading,
+              error: _loadError,
+              onRetry: _retry,
             ),
           ),
-          if (_showStatus)
-            _contentInsetOf(
-              DashboardLoadStatus(
-                selectedMonth: _selectedMonth,
-                displayedMonth: _displayedDataMonth,
-                isLoading: _isLoading,
-                error: _loadError,
-                onRetry: _retry,
-              ),
-            ),
-          _contentInsetOf(_InitialState(isLoading: _isLoading)),
-        ] else ...[
+        if (data == null)
+          _contentInsetOf(_InitialState(isLoading: _isLoading))
+        else ...[
+          // The hero is attributed to the snapshot's own month, so any values
+          // left visible while a different selected month loads or fails stay
+          // honestly labelled with the month they describe.
           _contentInsetOf(
             DisplayCard(
-              balance: data.summary.net,
-              income: data.summary.income,
-              expense: -data.summary.expense,
+              summary: data.summary,
+              displayedMonth: data.month,
             ),
           ),
-          _selectorInsetOf(
-            NearbyMonthSelector(
-              selectedMonth: _selectedMonth,
-              currentMonth: _currentMonth,
-              onMonthSelected: _selectMonth,
-            ),
-          ),
-          if (_showStatus)
-            _contentInsetOf(
-              DashboardLoadStatus(
-                selectedMonth: _selectedMonth,
-                displayedMonth: _displayedDataMonth,
-                isLoading: _isLoading,
-                error: _loadError,
-                onRetry: _retry,
-              ),
-            ),
           _contentInsetOf(
-            BudgetProgressWidget(expense: data.summary.expense),
+            BudgetProgressWidget(
+              expense: data.summary.expense,
+              breakdown: data.breakdown,
+            ),
           ),
           _contentInsetOf(
             CategoryBreakdownSection(breakdown: data.breakdown),
