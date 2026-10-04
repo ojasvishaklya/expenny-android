@@ -8,14 +8,22 @@ class TransactionRepository {
   late sqflite.Database _database;
   final String tableName = 'transactions';
 
-  /// Bumped to 2 for the tag-taxonomy refresh: [_migrateTagIds] rewrites
-  /// retired tag ids to their current equivalents so historical rows group and
-  /// display under the new categories.
-  static const int _databaseVersion = 2;
+  /// Bumped to 3 for the soft-delete `status` column.
+  ///
+  /// There is deliberately **no** v2 → v3 migration: the app is pre-release,
+  /// so the column is declared in [open]'s `onCreate` only and an existing v2
+  /// database must be cleared rather than upgraded. A v2 database opened at
+  /// this version will fail every read with `no such column: status`.
+  static const int _databaseVersion = 3;
 
-  Future<void> open() async {
+  /// Opens the database, creating it on first run.
+  ///
+  /// [path] overrides the on-device location and exists so tests can open a
+  /// real SQLite file through an FFI factory; production passes nothing and
+  /// resolves the platform databases directory as before.
+  Future<void> open({String? path}) async {
     _database = await sqflite.openDatabase(
-      join(await sqflite.getDatabasesPath(), tableName + '.db'),
+      path ?? join(await sqflite.getDatabasesPath(), tableName + '.db'),
       onCreate: (db, version) async {
         await db.execute(
           '''
@@ -31,7 +39,8 @@ class TransactionRepository {
             smsId TEXT,
             source TEXT DEFAULT 'manual',
             bank TEXT,
-            rawSms TEXT
+            rawSms TEXT,
+            status TEXT NOT NULL DEFAULT '${Transaction.statusActive}'
           )
           ''',
         );
@@ -76,7 +85,11 @@ class TransactionRepository {
   }
 
   Future<List<Transaction>> getTransactions() async {
-    final List<Map<String, dynamic>> maps = await _database.query(tableName);
+    final List<Map<String, dynamic>> maps = await _database.query(
+      tableName,
+      where: 'status = ?',
+      whereArgs: [Transaction.statusActive],
+    );
     var transactionList = List.generate(maps.length, (i) {
       return Transaction.fromMap(maps[i]);
     });
@@ -84,9 +97,19 @@ class TransactionRepository {
     return transactionList;
   }
 
+  /// Runs a caller-supplied read query against the **active** rows only.
+  ///
+  /// The `tableName` token resolves to an inline view restricted to
+  /// `status = 'active'`, so soft-deleted rows are filtered for every caller
+  /// without any of them having to know about [Transaction.status]. Filtering
+  /// here rather than appending to the caller's SQL keeps the gate correct for
+  /// queries that carry their own trailing clauses (`ORDER BY`, `LIMIT`).
   Future<List<Transaction>> getTransactionsRawQuery(String sql,
       [List<Object?>? arguments]) async {
-    sql = sql.replaceAll('tableName', tableName);
+    sql = sql.replaceAll(
+      'tableName',
+      "(SELECT * FROM $tableName WHERE status = '${Transaction.statusActive}')",
+    );
     final transactions = await _database.rawQuery(sql, arguments);
     var transactionList =
         transactions.map((map) => Transaction.fromMap(map)).toList();
@@ -103,18 +126,34 @@ class TransactionRepository {
     );
   }
 
-  Future<void> deleteTransaction(int id) async {
-    await _database.delete(
+  /// Marks one transaction deleted, leaving the row (and its `smsId`) in place.
+  ///
+  /// Deliberately not a `DELETE`: removing the row would drop its `smsId`, and
+  /// the next startup sync would re-import the same message because
+  /// [getExistingSmsIds] would no longer report it.
+  Future<void> softDelete(int id) async {
+    await _database.update(
       tableName,
+      {'status': Transaction.statusDeleted},
       where: 'id = ?',
       whereArgs: [id],
     );
   }
 
-  Future<void> deleteAllTransactions() async {
-    await _database.delete(tableName);
+  /// Marks every transaction deleted. See [softDelete] for why the rows stay.
+  Future<void> softDeleteAll() async {
+    await _database.update(
+      tableName,
+      {'status': Transaction.statusDeleted},
+    );
   }
 
+  /// Every `smsId` ever imported, **including soft-deleted rows**.
+  ///
+  /// The missing status filter is load-bearing, not an oversight: this set is
+  /// the SMS import dedup key, and a tombstone must keep suppressing its
+  /// message. Adding `status = 'active'` here would reintroduce the bug where
+  /// a deleted SMS transaction reappears on the next app start.
   Future<Set<String>> getExistingSmsIds() async {
     final results = await _database.query(
       tableName,
