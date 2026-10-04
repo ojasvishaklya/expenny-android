@@ -95,14 +95,24 @@ class TransactionController extends GetxController {
         .toList();
   }
 
+  /// Soft-deletes one transaction and drops it from the in-memory list.
+  ///
+  /// The row survives as a tombstone so SMS re-import stays suppressed; the
+  /// in-memory removal is what makes the UI update immediately. The passed
+  /// object is marked too, so a stale reference cannot be saved back as active.
   Future<void> deleteTransaction(Transaction transaction) async {
-    await transactionRepository.deleteTransaction(transaction.id!);
+    await transactionRepository.softDelete(transaction.id!);
+    transaction.status = Transaction.statusDeleted;
     transactionList.removeWhere((item) => item.id == transaction.id);
     refreshTransactionList();
   }
 
-  void deleteAllTransactions() async {
-    await transactionRepository.deleteAllTransactions();
+  /// Soft-deletes every transaction.
+  ///
+  /// Returns a future so callers can await the write before reporting success;
+  /// it used to be `void async`, which left the delete racing its own caller.
+  Future<void> deleteAllTransactions() async {
+    await transactionRepository.softDeleteAll();
     transactionList.value = await transactionRepository.getTransactions();
     refreshTransactionList();
   }

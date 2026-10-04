@@ -254,7 +254,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
             _PreferenceRow(
               icon: Icons.delete_outline,
               title: 'Delete all data',
-              subtitle: 'Permanently remove every transaction and setting',
+              subtitle: 'Remove every transaction and setting from the app',
               error: true,
               onTap: _handleDelete,
             ),
