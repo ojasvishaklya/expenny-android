@@ -85,7 +85,9 @@ class DataService {
 
   deleteAllTransactions() async {
     try {
-      _controller.deleteAllTransactions();
+      // Awaited so the write is durable before we report success; this used to
+      // be fire-and-forget and raced the GetStorage erase below.
+      await _controller.deleteAllTransactions();
       await GetStorage().erase();
       return DataServiceResponse(isError: false, response: 'All data deleted');
     } catch (e) {

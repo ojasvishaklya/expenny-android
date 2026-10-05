@@ -1,6 +1,14 @@
 import 'package:expenny/models/PaymentMethod.dart';
 
 class Transaction {
+  /// A live transaction, visible everywhere in the app.
+  static const String statusActive = 'active';
+
+  /// A tombstone: the user deleted this transaction, but the row is retained
+  /// so its [smsId] keeps suppressing SMS re-import. Excluded from every
+  /// display and analytics read.
+  static const String statusDeleted = 'deleted';
+
   int? id;
   DateTime date;
   double amount;
@@ -13,6 +21,14 @@ class Transaction {
   String? source; // 'manual' | 'sms'
   String? bank; // Bank/sender name from SMS (null for manual)
   String? rawSms; // Original SMS body for user verification (null for manual)
+
+  /// Soft-delete marker: [statusActive] or [statusDeleted].
+  ///
+  /// Deletes flip this rather than removing the row. A hard delete would drop
+  /// the row's [smsId] with it, and the next startup sync — which dedups only
+  /// against stored ids — would re-import the same message and resurrect the
+  /// transaction the user just deleted.
+  String status;
 
   // Default constructor
   Transaction({
@@ -28,6 +44,7 @@ class Transaction {
     this.source,
     this.bank,
     this.rawSms,
+    this.status = statusActive,
   });
 
   setAmount(double amount) {
@@ -51,7 +68,8 @@ class Transaction {
         smsId = null,
         source = 'manual',
         bank = null,
-        rawSms = null;
+        rawSms = null,
+        status = statusActive;
 
   // Convert a JSON map to a Transaction object
   factory Transaction.fromJson(Map<String, dynamic> json) {
@@ -68,6 +86,7 @@ class Transaction {
       source: json['source'] ?? 'manual',
       bank: json['bank'],
       rawSms: json['rawSms'],
+      status: json['status'],
     );
   }
 
@@ -86,6 +105,7 @@ class Transaction {
       'source': source,
       'bank': bank,
       'rawSms': rawSms,
+      'status': status,
     };
   }
 
@@ -103,6 +123,7 @@ class Transaction {
       'source': source,
       'bank': bank,
       'rawSms': rawSms,
+      'status': status,
     };
   }
 
@@ -120,6 +141,7 @@ class Transaction {
       source: map['source'] ?? 'manual',
       bank: map['bank'],
       rawSms: map['rawSms'],
+      status: map['status'],
     );
   }
 
@@ -138,7 +160,8 @@ class Transaction {
   "smsId": "$smsId",
   "source": "$source",
   "bank": "$bank",
-  "rawSms": "$rawSms"
+  "rawSms": "$rawSms",
+  "status": "$status"
 }
     ''';
   }
